@@ -127,18 +127,17 @@ p {
 }
 
 .nav {
-  height: 80px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
-  min-width: 160px;
+  gap: 10px;
   transition: opacity 200ms var(--ease-out);
 }
 
@@ -147,15 +146,15 @@ p {
 }
 
 .brandLogo {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
 .brandText {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 21.6px;
+  font-size: 18px;
   letter-spacing: -0.02em;
   color: var(--heading);
 }
@@ -196,9 +195,67 @@ p {
 }
 
 .navCtas {
-  display: flex;
+  display: none;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+}
+
+.hamburgerLine {
+  width: 100%;
+  height: 2px;
+  background: var(--heading);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.mobileMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.98);
+  border-top: 1px solid rgba(2, 48, 71, 0.08);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+}
+
+.mobileMenu.open {
+  max-height: 400px;
+  opacity: 1;
+  padding: 24px;
+}
+
+.mobileMenu a {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+  padding: 8px 0;
+  transition: color 200ms var(--ease-out);
+}
+
+.mobileMenu a:hover {
+  color: var(--primary);
+}
+
+.mobileMenu .btn {
+  width: 100%;
+  justify-content: center;
 }
 
 .btn {
@@ -207,9 +264,10 @@ p {
   justify-content: center;
   height: 44px;
   padding: 0 18px;
-  border-radius: 12px;
+  border-radius: 999px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
+  letter-spacing: 0.01em;
   border: 1px solid transparent;
   transition: transform 200ms var(--ease-out), filter 200ms var(--ease-out), background 200ms var(--ease-out),
     color 200ms var(--ease-out), border-color 200ms var(--ease-out);
@@ -218,16 +276,17 @@ p {
 }
 
 .btnPrimary {
-  background: #23a3b6;
+  background: linear-gradient(135deg, #23a3b6 0%, #11418d 100%);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 18px 45px rgba(35, 163, 182, 0.3);
+  border: 1px solid rgba(35, 163, 182, 0.35);
+  box-shadow: 0 10px 24px rgba(17, 65, 141, 0.22);
 }
 
 .btnPrimary:hover {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 22px 55px rgba(35, 163, 182, 0.4);
-  background: #1e8d9e;
+  box-shadow: 0 16px 36px rgba(17, 65, 141, 0.3);
+  background: linear-gradient(135deg, #2cb7cf 0%, #134a9d 100%);
 }
 
 .btnSecondary {
@@ -316,10 +375,10 @@ p {
 
 .heroGrid {
   position: relative;
-  padding: 60px 0 60px;
+  padding: 32px 20px 40px;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 40px;
+  gap: 32px;
   align-items: center;
 }
 
@@ -440,6 +499,32 @@ p {
   gap: 12px;
 }
 
+.mockBody .bubble {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: chatBubble 9s infinite;
+}
+
+.mockBody .bubble:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.mockBody .bubble:nth-child(2) {
+  animation-delay: 0.6s;
+}
+
+.mockBody .bubble:nth-child(3) {
+  animation-delay: 1.2s;
+}
+
+.mockBody .bubble:nth-child(4) {
+  animation-delay: 1.8s;
+}
+
+.mockBody .bubble:nth-child(5) {
+  animation-delay: 2.4s;
+}
+
 .bubble {
   padding: 12px 14px;
   border-radius: 14px;
@@ -463,6 +548,28 @@ p {
   color: rgba(2, 48, 71, 0.92);
 }
 
+.bubbleThinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 84px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(232, 244, 250, 0.96);
+  border: 1px solid rgba(251, 133, 0, 0.18);
+  color: rgba(2, 48, 71, 0.7);
+}
+
+.bubbleThinking::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(35, 163, 182, 0.8);
+  box-shadow: 12px 0 0 rgba(35, 163, 182, 0.55), 24px 0 0 rgba(35, 163, 182, 0.35);
+  animation: thinkingDots 1.2s infinite;
+}
+
 .cite {
   margin-top: 10px;
   font-size: 12px;
@@ -479,6 +586,7 @@ p {
 }
 
 .mockField {
+  position: relative;
   flex: 1;
   padding: 10px 12px;
   border-radius: 12px;
@@ -486,14 +594,91 @@ p {
   background: rgba(232, 244, 250, 0.96);
   color: rgba(33, 158, 188, 0.76);
   font-size: 13px;
+  overflow: hidden;
+}
+
+.mockField::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(35, 163, 182, 0.2), transparent);
+  transform: translateX(-120%);
+  animation: inputShimmer 3.5s infinite;
 }
 
 .mockSend {
   width: 34px;
   height: 34px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(142, 202, 230, 1), rgba(33, 158, 188, 1));
+  background: #23a3b6;
   box-shadow: 0 14px 30px rgba(142, 202, 230, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: sendPulse 2.2s infinite;
+}
+
+.mockSend::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M2 21 23 12 2 3v7l15 2-15 2z'/%3E%3C/svg%3E") no-repeat center / contain;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M2 21 23 12 2 3v7l15 2-15 2z'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
+@keyframes chatBubble {
+  0%,
+  10% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  16%,
+  78% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  86%,
+  100% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes inputShimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  40% {
+    transform: translateX(220%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+@keyframes sendPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 12px 24px rgba(35, 163, 182, 0.22);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 16px 32px rgba(35, 163, 182, 0.35);
+  }
+}
+
+@keyframes thinkingDots {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 
 .section {
@@ -907,6 +1092,39 @@ p {
     display: inline-flex;
   }
 
+  .navCtas {
+    display: flex;
+  }
+
+  .hamburger {
+    display: none;
+  }
+
+  .mobileMenu {
+    display: none;
+  }
+
+  .nav {
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .brandLogo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brandText {
+    font-size: 21.6px;
+  }
+
+  .brand {
+    gap: 14px;
+  }
+
+  .nav {
+    height: 72px;
+  }
+
   .container {
     --gutter: 32px;
   }
@@ -976,5 +1194,10 @@ p {
   }
   .btn {
     transition: none !important;
+  }
+  .mockBody .bubble,
+  .mockField::after,
+  .mockSend {
+    animation: none !important;
   }
 }
