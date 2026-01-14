@@ -52,6 +52,17 @@ body {
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+#root,
+.app {
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -1142,7 +1153,7 @@ p {
   }
 
   .heroCtas .btn {
-    width: auto;
+    width: 280px;
   }
 
   .statGrid {
