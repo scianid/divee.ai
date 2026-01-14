@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Reveal } from './components/Reveal'
 
 function PlayIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -74,6 +75,11 @@ const useCases = [
 ]
 
 function App() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen)
+  const closeMenu = () => setMobileMenuOpen(false)
+
   return (
     <div className="app">
       <a className="skipLink" href="#main">
@@ -98,12 +104,33 @@ function App() {
             <a href="#faq">FAQ</a>
           </nav>
 
+          <button 
+            className="hamburger" 
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <span className="hamburgerLine" />
+            <span className="hamburgerLine" />
+            <span className="hamburgerLine" />
+          </button>
+
           <div className="navCtas">
             <a className="btn btnPrimary" href="#cta">
               See demo
             </a>
           </div>
         </div>
+
+        <nav className={`mobileMenu ${mobileMenuOpen ? 'open' : ''}`} aria-label="Mobile">
+          <a href="#features" onClick={closeMenu}>Features</a>
+          <a href="#how" onClick={closeMenu}>How it works</a>
+          <a href="#demo" onClick={closeMenu}>Demo</a>
+          <a href="#faq" onClick={closeMenu}>FAQ</a>
+          <a className="btn btnPrimary" href="#cta" onClick={closeMenu}>
+            See demo
+          </a>
+        </nav>
       </header>
 
       <main id="main">
@@ -149,15 +176,18 @@ function App() {
                 </div>
 
                 <div className="mockBody">
-                  <div className="bubble bubbleUser">What does this article mean for 2026?</div>
+                  <div className="bubble bubbleUser">Summarise this article for me.</div>
                   <div className="bubble bubbleAi">
-                    It explains the shift from passive reading to interactive understanding—readers get answers instantly,
-                    with citations.
-                    <div className="cite">Sources: Paragraph 4, “Engagement” section</div>
+                    The article argues that publishers should shift from static pages to interactive, AI‑assisted
+                    experiences to keep readers engaged and monetize attention.
+                    <div className="cite">Sources: Intro, “Engagement” section</div>
                   </div>
+                  <div className="bubble bubbleUser">What does this mean for 2026?</div>
                   <div className="bubble bubbleAi">
-                    Want a quick summary, key takeaways, or a deeper dive on one concept?
+                    It means readers will expect instant, citation‑grounded answers on‑page—and publishers who deliver
+                    that will see longer sessions and higher retention.
                   </div>
+                  <div className="bubble bubbleThinking" aria-label="Assistant is thinking" />
                 </div>
 
                 <div className="mockInput" aria-hidden="true">
