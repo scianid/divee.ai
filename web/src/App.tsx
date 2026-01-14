@@ -95,11 +95,8 @@ function App() {
           </nav>
 
           <div className="navCtas">
-            <a className="btn btnSecondary" href="#demo">
-              See demo
-            </a>
             <a className="btn btnPrimary" href="#cta">
-              Start free trial
+              See demo
             </a>
           </div>
         </div>
@@ -120,28 +117,22 @@ function App() {
               </Reveal>
 
               <Reveal as="h1" className="heroTitle" delay={80}>
-                Your articles deserve more than a quick scan.
+                Turn static cotent into {' '}
+                <span className="heroHighlight">interactive experiences</span>.
               </Reveal>
 
               <Reveal as="p" className="heroSub" delay={160}>
-                Divee.AI transforms every article into an interactive experience. Let readers ask questions, get instant
-                answers, and dive deeper—all without leaving your page.
+                Divee.AI keeps readers on‑page with instant, citation‑grounded answers—so they can explore deeper without
+                opening new tabs.
               </Reveal>
 
               <Reveal className="heroCtas" delay={240}>
                 <a className="btn btnPrimary" href="#cta">
-                  Start free trial
-                </a>
-                <a className="btn btnSecondary" href="#demo">
-                  See demo
+                  See Demo
                 </a>
               </Reveal>
 
-              <Reveal className="heroMeta" delay={320}>
-                <span className="pill">No credit card</span>
-                <span className="pill">Asynchronous load</span>
-                <span className="pill">RTL-ready</span>
-              </Reveal>
+             
             </div>
 
             <Reveal className="heroMock" delay={140}>
