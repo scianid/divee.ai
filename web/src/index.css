@@ -115,10 +115,10 @@ p {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(0, 9, 14, 0.75);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(142, 202, 230, 0.12);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid rgba(2, 48, 71, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .nav {
@@ -141,20 +141,18 @@ p {
   opacity: 0.85;
 }
 
-.brandMark {
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 30% 30%, #8ecae6, #219ebc 55%, #023047);
-  box-shadow: 0 0 26px rgba(142, 202, 230, 0.6), 0 0 12px rgba(255, 183, 3, 0.3);
+.brandLogo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .brandText {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 21.6px;
   letter-spacing: -0.02em;
-  color: #ffffff;
+  color: var(--heading);
 }
 
 .navLinks {
@@ -164,9 +162,9 @@ p {
 }
 
 .navLinks a {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 500;
-  color: rgba(142, 202, 230, 0.88);
+  color: var(--text);
   transition: color 200ms var(--ease-out);
   position: relative;
 }
@@ -185,7 +183,7 @@ p {
 }
 
 .navLinks a:hover {
-  color: #ffffff;
+  color: var(--primary);
 }
 
 .navLinks a:hover::after {
@@ -215,15 +213,16 @@ p {
 }
 
 .btnPrimary {
-  background: linear-gradient(135deg, #ffb703, #fb8500);
-  color: #00090e;
+  background: #23a3b6;
+  color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 18px 45px rgba(255, 183, 3, 0.3);
+  box-shadow: 0 18px 45px rgba(35, 163, 182, 0.3);
 }
 
 .btnPrimary:hover {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 22px 55px rgba(255, 183, 3, 0.4);
+  box-shadow: 0 22px 55px rgba(35, 163, 182, 0.4);
+  background: #1e8d9e;
 }
 
 .btnSecondary {
@@ -244,7 +243,7 @@ p {
   display: flex;
   align-items: center;
   overflow: clip;
-  background: linear-gradient(180deg, #00090e 0%, #01131c 45%, #011c2a 100%);
+  background: #ffffff;
 }
 
 .aurora {
@@ -326,11 +325,15 @@ p {
 .eyebrow {
   display: inline-block;
   font-weight: 600;
-  color: #ffb703;
-  letter-spacing: 0.08em;
+  color: #23a3b6;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  font-size: 13px;
-  margin-bottom: 4px;
+  font-size: 12px;
+  margin-bottom: 8px;
+  padding: 6px 14px;
+  background: rgba(35, 163, 182, 0.08);
+  border-radius: 20px;
+  border: 1px solid rgba(35, 163, 182, 0.2);
 }
 
 .heroTitle {
@@ -339,13 +342,13 @@ p {
   line-height: 1.05;
   letter-spacing: -0.045em;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--heading);
   margin-top: 20px;
   margin-bottom: 0;
 }
 
 .heroHighlight {
-  background: linear-gradient(135deg, #8ecae6 0%, #219ebc 45%, #ffb703 100%);
+  background: linear-gradient(135deg, #11418d 0%, #0f6e97 45%, #23a3b6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -356,7 +359,7 @@ p {
   margin-top: 24px;
   font-size: 20px;
   line-height: 1.65;
-  color: rgba(142, 202, 230, 0.92);
+  color: var(--text);
   max-width: 58ch;
 }
 

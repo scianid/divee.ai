@@ -83,7 +83,11 @@ function App() {
       <header className="navWrap">
         <div className="nav container">
           <a className="brand" href="#top" aria-label="Divee.AI">
-            <span className="brandMark" aria-hidden="true" />
+            <img 
+              src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/public-files/divee.ai-logo.png" 
+              alt="Divee.AI logo" 
+              className="brandLogo"
+            />
             <span className="brandText">Divee.AI</span>
           </a>
 
@@ -479,7 +483,11 @@ function App() {
         <div className="container footerInner">
           <div className="footerBrand">
             <div className="brandRow">
-              <span className="brandMark" aria-hidden="true" />
+              <img 
+                src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/public-files/divee.ai-logo.png" 
+                alt="Divee.AI logo" 
+                className="brandLogo"
+              />
               <span className="brandText">Divee.AI</span>
             </div>
             <p className="footerTag">Publishing For The AI Era</p>

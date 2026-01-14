@@ -38,7 +38,7 @@ background: linear-gradient with 3+ colors, subtle animation, filter: blur for g
 
 ### Usage Guidelines
 
-**Text Hierarchy:**
+**Text Hierarchy:**11418d
 - H1/Hero: #134E4A at 48-72px
 - H2/Section: #0D9488 at 32-40px
 - H3/Subsection: #0D9488 at 24-28px
