@@ -226,7 +226,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 24px;
+  padding: 0 24px;
   background: rgba(255, 255, 255, 0.98);
   border-top: 1px solid rgba(2, 48, 71, 0.08);
   max-height: 0;
@@ -264,7 +264,7 @@ p {
   justify-content: center;
   height: 44px;
   padding: 0 18px;
-  border-radius: 999px;
+  border-radius: 9999px;
   font-weight: 600;
   font-size: 15px;
   letter-spacing: 0.01em;
@@ -432,13 +432,15 @@ p {
   gap: 12px;
   margin-top: 28px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .heroCtas .btn {
   height: 50px;
   padding: 0 24px;
   font-size: 16px;
-  border-radius: 14px;
+  border-radius: 9999px;
+  width: min(260px, 100%);
 }
 
 .heroMeta {
@@ -1133,6 +1135,14 @@ p {
     grid-template-columns: 1.2fr 0.8fr;
     gap: 72px;
     padding: 140px 0 120px;
+  }
+
+  .heroCtas {
+    justify-content: flex-start;
+  }
+
+  .heroCtas .btn {
+    width: auto;
   }
 
   .statGrid {
