@@ -68,18 +68,20 @@ function useInView<T extends Element>({ rootMargin, threshold, once = true }: Us
   return { ref, isVisible }
 }
 
-type RevealProps<T extends keyof JSX.IntrinsicElements> = {
-  as?: T
+type RevealProps = {
+  as?: keyof React.JSX.IntrinsicElements
   delay?: number
   className?: string
   once?: boolean
   rootMargin?: string
   threshold?: number | number[]
-} & Omit<JSX.IntrinsicElements[T], 'ref'>
+  style?: React.CSSProperties
+  children?: React.ReactNode
+} & React.HTMLAttributes<HTMLElement>
 
-export function Reveal<T extends keyof JSX.IntrinsicElements = 'div'>(props: RevealProps<T>) {
+export function Reveal(props: RevealProps) {
   const {
-    as,
+    as: Tag = 'div',
     delay = 0,
     className,
     once,
@@ -90,22 +92,21 @@ export function Reveal<T extends keyof JSX.IntrinsicElements = 'div'>(props: Rev
     ...rest
   } = props
 
-  const Tag = (as ?? 'div') as keyof JSX.IntrinsicElements
   const { ref, isVisible } = useInView<Element>({ rootMargin, threshold, once: once ?? true })
 
   const mergedStyle = {
-    ...(style as React.CSSProperties),
-    ['--reveal-delay' as any]: `${delay}ms`,
-  } as React.CSSProperties & { ['--reveal-delay']?: string }
+    ...style,
+    '--reveal-delay': `${delay}ms`,
+  } as React.CSSProperties
 
-  return (
-    <Tag
-      ref={ref as any}
-      className={['reveal', isVisible ? 'is-visible' : '', className ?? ''].filter(Boolean).join(' ')}
-      style={mergedStyle}
-      {...(rest as any)}
-    >
-      {children}
-    </Tag>
+  return React.createElement(
+    Tag,
+    {
+      ref,
+      className: ['reveal', isVisible ? 'is-visible' : '', className ?? ''].filter(Boolean).join(' '),
+      style: mergedStyle,
+      ...rest,
+    },
+    children
   )
 }
