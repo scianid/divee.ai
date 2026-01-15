@@ -105,7 +105,8 @@ export default function Projects() {
         icon_url: formData.icon_url || null,
         highlight_color: colors.length > 0 ? colors : null,
         input_text_placeholders: placeholders.length > 0 ? placeholders : ['Ask a question...'],
-        allowed_urls: urls.length > 0 ? urls : null
+        allowed_urls: urls.length > 0 ? urls : null,
+        show_ad: true
       }
 
       const { data, error } = await supabase
