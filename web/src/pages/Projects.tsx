@@ -34,12 +34,18 @@ export default function Projects() {
     highlight_color_1: '#68E5FD',
     highlight_color_2: '#A389E0',
     show_ad: false,
-    input_text_placeholders: 'Ask a question about this article...',
-    allowed_urls: ''
+    input_text_placeholders: [
+      'Ask anything about this article',
+      'I can help you understand this article'
+    ],
+    allowed_urls: []
   }
   const [formData, setFormData] = useState(initialFormState)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [tempPlaceholder, setTempPlaceholder] = useState('')
+  const [tempUrl, setTempUrl] = useState('')
 
   useEffect(() => {
     fetchUserAndProjects()
@@ -66,6 +72,12 @@ export default function Projects() {
     }
   }
 
+  const handleCopy = (id: string) => {
+    navigator.clipboard.writeText(id)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     if (!userId) return
@@ -73,13 +85,11 @@ export default function Projects() {
     setError(null)
 
     try {
-      const placeholders = formData.input_text_placeholders
-        .split(',')
+      const placeholders = (formData.input_text_placeholders as unknown as string[])
         .map(s => s.trim())
         .filter(Boolean)
       
-      const urls = formData.allowed_urls
-        .split('\n')
+      const urls = (formData.allowed_urls as unknown as string[])
         .map(s => s.trim())
         .filter(Boolean)
 
@@ -169,7 +179,7 @@ export default function Projects() {
                   className="inputField"
                   value={formData.client_name}
                   onChange={e => handleChange('client_name', e.target.value)}
-                  placeholder="e.g. My Tech Blog"
+                  placeholder="e.g. CNN"
                 />
               </div>
               <div>
@@ -257,24 +267,147 @@ export default function Projects() {
             </div>
 
             <div>
-              <label className="inputLabel">Input Placeholders (comma separated)</label>
-              <input 
-                className="inputField"
-                value={formData.input_text_placeholders}
-                onChange={e => handleChange('input_text_placeholders', e.target.value)}
-                placeholder="Ask me anything..., Summarize this..."
-              />
+              <label className="inputLabel">Input Placeholders</label>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                <input 
+                  className="inputField"
+                  value={tempPlaceholder}
+                  onChange={e => setTempPlaceholder(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (!tempPlaceholder.trim()) return
+                      const newArr = [...(formData.input_text_placeholders as unknown as string[]), tempPlaceholder.trim()]
+                      handleChange('input_text_placeholders', newArr)
+                      setTempPlaceholder('')
+                    }
+                  }}
+                  placeholder="Type placeholder and press Enter..."
+                />
+                <button 
+                  type="button"
+                  className="btn btnSecondary"
+                  onClick={() => {
+                    if (!tempPlaceholder.trim()) return
+                    const newArr = [...(formData.input_text_placeholders as unknown as string[]), tempPlaceholder.trim()]
+                    handleChange('input_text_placeholders', newArr)
+                    setTempPlaceholder('')
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+              
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {(formData.input_text_placeholders as unknown as string[]).map((ph, idx) => (
+                  <div key={idx} style={{ 
+                    background: 'rgba(2, 48, 71, 0.05)', 
+                    borderRadius: '99px', 
+                    padding: '6px 12px', 
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: 'var(--heading)'
+                  }}>
+                    {ph}
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const current = formData.input_text_placeholders as unknown as string[]
+                        const newArr = current.filter((_, i) => i !== idx)
+                        handleChange('input_text_placeholders', newArr)
+                      }}
+                      style={{ 
+                        border: 'none', 
+                        background: 'none', 
+                        cursor: 'pointer', 
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: 'rgba(2, 48, 71, 0.4)'
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div>
-              <label className="inputLabel">Allowed URLs (one per line)</label>
-              <textarea 
-                className="inputField"
-                style={{ height: '100px', paddingTop: '12px' }}
-                value={formData.allowed_urls}
-                onChange={e => handleChange('allowed_urls', e.target.value)}
-                placeholder="https://example.com/blog/*"
-              />
+              <label className="inputLabel">Allowed URLs</label>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                <input 
+                  className="inputField"
+                  value={tempUrl}
+                  onChange={e => setTempUrl(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (!tempUrl.trim()) return
+                      const newArr = [...(formData.allowed_urls as unknown as string[]), tempUrl.trim()]
+                      handleChange('allowed_urls', newArr)
+                      setTempUrl('')
+                    }
+                  }}
+                  placeholder="Type URL and press Enter (e.g. https://example.com/*)"
+                />
+                <button 
+                  type="button"
+                  className="btn btnSecondary"
+                  onClick={() => {
+                    if (!tempUrl.trim()) return
+                    const newArr = [...(formData.allowed_urls as unknown as string[]), tempUrl.trim()]
+                    handleChange('allowed_urls', newArr)
+                    setTempUrl('')
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {(formData.allowed_urls as unknown as string[]).map((url, idx) => (
+                  <div key={idx} style={{ 
+                    background: 'rgba(2, 48, 71, 0.05)', 
+                    borderRadius: '99px', 
+                    padding: '6px 12px', 
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: 'var(--heading)'
+                  }}>
+                    {url}
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const current = formData.allowed_urls as unknown as string[]
+                        const newArr = current.filter((_, i) => i !== idx)
+                        handleChange('allowed_urls', newArr)
+                      }}
+                      style={{ 
+                        border: 'none', 
+                        background: 'none', 
+                        cursor: 'pointer', 
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: 'rgba(2, 48, 71, 0.4)'
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+            </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -332,6 +465,13 @@ export default function Projects() {
             <Reveal key={project.id} className="card" style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }} delay={idx * 50}>
               <div style={{ flex: 1, minWidth: '300px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  {project.icon_url && (
+                    <img 
+                      src={project.icon_url} 
+                      alt={project.client_name} 
+                      style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover' }}
+                    />
+                  )}
                   <h3 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: 'var(--heading)' }}>{project.client_name}</h3>
                   <span style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '99px', background: 'rgba(142, 202, 230, 0.2)', color: 'var(--heading)' }}>
                     {project.language.toUpperCase()}
@@ -343,12 +483,37 @@ export default function Projects() {
                   )}
                 </div>
                 
-                <p style={{ color: 'rgba(2, 48, 71, 0.7)', marginBottom: '16px', fontSize: '15px' }}>{project.client_description || 'No description provided.'}</p>
+                <p style={{ color: 'rgba(2, 48, 71, 0.7)', marginBottom: '12px', fontSize: '13px', lineHeight: '1.4' }}>{project.client_description || 'No description provided.'}</p>
                 
                 <div style={{ display: 'grid', gap: '6px', fontSize: '13px', color: 'rgba(2, 48, 71, 0.5)' }}>
                    <div>
                      <span style={{ fontWeight: 600 }}>Project ID:</span> 
-                     <code style={{ background: 'rgba(0,0,0,0.04)', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px' }}>{project.project_id}</code>
+                     <code 
+                        onClick={() => handleCopy(project.project_id)}
+                        title="Click to copy"
+                        style={{ 
+                          background: 'rgba(0,0,0,0.04)', 
+                          padding: '2px 6px', 
+                          borderRadius: '4px', 
+                          marginLeft: '6px', 
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.2s',
+                          color: copiedId === project.project_id ? '#10b981' : 'inherit'
+                        }}
+                     >
+                        {project.project_id}
+                        {copiedId === project.project_id ? (
+                          <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Copied</span>
+                        ) : (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                        )}
+                     </code>
                    </div>
                    <div>
                      <span style={{ fontWeight: 600 }}>Inputs:</span> {project.input_text_placeholders.join(', ')}
