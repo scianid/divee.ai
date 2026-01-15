@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Reveal } from '../components/Reveal'
 
 export default function Login() {
@@ -42,80 +42,121 @@ export default function Login() {
   }
 
   return (
-    <main className="section min-h-screen flex items-center justify-center">
-      <div className="container max-w-md">
-        <Reveal className="card p-8" delay={0}>
-          <h1 className="text-2xl font-bold mb-6 text-center">
-            {isSignUp ? 'Create an account' : 'Welcome back'}
-          </h1>
-
-          <form onSubmit={handleAuth} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded bg-white/5 border border-white/10 focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/20 text-white"
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded bg-white/5 border border-white/10 focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/20 text-white"
-                placeholder="••••••••"
-              />
-            </div>
-
-            {error && (
-              <div className="p-3 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
-                {error}
-              </div>
-            )}
-
-            {message && (
-              <div className="p-3 rounded bg-green-500/10 border border-green-500/20 text-green-500 text-sm">
-                {message}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full btn btnPrimary justify-center"
-            >
-              {loading
-                ? 'Loading...'
-                : isSignUp
-                ? 'Sign Up'
-                : 'Sign In'}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-gray-400">
-            {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-white hover:underline"
-            >
-              {isSignUp ? 'Sign In' : 'Sign Up'}
-            </button>
-          </div>
-        </Reveal>
+    <main className="authPage">
+      {/* Background Ambience */}
+      <div className="aurora" aria-hidden="true" style={{ position: 'fixed', zIndex: -1 }}>
+        <div className="auroraLayer a1" />
+        <div className="auroraLayer a2" />
+        <div className="auroraLayer a3" />
       </div>
+
+      <Reveal className="authCard" delay={100}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+             <img 
+               src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/public-files/divee.ai-logo.png" 
+               alt="Divee.AI logo" 
+               style={{ width: '40px', height: '40px' }}
+             />
+             <span style={{ 
+               fontFamily: 'var(--font-display)', 
+               fontWeight: 700, 
+               fontSize: '24px', 
+               color: 'var(--heading)' 
+             }}>Divee.AI</span>
+          </Link>
+          <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--heading)' }}>
+            {isSignUp ? 'Create your account' : 'Welcome back'}
+          </h1>
+          <p style={{ marginTop: '8px', color: 'rgba(2, 48, 71, 0.6)' }}>
+            {isSignUp ? 'Start engaging your readers today.' : 'Sign in to manage your widget.'}
+          </p>
+        </div>
+
+        <form onSubmit={handleAuth} style={{ display: 'grid', gap: '20px' }}>
+          <div>
+            <label className="inputLabel" htmlFor="email">
+              Email address
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="inputField"
+              placeholder="you@company.com"
+            />
+          </div>
+
+          <div>
+            <label className="inputLabel" htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="inputField"
+              placeholder="••••••••"
+            />
+          </div>
+
+          {error && (
+            <div style={{ 
+              padding: '12px', 
+              borderRadius: '10px', 
+              background: 'rgba(239, 68, 68, 0.1)', 
+              border: '1px solid rgba(239, 68, 68, 0.2)', 
+              color: '#dc2626', 
+              fontSize: '14px' 
+            }}>
+              {error}
+            </div>
+          )}
+
+          {message && (
+            <div style={{ 
+              padding: '12px', 
+              borderRadius: '10px', 
+              background: 'rgba(34, 197, 94, 0.1)', 
+              border: '1px solid rgba(34, 197, 94, 0.2)', 
+              color: '#16a34a', 
+              fontSize: '14px' 
+            }}>
+              {message}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btnPrimary"
+            style={{ width: '100%', marginTop: '8px' }}
+          >
+            {loading ? 'Processing...' : isSignUp ? 'Create account' : 'Sign in'}
+          </button>
+        </form>
+
+        <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '14px', color: 'rgba(2, 48, 71, 0.6)' }}>
+          {isSignUp ? 'Already have an account? ' : "New to Divee? "}
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              padding: 0, 
+              color: 'var(--primary)', 
+              fontWeight: 600, 
+              cursor: 'pointer' 
+            }}
+          >
+            {isSignUp ? 'Sign in' : 'Create account'}
+          </button>
+        </div>
+      </Reveal>
     </main>
   )
 }

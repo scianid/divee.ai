@@ -1253,3 +1253,57 @@ p {
     animation: none !important;
   }
 }
+
+.inputField {
+  width: 100%;
+  padding: 0 16px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(2, 48, 71, 0.12);
+  color: var(--text);
+  font-size: 16px;
+  transition: all 200ms var(--ease-out);
+}
+
+.inputField:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(33, 158, 188, 0.12);
+}
+
+.inputField::placeholder {
+  color: rgba(2, 48, 71, 0.4);
+}
+
+.inputLabel {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--heading);
+}
+
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+}
+
+.authCard {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.02),
+    0 12px 32px -4px rgba(2, 48, 71, 0.08);
+}
