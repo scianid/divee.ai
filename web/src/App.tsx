@@ -480,6 +480,46 @@ function LandingPage() {
           </div>
         </section>
 
+        <section id="demo" className="section">
+          <div className="container">
+            <Reveal as="h2" className="sectionTitle" delay={0}>
+              See the widget live
+            </Reveal>
+            <Reveal as="p" className="sectionLead" delay={80}>
+              Experience the on‑page AI assistant in action before you ship.
+            </Reveal>
+            <Reveal className="demoActions" delay={140}>
+              <a className="btn btnPrimary" href="#cta">
+                <PlayIcon style={{ marginRight: 8 }} aria-hidden="true" />
+                Watch demo
+              </a>
+              <a className="btn btnSecondary" href="#cta">
+                Get a live walkthrough
+              </a>
+            </Reveal>
+          </div>
+        </section>
+
+        <section id="faq" className="section sectionAlt">
+          <div className="container">
+            <Reveal as="h2" className="sectionTitle" delay={0}>
+              Frequently asked questions
+            </Reveal>
+            <Reveal as="p" className="sectionLead" delay={80}>
+              Quick answers to the most common questions from publishers.
+            </Reveal>
+
+            <div className="faq">
+              {faqs.map((item, idx) => (
+                <Reveal key={item.q} className="faqItem" delay={120 + idx * 60}>
+                  <div className="faqQ">{item.q}</div>
+                  <div className="faqA">{item.a}</div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
       <section id="cta" className="cta">
         <div className="container ctaInner">
           <Reveal as="h2" className="ctaTitle" delay={0}>
