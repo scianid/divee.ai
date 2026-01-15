@@ -3,6 +3,7 @@ import { Link, Routes, Route, Outlet, useLocation, useNavigate } from 'react-rou
 import { Reveal } from './components/Reveal'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import Projects from './pages/Projects'
 import TermsPage from './pages/Terms'
 import PrivacyPage from './pages/Privacy'
 import { supabase } from './lib/supabase'
@@ -79,18 +80,6 @@ const useCases = [
   { title: 'Educational Platforms', body: 'Enhance learning with interactive Q&A.' },
   { title: 'Enterprise Blogs', body: 'Build authority and capture intent data.' },
 ]
-
-function ManageProjects() {
-  return (
-    <div className="container section">
-      <h1 className="sectionTitle">Manage Projects</h1>
-      <p className="sectionLead">Organize your content and widgets.</p>
-      <div className="callout" style={{ marginTop: '20px' }}>
-        Project management features coming soon.
-      </div>
-    </div>
-  )
-}
 
 function Analytics() {
   return (
@@ -670,7 +659,7 @@ function App() {
 
       <Route element={<AppLayout />}>
          <Route path="/dashboard" element={<Dashboard />} />
-         <Route path="/projects" element={<ManageProjects />} />
+         <Route path="/projects" element={<Projects />} />
          <Route path="/analytics" element={<Analytics />} />
       </Route>
     </Routes>
