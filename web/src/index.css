@@ -992,6 +992,37 @@ p {
   color: rgba(33, 158, 188, 0.92);
 }
 
+.termsContent {
+  margin-top: 24px;
+  display: grid;
+  gap: 14px;
+  max-width: 900px;
+  color: rgba(2, 48, 71, 0.92);
+}
+
+.termsContent h3 {
+  margin-top: 10px;
+  font-size: 18px;
+  color: var(--heading);
+}
+
+.termsContent p {
+  margin: 0;
+  color: rgba(2, 48, 71, 0.88);
+}
+
+.termsList {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  color: rgba(2, 48, 71, 0.88);
+}
+
+.termsList li {
+  list-style: disc;
+}
+
 .cta {
   position: relative;
   padding: 96px 0;
