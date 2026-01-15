@@ -407,6 +407,12 @@ export default function Projects() {
               </div>
             </div>
 
+            {error && (
+              <div style={{ color: '#ef4444', marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
+                {error}
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
               <button 
                 type="submit" 
