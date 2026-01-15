@@ -33,7 +33,6 @@ export default function Projects() {
     icon_url: '',
     highlight_color_1: '#68E5FD',
     highlight_color_2: '#A389E0',
-    show_ad: false,
     input_text_placeholders: [
       'Ask anything about this article',
       'I can help you understand this article'
@@ -105,7 +104,6 @@ export default function Projects() {
         direction: formData.direction,
         icon_url: formData.icon_url || null,
         highlight_color: colors.length > 0 ? colors : null,
-        show_ad: formData.show_ad,
         input_text_placeholders: placeholders.length > 0 ? placeholders : ['Ask a question...'],
         allowed_urls: urls.length > 0 ? urls : null
       }
@@ -183,6 +181,18 @@ export default function Projects() {
                 />
               </div>
               <div>
+                <label className="inputLabel">Icon URL</label>
+                <input 
+                  className="inputField"
+                  value={formData.icon_url}
+                  onChange={e => handleChange('icon_url', e.target.value)}
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div>
                 <label className="inputLabel">Language</label>
                 <input 
                   className="inputField"
@@ -191,21 +201,7 @@ export default function Projects() {
                   placeholder="en"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="inputLabel">Description</label>
-              <textarea 
-                className="inputField"
-                style={{ height: '100px', paddingTop: '12px' }}
-                value={formData.client_description}
-                onChange={e => handleChange('client_description', e.target.value)}
-                placeholder="Internal description for this project"
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-               <div>
+              <div>
                 <label className="inputLabel">Direction</label>
                 <select 
                   className="inputField"
@@ -216,15 +212,88 @@ export default function Projects() {
                   <option value="rtl">RTL (Right to Left)</option>
                 </select>
               </div>
-               <div>
-                <label className="inputLabel">Icon URL</label>
+            </div>
+
+            <div>
+              <label className="inputLabel">Allowed URLs</label>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                 <input 
                   className="inputField"
-                  value={formData.icon_url}
-                  onChange={e => handleChange('icon_url', e.target.value)}
-                  placeholder="https://..."
+                  value={tempUrl}
+                  onChange={e => setTempUrl(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (!tempUrl.trim()) return
+                      const newArr = [...(formData.allowed_urls as unknown as string[]), tempUrl.trim()]
+                      handleChange('allowed_urls', newArr)
+                      setTempUrl('')
+                    }
+                  }}
+                  placeholder="Type URL and press Enter (e.g. https://example.com/*)"
                 />
+                <button 
+                  type="button"
+                  className="btn btnSecondary"
+                  onClick={() => {
+                    if (!tempUrl.trim()) return
+                    const newArr = [...(formData.allowed_urls as unknown as string[]), tempUrl.trim()]
+                    handleChange('allowed_urls', newArr)
+                    setTempUrl('')
+                  }}
+                >
+                  Add
+                </button>
               </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {(formData.allowed_urls as unknown as string[]).map((url, idx) => (
+                  <div key={idx} style={{ 
+                    background: 'rgba(2, 48, 71, 0.05)', 
+                    borderRadius: '99px', 
+                    padding: '6px 12px', 
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: 'var(--heading)'
+                  }}>
+                    {url}
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const current = formData.allowed_urls as unknown as string[]
+                        const newArr = current.filter((_, i) => i !== idx)
+                        handleChange('allowed_urls', newArr)
+                      }}
+                      style={{ 
+                        border: 'none', 
+                        background: 'none', 
+                        cursor: 'pointer', 
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: 'rgba(2, 48, 71, 0.4)'
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+            </div>
+            </div>
+
+            <div>
+              <label className="inputLabel">Description</label>
+              <input 
+                className="inputField"
+                value={formData.client_description}
+                onChange={e => handleChange('client_description', e.target.value)}
+                placeholder="Internal description for this project"
+              />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -338,112 +407,23 @@ export default function Projects() {
               </div>
             </div>
 
-            <div>
-              <label className="inputLabel">Allowed URLs</label>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                <input 
-                  className="inputField"
-                  value={tempUrl}
-                  onChange={e => setTempUrl(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      if (!tempUrl.trim()) return
-                      const newArr = [...(formData.allowed_urls as unknown as string[]), tempUrl.trim()]
-                      handleChange('allowed_urls', newArr)
-                      setTempUrl('')
-                    }
-                  }}
-                  placeholder="Type URL and press Enter (e.g. https://example.com/*)"
-                />
-                <button 
-                  type="button"
-                  className="btn btnSecondary"
-                  onClick={() => {
-                    if (!tempUrl.trim()) return
-                    const newArr = [...(formData.allowed_urls as unknown as string[]), tempUrl.trim()]
-                    handleChange('allowed_urls', newArr)
-                    setTempUrl('')
-                  }}
-                >
-                  Add
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {(formData.allowed_urls as unknown as string[]).map((url, idx) => (
-                  <div key={idx} style={{ 
-                    background: 'rgba(2, 48, 71, 0.05)', 
-                    borderRadius: '99px', 
-                    padding: '6px 12px', 
-                    fontSize: '14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    color: 'var(--heading)'
-                  }}>
-                    {url}
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        const current = formData.allowed_urls as unknown as string[]
-                        const newArr = current.filter((_, i) => i !== idx)
-                        handleChange('allowed_urls', newArr)
-                      }}
-                      style={{ 
-                        border: 'none', 
-                        background: 'none', 
-                        cursor: 'pointer', 
-                        padding: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        color: 'rgba(2, 48, 71, 0.4)'
-                      }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-            </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <input 
-                type="checkbox"
-                id="show_ad"
-                style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }}
-                checked={formData.show_ad}
-                onChange={e => handleChange('show_ad', e.target.checked)}
-              />
-              <label htmlFor="show_ad" className="inputLabel" style={{ marginBottom: 0, cursor: 'pointer' }}>Show Ads in Widget</label>
-            </div>
-
-            {error && (
-              <div style={{ padding: '12px', background: '#fee2e2', color: '#dc2626', borderRadius: '8px', fontSize: '14px' }}>
-                {error}
-              </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-              <button 
-                type="button" 
-                onClick={() => setShowCreateForm(false)}
-                className="btn btnSecondary"
-              >
-                Cancel
-              </button>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
               <button 
                 type="submit" 
-                disabled={submitting}
                 className="btn btnPrimary"
+                disabled={submitting}
               >
                 {submitting ? 'Creating...' : 'Create Project'}
               </button>
+              <button 
+                type="button" 
+                className="btn btnSecondary"
+                onClick={() => setShowCreateForm(false)}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
             </div>
-
           </form>
         </Reveal>
       )}
@@ -476,11 +456,6 @@ export default function Projects() {
                   <span style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '99px', background: 'rgba(142, 202, 230, 0.2)', color: 'var(--heading)' }}>
                     {project.language.toUpperCase()}
                   </span>
-                  {project.show_ad && (
-                    <span style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '99px', background: 'rgba(251, 133, 0, 0.1)', color: 'var(--secondary)' }}>
-                      Ads
-                    </span>
-                  )}
                 </div>
                 
                 <p style={{ color: 'rgba(2, 48, 71, 0.7)', marginBottom: '12px', fontSize: '13px', lineHeight: '1.4' }}>{project.client_description || 'No description provided.'}</p>
