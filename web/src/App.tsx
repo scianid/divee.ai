@@ -4,6 +4,8 @@ import { Reveal } from './components/Reveal'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Projects from './pages/Projects'
+import Accounts from './pages/Accounts'
+import { RequireAuth } from './components/RequireAuth'
 import Analytics from './pages/Analytics'
 import Inventory from './pages/Inventory'
 import TermsPage from './pages/Terms'
@@ -570,10 +572,11 @@ function App() {
       <Route path="/login" element={<Login />} />
 
       <Route element={<DashboardLayout />}>
-         <Route path="/dashboard" element={<Dashboard />} />
-         <Route path="/projects" element={<Projects />} />
-         <Route path="/inventory" element={<Inventory />} />
-         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/accounts" element={<RequireAuth><Accounts /></RequireAuth>} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/inventory" element={<RequireAuth><Inventory /></RequireAuth>} />
+        <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
       </Route>
     </Routes>
   )

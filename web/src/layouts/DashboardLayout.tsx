@@ -57,7 +57,7 @@ export function DashboardLayout() {
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: DashboardIcon },
-    { label: 'Accounts', path: '/projects', icon: AccountsIcon },
+    { label: 'Accounts', path: '/accounts', icon: AccountsIcon },
     { label: 'Inventory', path: '/inventory', icon: InventoryIcon },
     { label: 'Reports', path: '/analytics', icon: ReportsIcon },
   ]
