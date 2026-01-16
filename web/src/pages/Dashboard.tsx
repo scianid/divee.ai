@@ -33,9 +33,9 @@ ChartJS.register(
 // --- Mock Data ---
 
 const MOCK_WIDGET_DATA = [
-    { label: 'Chat Widget', value: 450, color: '#3b82f6' },
-    { label: 'Booking Form', value: 320, color: '#6366f1' },
-    { label: 'Contact Button', value: 210, color: '#ec4899' },
+    { label: 'CNN', value: 450, color: '#3b82f6' },
+    { label: 'Fox News', value: 320, color: '#6366f1' },
+    { label: 'וואלה', value: 210, color: '#ec4899' },
 ]
 
 const MOCK_TREND_DATA = [
@@ -76,11 +76,7 @@ const CHECKUP_PROGRESS = [
   { id: 3, date: '12 Agustus, 2024', status: 'completed' },
 ]
 
-const DOCTORS = [
-  { id: 1, name: 'Dr. Leslie Alexander', hospital: 'Hasan Sadikin Hospital', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leslie' },
-  { id: 2, name: 'Dr. Savannah Nguyen', hospital: 'Hasan Sadikin Hospital', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Savannah' },
-  { id: 3, name: 'Dr. Darlene Robertson', hospital: 'Hasan Sadikin Hospital', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Darlene' },
-]
+
 
 // --- Icons ---
 
@@ -447,18 +443,21 @@ export default function Dashboard() {
         </Card>
 
         {/* Card 4 */}
-        <Card title="Checkup progress" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
+        <Card title="Top 3 Widgets" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '8px' }}>
-                {CHECKUP_PROGRESS.map((item, idx) => (
-                    <div key={item.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2"/><line x1="16" y1="2" x2="16" y2="6" strokeWidth="2"/><line x1="8" y1="2" x2="8" y2="6" strokeWidth="2"/><line x1="3" y1="10" x2="21" y2="10" strokeWidth="2"/></svg>
+                {MOCK_WIDGET_DATA.map((item, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${item.color}15`, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <span style={{ fontWeight: 700, fontSize: '16px' }}>#{idx + 1}</span>
                         </div>
                         <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>{item.date}</div>
-                            <div style={{ width: '100%', background: '#f1f5f9', height: '6px', borderRadius: '999px', marginTop: '12px', overflow: 'hidden' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                <div style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>{item.label}</div>
+                                <div style={{ fontSize: '12px', color: '#64748b' }}>{item.value} interactions</div>
+                            </div>
+                            <div style={{ width: '100%', background: '#f1f5f9', height: '6px', borderRadius: '999px', overflow: 'hidden' }}>
                                  <div 
-                                    style={{ height: '100%', background: '#2563eb', borderRadius: '999px', width: idx === 0 ? '70%' : '100%' }}
+                                    style={{ height: '100%', background: item.color, borderRadius: '999px', width: `${(item.value / 600) * 100}%` }}
                                  ></div>
                             </div>
                         </div>
@@ -479,18 +478,45 @@ export default function Dashboard() {
             </Card>
         </div>
 
-        {/* Row 2: Doctor */}
-        <Card title="My Doctor" action={<button style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>See Details</button>}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px' }}>
-                {DOCTORS.map((doc) => (
-                    <div key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid #f8fafc' }}>
-                         <img src={doc.image} alt={doc.name} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#eff6ff' }} />
-                         <div>
-                             <div style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>{doc.name}</div>
-                             <div style={{ fontSize: '12px', color: '#64748b' }}>{doc.hospital}</div>
-                         </div>
-                    </div>
-                ))}
+        {/* Row 2: Quick Start */}
+        <Card title="Quick Start">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', height: '100%', justifyContent: 'center' }}>
+                 <button style={{ 
+                    background: '#eff6ff', 
+                    color: '#2563eb', 
+                    padding: '12px', 
+                    borderRadius: '12px', 
+                    border: '1px solid #bfdbfe', 
+                    fontWeight: 600, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                }}>
+                    <span style={{ fontSize: '18px', lineHeight: 1 }}>+</span> New Widget
+                 </button>
+                 
+                 <button style={{ 
+                    background: '#fff', 
+                    color: '#334155', 
+                    padding: '12px', 
+                    borderRadius: '12px', 
+                    border: '1px solid #e2e8f0', 
+                    fontWeight: 600, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                }}>
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    New Account
+                 </button>
             </div>
         </Card>
 
