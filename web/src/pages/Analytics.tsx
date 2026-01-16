@@ -1,6 +1,6 @@
 export default function Analytics() {
   return (
-    <div className="container section">
+    <div className="container py-8">
       <h1 className="sectionTitle">Reports</h1>
       <p className="sectionLead">Insights into your readership.</p>
       <div className="statGrid" style={{ marginTop: '30px' }}>

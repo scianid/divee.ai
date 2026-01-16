@@ -185,7 +185,7 @@ const Accounts: React.FC = () => {
   }
 
   return (
-    <div className="container section" style={{ paddingTop: '50px' }}>
+    <div className="container py-8">
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', gap: 16 }}>
         <div style={{ flex: 1, minWidth: 220 }}>
           <h1 className="sectionTitle">Accounts</h1>
