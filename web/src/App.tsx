@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Link, Routes, Route, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Routes, Route, Outlet, useLocation } from 'react-router-dom'
 import { Reveal } from './components/Reveal'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Projects from './pages/Projects'
+import Analytics from './pages/Analytics'
+import Inventory from './pages/Inventory'
 import TermsPage from './pages/Terms'
 import PrivacyPage from './pages/Privacy'
-import { supabase } from './lib/supabase'
+import { DashboardLayout } from './layouts/DashboardLayout'
 
 function PlayIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -80,25 +82,6 @@ const useCases = [
   { title: 'Educational Platforms', body: 'Enhance learning with interactive Q&A.' },
   { title: 'Enterprise Blogs', body: 'Build authority and capture intent data.' },
 ]
-
-function Analytics() {
-  return (
-    <div className="container section">
-      <h1 className="sectionTitle">Analytics</h1>
-      <p className="sectionLead">Insights into your readership.</p>
-      <div className="statGrid" style={{ marginTop: '30px' }}>
-        <div className="statCard">
-            <div className="statNum">0</div>
-            <div className="statLabel">Active Readers</div>
-        </div>
-        <div className="statCard">
-            <div className="statNum">0%</div>
-            <div className="statLabel">Engagement Rate</div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function MarketingLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -219,77 +202,6 @@ function MarketingLayout() {
   )
 }
 
-function AppLayout() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const navigate = useNavigate()
-  
-  const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen)
-  const closeMenu = () => setMobileMenuOpen(false)
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate('/login')
-  }
-
-  return (
-    <div className="app">
-      <header className="navWrap">
-        <div className="nav container">
-          <Link to="/dashboard" className="brand" aria-label="Divee.AI Dashboard">
-            <img 
-              src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/public-files/divee.ai-logo.png" 
-              alt="Divee.AI logo" 
-              className="brandLogo"
-            />
-            <span className="brandText">Divee.AI</span>
-          </Link>
-
-          <nav className="navLinks" aria-label="App Navigation">
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/projects">Manage Projects</Link>
-            <Link to="/analytics">Analytics</Link>
-          </nav>
-
-          <button 
-            className="hamburger" 
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-            aria-expanded={mobileMenuOpen}
-          >
-            <span className="hamburgerLine" />
-            <span className="hamburgerLine" />
-            <span className="hamburgerLine" />
-          </button>
-
-          <div className="navCtas">
-            <button className="btn btnSecondary" onClick={handleLogout}>
-              Sign out
-            </button>
-          </div>
-        </div>
-
-        <nav className={`mobileMenu ${mobileMenuOpen ? 'open' : ''}`} aria-label="Mobile">
-          <Link to="/dashboard" onClick={closeMenu}>Dashboard</Link>
-          <Link to="/projects" onClick={closeMenu}>Manage Projects</Link>
-          <Link to="/analytics" onClick={closeMenu}>Analytics</Link>
-          <button className="btn btnSecondary" onClick={() => { closeMenu(); handleLogout(); }}>
-            Sign out
-          </button>
-        </nav>
-      </header>
-
-      <main style={{ minHeight: '80vh', paddingBottom: '40px' }}>
-        <Outlet />
-      </main>
-
-      <footer className="footer" style={{ marginTop: 'auto', paddingTop: '20px', paddingBottom: '20px' }}>
-        <div className="container" style={{ textAlign: 'center', fontSize: '14px', color: 'var(--text)' }}>
-           © 2026 Divee.AI
-        </div>
-      </footer>
-    </div>
-  )
-}
 
 function LandingPage() {
   return (
@@ -657,9 +569,10 @@ function App() {
       
       <Route path="/login" element={<Login />} />
 
-      <Route element={<AppLayout />}>
+      <Route element={<DashboardLayout />}>
          <Route path="/dashboard" element={<Dashboard />} />
          <Route path="/projects" element={<Projects />} />
+         <Route path="/inventory" element={<Inventory />} />
          <Route path="/analytics" element={<Analytics />} />
       </Route>
     </Routes>

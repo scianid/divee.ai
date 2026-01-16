@@ -152,7 +152,7 @@ export default function Projects() {
     <div className="container section" style={{ paddingTop: '50px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
-          <h1 className="sectionTitle">My Projects</h1>
+          <h1 className="sectionTitle">Accounts</h1>
           <p className="sectionLead" style={{ marginTop: '8px', fontSize: '16px' }}>Manage your Divee.AI widgets</p>
         </div>
         {!showCreateForm && (
@@ -250,14 +250,14 @@ export default function Projects() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {(formData.allowed_urls as unknown as string[]).map((url, idx) => (
                   <div key={idx} style={{ 
-                    background: 'rgba(2, 48, 71, 0.05)', 
+                    background: 'rgba(76, 76, 102, 0.08)', 
                     borderRadius: '99px', 
                     padding: '6px 12px', 
                     fontSize: '14px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    color: 'var(--heading)'
+                    color: 'var(--text)'
                   }}>
                     {url}
                     <button 
@@ -274,7 +274,8 @@ export default function Projects() {
                         padding: 0,
                         display: 'flex',
                         alignItems: 'center',
-                        color: 'rgba(2, 48, 71, 0.4)'
+                        color: 'var(--text)',
+                        opacity: 0.6
                       }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -371,14 +372,14 @@ export default function Projects() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {(formData.input_text_placeholders as unknown as string[]).map((ph, idx) => (
                   <div key={idx} style={{ 
-                    background: 'rgba(2, 48, 71, 0.05)', 
+                    background: 'rgba(76, 76, 102, 0.08)', 
                     borderRadius: '99px', 
                     padding: '6px 12px', 
                     fontSize: '14px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    color: 'var(--heading)'
+                    color: 'var(--text)'
                   }}>
                     {ph}
                     <button 
@@ -395,7 +396,8 @@ export default function Projects() {
                         padding: 0,
                         display: 'flex',
                         alignItems: 'center',
-                        color: 'rgba(2, 48, 71, 0.4)'
+                        color: 'var(--text)',
+                        opacity: 0.6
                       }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -438,7 +440,7 @@ export default function Projects() {
       <div style={{ display: 'grid', gap: '24px' }}>
         {projects.length === 0 && !showCreateForm ? (
           <div className="card" style={{ padding: '48px', textAlign: 'center', borderStyle: 'dashed' }}>
-             <p style={{ fontSize: '18px', color: 'rgba(2, 48, 71, 0.6)' }}>No projects found. Create one to get started!</p>
+             <p style={{ fontSize: '18px', color: 'var(--text)', opacity: 0.7 }}>No projects found. Create one to get started!</p>
              <button 
               onClick={() => setShowCreateForm(true)}
               className="btn btnPrimary"
@@ -460,14 +462,14 @@ export default function Projects() {
                     />
                   )}
                   <h3 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: 'var(--heading)' }}>{project.client_name}</h3>
-                  <span style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '99px', background: 'rgba(142, 202, 230, 0.2)', color: 'var(--heading)' }}>
+                  <span style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '99px', background: 'rgba(17, 65, 141, 0.08)', color: 'var(--heading)' }}>
                     {project.language.toUpperCase()}
                   </span>
                 </div>
                 
-                <p style={{ color: 'rgba(2, 48, 71, 0.7)', marginBottom: '12px', fontSize: '13px', lineHeight: '1.4' }}>{project.client_description || 'No description provided.'}</p>
+                <p style={{ color: 'var(--text)', marginBottom: '12px', fontSize: '13px', lineHeight: '1.4' }}>{project.client_description || 'No description provided.'}</p>
                 
-                <div style={{ display: 'grid', gap: '6px', fontSize: '13px', color: 'rgba(2, 48, 71, 0.5)' }}>
+                <div style={{ display: 'grid', gap: '6px', fontSize: '13px', color: 'var(--text)', opacity: 0.8 }}>
                    <div>
                      <span style={{ fontWeight: 600 }}>Project ID:</span> 
                      <code 
