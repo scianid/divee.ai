@@ -10,6 +10,32 @@ CREATE TABLE public.account (
   CONSTRAINT account_pkey PRIMARY KEY (id),
   CONSTRAINT account_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
+CREATE TABLE public.analytics_events (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  project_id text NOT NULL,
+  visitor_id uuid,
+  session_id uuid,
+  event_type text NOT NULL,
+  event_label text,
+  event_data jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT analytics_events_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.analytics_impressions (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  project_id text NOT NULL,
+  visitor_id uuid,
+  session_id uuid,
+  url text,
+  referrer text,
+  user_agent text,
+  geo_country text,
+  geo_city text,
+  geo_lat double precision,
+  geo_lng double precision,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT analytics_impressions_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.article (
   url text NOT NULL UNIQUE,
   title text NOT NULL,
