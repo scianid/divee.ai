@@ -9,9 +9,10 @@ interface Account {
   user_id: string;
   name: string;
   created_at: string;
+  icon_url?: string | null;
 }
 
-const initialFormState = { name: '' };
+const initialFormState = { name: '', icon_url: '' };
 
 const Accounts: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -65,7 +66,7 @@ const Accounts: React.FC = () => {
 
   function startEdit(account: Account) {
     setEditingId(account.id);
-    setForm({ name: account.name });
+    setForm({ name: account.name, icon_url: account.icon_url || '' });
     setShowCreateForm(true);
   }
 
@@ -85,7 +86,7 @@ const Accounts: React.FC = () => {
         // Update
         const { error } = await supabase
           .from('account')
-          .update({ name: form.name })
+          .update({ name: form.name, icon_url: form.icon_url })
           .eq('id', editingId)
           .eq('user_id', userId);
         if (error) throw error;
@@ -93,7 +94,7 @@ const Accounts: React.FC = () => {
         // Create
         const { error } = await supabase
           .from('account')
-          .insert([{ name: form.name, user_id: userId }]);
+          .insert([{ name: form.name, icon_url: form.icon_url, user_id: userId }]);
         if (error) throw error;
       }
       setForm(initialFormState);
@@ -167,6 +168,17 @@ const Accounts: React.FC = () => {
                 disabled={submitting}
               />
             </div>
+            <div>
+              <label className="inputLabel">Icon URL</label>
+              <input
+                className="inputField"
+                name="icon_url"
+                value={form.icon_url}
+                onChange={handleChange}
+                placeholder="https://... (optional)"
+                disabled={submitting}
+              />
+            </div>
             {error && (
               <div style={{ color: '#ef4444', marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
                 {error}
@@ -209,6 +221,7 @@ const Accounts: React.FC = () => {
           <table className="table-auto" style={{ width: '100%', minWidth: 500, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid #ececec' }}>
+                <th style={{ padding: '14px 16px', fontWeight: 600, fontSize: 15, borderBottom: '1px solid #ececec', background: 'none' }}>Icon</th>
                 <th style={{ padding: '14px 16px', fontWeight: 600, fontSize: 15, borderBottom: '1px solid #ececec', background: 'none' }}>Name</th>
                 <th style={{ padding: '14px 16px', fontWeight: 600, fontSize: 15, borderBottom: '1px solid #ececec', background: 'none' }}>Created</th>
                 <th style={{ padding: '14px 16px', fontWeight: 600, fontSize: 15, borderBottom: '1px solid #ececec', background: 'none' }}>Actions</th>
@@ -217,6 +230,20 @@ const Accounts: React.FC = () => {
             <tbody>
               {accounts.map((account, idx) => (
                 <tr key={account.id} style={{ borderBottom: '1px solid #f0f0f0', transition: 'background 0.2s', background: idx % 2 === 0 ? '#fff' : '#fafbfc' }}>
+                  <td style={{ padding: '12px 16px' }}>
+                    {account.icon_url ? (
+                      <img
+                        src={account.icon_url}
+                        alt={account.name}
+                        style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover', background: '#f3f3f3', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+                        onError={e => (e.currentTarget.style.display = 'none')}
+                      />
+                    ) : (
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f3f3f3', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: 18 }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><text x="12" y="16" textAnchor="middle" fontSize="10" fill="#bbb">?</text></svg>
+                      </div>
+                    )}
+                  </td>
                   <td style={{ padding: '12px 16px', fontWeight: 600 }}>{account.name}</td>
                   <td style={{ padding: '12px 16px', color: '#555', fontSize: 14 }}>{new Date(account.created_at).toLocaleString()}</td>
                   <td style={{ padding: '12px 16px', display: 'flex', gap: 8 }}>

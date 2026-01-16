@@ -6,10 +6,10 @@ CREATE TABLE public.account (
   user_id uuid NOT NULL,
   name text NOT NULL,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  icon_url text,
   CONSTRAINT account_pkey PRIMARY KEY (id),
   CONSTRAINT account_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
-
 CREATE TABLE public.article (
   url text NOT NULL UNIQUE,
   title text NOT NULL,
@@ -18,7 +18,6 @@ CREATE TABLE public.article (
   project_id text NOT NULL UNIQUE,
   CONSTRAINT article_pkey PRIMARY KEY (project_id)
 );
-
 CREATE TABLE public.project (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
