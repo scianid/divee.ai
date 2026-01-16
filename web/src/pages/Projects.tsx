@@ -6,7 +6,7 @@ export default function Projects() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
           <h1 className="sectionTitle">Accounts</h1>
-          <p className="sectionLead" style={{ marginTop: '8px', fontSize: '16px' }}>Manage user account settings and profile.</p>
+          <p className="sectionLead" style={{ marginTop: '8px', fontSize: '16px' }}>Manage user's subaccounts</p>
         </div>
       </div>
 
