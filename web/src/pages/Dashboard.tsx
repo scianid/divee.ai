@@ -399,20 +399,32 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        console.log('No session found');
+        return;
+      }
 
       const baseUrl = 'https://vdbmhqlogqrxozaibntq.supabase.co/functions/v1/stats';
+      
+      // Format dates with time component for proper filtering
+      const startDate = `${dateRange.start}T00:00:00`;
+      const endDate = `${dateRange.end}T23:59:59`;
+      
       const params = new URLSearchParams({
-        start_date: dateRange.start,
-        end_date: dateRange.end
+        start_date: startDate,
+        end_date: endDate
       });
+      
+      console.log('Fetching stats with date range:', { start: startDate, end: endDate });
+      console.log('Using token:', session.access_token.substring(0, 20) + '...');
 
       const headers = {
         'Authorization': `Bearer ${session.access_token}`,
-        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
       };
 
-      // Fetch all endpoints in parallel
+      // Fetch all endpoints in parallel using GET requests
       const [
         totalInteractions,
         impressionsByWidget,
@@ -420,14 +432,38 @@ export default function Dashboard() {
         interactionsOverTime,
         impressionsOverTime
       ] = await Promise.all([
-        fetch(`${baseUrl}/total-interactions?${params}`, { headers }).then(r => r.json()),
-        fetch(`${baseUrl}/impressions-by-widget?${params}`, { headers }).then(r => r.json()),
-        fetch(`${baseUrl}/impressions-by-location?${params}`, { headers }).then(r => r.json()),
-        fetch(`${baseUrl}/interactions-over-time?${params}`, { headers }).then(r => r.json()),
-        fetch(`${baseUrl}/impressions-over-time?${params}`, { headers }).then(r => r.json())
+        fetch(`${baseUrl}/total-interactions?${params}`, { 
+          method: 'GET',
+          headers 
+        }).then(r => r.json()),
+        fetch(`${baseUrl}/impressions-by-widget?${params}`, { 
+          method: 'GET',
+          headers 
+        }).then(r => r.json()),
+        fetch(`${baseUrl}/impressions-by-location?${params}`, { 
+          method: 'GET',
+          headers 
+        }).then(r => r.json()),
+        fetch(`${baseUrl}/interactions-over-time?${params}`, { 
+          method: 'GET',
+          headers 
+        }).then(r => r.json()),
+        fetch(`${baseUrl}/impressions-over-time?${params}`, { 
+          method: 'GET',
+          headers 
+        }).then(r => r.json())
       ]);
 
       setStats({
+        totalInteractions,
+        impressionsByWidget,
+        impressionsByLocation,
+        interactionsOverTime,
+        impressionsOverTime
+      });
+      
+      // Debug logging
+      console.log('Stats fetched:', {
         totalInteractions,
         impressionsByWidget,
         impressionsByLocation,
