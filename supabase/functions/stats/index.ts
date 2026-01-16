@@ -49,10 +49,12 @@ async function getAuthenticatedClient(authHeader: string | null) {
   console.log(`User verified: ${user.id}`);
 
   // Return service role client for querying analytics (bypasses RLS)
-  return createClient(
+  const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
+
+  return { supabase, userId: user.id };
 }
 
 // Helper to parse and validate query parameters
@@ -71,15 +73,47 @@ function parseParams(url: URL): StatsParams {
   return { accountId: accountId || undefined, startDate, endDate };
 }
 
-// Helper to get project IDs for an account
-async function getProjectIds(supabase: any, accountId?: string): Promise<string[]> {
-  let query = supabase.from("project").select("project_id");
-  
-  if (accountId) {
-    query = query.eq("account_id", accountId);
+// Helper to get project IDs for a user (and optionally specific account)
+async function getProjectIds(supabase: any, userId: string, accountId?: string): Promise<string[]> {
+  // 1. Get all accounts for this user
+  const { data: accounts, error: accountError } = await supabase
+    .from("account")
+    .select("id")
+    .eq("user_id", userId);
+
+  if (accountError) {
+    throw new Error(`Failed to fetch user accounts: ${accountError.message}`);
   }
 
-  const { data, error } = await query;
+  const userAccountIds = accounts?.map((a: any) => a.id) || [];
+
+  if (userAccountIds.length === 0) {
+    return []; // User has no accounts
+  }
+
+  // 2. If a specific account was requested, verify access
+  if (accountId) {
+    if (!userAccountIds.includes(accountId)) {
+      throw new Error("Unauthorized: You do not have access to this account.");
+    }
+    
+    // Fetch projects for this validated account
+    const { data, error } = await supabase
+      .from("project")
+      .select("project_id")
+      .eq("account_id", accountId);
+
+    if (error) {
+      throw new Error(`Failed to fetch projects: ${error.message}`);
+    }
+    return data?.map((p: any) => p.project_id) || [];
+  }
+
+  // 3. Otherwise, fetch projects for ALL user accounts
+  const { data, error } = await supabase
+    .from("project")
+    .select("project_id")
+    .in("account_id", userAccountIds);
 
   if (error) {
     throw new Error(`Failed to fetch projects: ${error.message}`);
@@ -89,8 +123,8 @@ async function getProjectIds(supabase: any, accountId?: string): Promise<string[
 }
 
 // Handler: Total interactions
-async function handleTotalInteractions(supabase: any, params: StatsParams) {
-  const projectIds = await getProjectIds(supabase, params.accountId);
+async function handleTotalInteractions(supabase: any, userId: string, params: StatsParams) {
+  const projectIds = await getProjectIds(supabase, userId, params.accountId);
 
   if (projectIds.length === 0) {
     return { total: 0, breakdown: [] };
@@ -125,8 +159,8 @@ async function handleTotalInteractions(supabase: any, params: StatsParams) {
 }
 
 // Handler: Impressions by widget (project)
-async function handleImpressionsByWidget(supabase: any, params: StatsParams) {
-  const projectIds = await getProjectIds(supabase, params.accountId);
+async function handleImpressionsByWidget(supabase: any, userId: string, params: StatsParams) {
+  const projectIds = await getProjectIds(supabase, userId, params.accountId);
 
   if (projectIds.length === 0) {
     return { widgets: [] };
@@ -171,8 +205,8 @@ async function handleImpressionsByWidget(supabase: any, params: StatsParams) {
 }
 
 // Handler: Impressions by location
-async function handleImpressionsByLocation(supabase: any, params: StatsParams) {
-  const projectIds = await getProjectIds(supabase, params.accountId);
+async function handleImpressionsByLocation(supabase: any, userId: string, params: StatsParams) {
+  const projectIds = await getProjectIds(supabase, userId, params.accountId);
 
   if (projectIds.length === 0) {
     return { locations: [] };
@@ -213,8 +247,8 @@ async function handleImpressionsByLocation(supabase: any, params: StatsParams) {
 }
 
 // Handler: Interactions over time
-async function handleInteractionsOverTime(supabase: any, params: StatsParams) {
-  const projectIds = await getProjectIds(supabase, params.accountId);
+async function handleInteractionsOverTime(supabase: any, userId: string, params: StatsParams) {
+  const projectIds = await getProjectIds(supabase, userId, params.accountId);
 
   if (projectIds.length === 0) {
     return { timeline: [] };
@@ -251,8 +285,8 @@ async function handleInteractionsOverTime(supabase: any, params: StatsParams) {
 }
 
 // Handler: Impressions over time
-async function handleImpressionsOverTime(supabase: any, params: StatsParams) {
-  const projectIds = await getProjectIds(supabase, params.accountId);
+async function handleImpressionsOverTime(supabase: any, userId: string, params: StatsParams) {
+  const projectIds = await getProjectIds(supabase, userId, params.accountId);
 
   if (projectIds.length === 0) {
     return { timeline: [] };
@@ -302,7 +336,8 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization");
     
     // Verify JWT manually (Gateway verification disabled)
-    const supabase = await getAuthenticatedClient(authHeader);
+    // Now returns both client and userId
+    const { supabase, userId } = await getAuthenticatedClient(authHeader);
     
     // Parse common parameters
     const params = parseParams(url);
@@ -310,15 +345,15 @@ Deno.serve(async (req: Request) => {
     // Route to appropriate handler
     let data;
     if (path.endsWith("/total-interactions")) {
-      data = await handleTotalInteractions(supabase, params);
+      data = await handleTotalInteractions(supabase, userId, params);
     } else if (path.endsWith("/impressions-by-widget")) {
-      data = await handleImpressionsByWidget(supabase, params);
+      data = await handleImpressionsByWidget(supabase, userId, params);
     } else if (path.endsWith("/impressions-by-location")) {
-      data = await handleImpressionsByLocation(supabase, params);
+      data = await handleImpressionsByLocation(supabase, userId, params);
     } else if (path.endsWith("/interactions-over-time")) {
-      data = await handleInteractionsOverTime(supabase, params);
+      data = await handleInteractionsOverTime(supabase, userId, params);
     } else if (path.endsWith("/impressions-over-time")) {
-      data = await handleImpressionsOverTime(supabase, params);
+      data = await handleImpressionsOverTime(supabase, userId, params);
     } else {
       return new Response(
         JSON.stringify({
