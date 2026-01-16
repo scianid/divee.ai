@@ -71,7 +71,8 @@ export function DashboardLayout() {
         style={{
           width: collapsed ? '64px' : '240px',
           background: '#fff',
-          borderRight: '1px solid rgba(0,0,0,0.08)',
+          boxShadow: '4px 0 24px rgba(0,0,0,0.08)',
+          borderRight: '1px solid rgba(0,0,0,0.02)',
           display: 'flex',
           flexDirection: 'column',
           transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
