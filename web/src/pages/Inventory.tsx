@@ -275,7 +275,7 @@ function Inventory() {
             <option value="all">All Accounts</option>
             {accounts.map(acc => (
               <option key={acc.id} value={acc.id}>
-                {acc.icon_url ? '🖼️ ' : ''}{acc.name}
+                {acc.name}
               </option>
             ))}
           </select>
