@@ -30,63 +30,7 @@ ChartJS.register(
   ArcElement
 )
 
-// --- Mock Data ---
-
-const MOCK_WIDGET_DATA = [
-    { label: 'CNN', value: 450, color: '#3b82f6' },
-    { label: 'Fox News', value: 320, color: '#6366f1' },
-    { label: 'וואלה', value: 210, color: '#ec4899' },
-]
-
-const MOCK_TREND_DATA = [
-  15, 18, 16, 22, 18, 25, 23, 28, 26, 30, 28, 32
-]
-
-const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-const MOCK_DAILY_INTERACTIONS = [142, 210, 185, 234, 289, 312, 345]
-
-const CHART_DATA = WEEK_DAYS.map((day, i) => ({
-  name: day,
-  value: MOCK_DAILY_INTERACTIONS[i]
-}))
-
-const MOCK_BAR_DATA = [
-  { label: 'Jan', value: 35, type: 'recovery' },
-  { label: 'Feb', value: 75, type: 'process' },
-  { label: 'Mar', value: 25, type: 'recovery' },
-  { label: 'Apr', value: 0, type: 'empty' },
-  { label: 'May', value: 50, type: 'process' },
-  { label: 'Jun', value: 20, type: 'recovery' },
-]
-
-const MOCK_LOCATIONS = [
-  { id: 1, name: "New York", lat: 40.7128, lng: -74.0060, value: 850 },
-  { id: 2, name: "London", lat: 51.5074, lng: -0.1278, value: 650 },
-  { id: 3, name: "Tokyo", lat: 35.6762, lng: 139.6503, value: 920 },
-  { id: 4, name: "Sydney", lat: -33.8688, lng: 151.2093, value: 450 },
-  { id: 5, name: "Paris", lat: 48.8566, lng: 2.3522, value: 700 },
-  { id: 6, name: "Berlin", lat: 52.5200, lng: 13.4050, value: 550 },
-  { id: 7, name: "Singapore", lat: 1.3521, lng: 103.8198, value: 780 },
-  { id: 8, name: "San Francisco", lat: 37.7749, lng: -122.4194, value: 890 },
-]
-
-const CHECKUP_PROGRESS = [
-  { id: 1, date: '22 Agustus, 2024', status: 'completed' },
-  { id: 2, date: '16 Agustus, 2024', status: 'completed' },
-  { id: 3, date: '12 Agustus, 2024', status: 'completed' },
-]
-
-
-
 // --- Icons ---
-
-
-
-const FilterIcon = () => (
-  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-  </svg>
-)
 
 
 
@@ -224,17 +168,17 @@ function ImpressionsMap({ locations }: { locations: any[] }) {
                 <TileLayer
                     url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                 />
-                {MOCK_LOCATIONS.map(loc => (
+                {locations.map((loc, i) => (
                     <CircleMarker 
-                        key={loc.id} 
-                        center={[loc.lat, loc.lng]} 
+                        key={i} 
+                        center={[loc.latitude || 0, loc.longitude || 0]} 
                         pathOptions={{ color: '#2563eb', fillColor: '#2563eb', fillOpacity: 0.6, weight: 0 }}
-                        radius={Math.sqrt(loc.value) * 0.4}
+                        radius={Math.sqrt(loc.count || 0) * 0.4}
                     >
                         <Popup>
                             <div style={{ fontFamily: 'var(--font-display)', color: '#1e293b' }}>
-                                <strong>{loc.name}</strong><br/>
-                                {loc.value} impressions
+                                <strong>{loc.city || 'Unknown'}, {loc.country || ''}</strong><br/>
+                                {loc.count} impressions
                             </div>
                         </Popup>
                     </CircleMarker>
@@ -415,62 +359,11 @@ export default function Dashboard() {
         end_date: endDate
       });
       
-      console.log('Fetching stats with date range:', { start: startDate, end: endDate });
-      console.log('Access token:', session.access_token);
-      
-      // Manually decode JWT to inspect it
-      try {
-        const parts = session.access_token.split('.');
-        if (parts.length === 3) {
-          const header = JSON.parse(atob(parts[0]));
-          const payload = JSON.parse(atob(parts[1]));
-          console.log('JWT Header:', header);
-          console.log('JWT Payload:', payload);
-          console.log('JWT Expiry:', new Date(payload.exp * 1000));
-          console.log('JWT Issuer:', payload.iss);
-          console.log('JWT Role:', payload.role);
-          
-          // Check if token is expired
-          if (payload.exp * 1000 < Date.now()) {
-            console.error('JWT is EXPIRED!');
-            alert('Your session has expired. Please log in again.');
-            return;
-          }
-        } else {
-          console.error('Invalid JWT format - should have 3 parts separated by dots');
-        }
-      } catch (e) {
-        console.error('Failed to decode JWT:', e);
-      }
-
       const headers = {
         'Authorization': `Bearer ${session.access_token}`,
         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         'Content-Type': 'application/json'
       };
-      
-      console.log('Request headers:', headers);
-      console.log('Anon key:', import.meta.env.VITE_SUPABASE_ANON_KEY);
-
-      // Test a single request first with full error handling
-      const testUrl = `${baseUrl}/total-interactions?${params}`;
-      console.log('Test request to:', testUrl);
-      
-      const testResponse = await fetch(testUrl, { 
-        method: 'GET',
-        headers 
-      });
-      
-      console.log('Response status:', testResponse.status);
-      console.log('Response headers:', Object.fromEntries(testResponse.headers.entries()));
-      const testData = await testResponse.json();
-      console.log('Response data:', testData);
-      
-      if (!testResponse.ok) {
-        console.error('Request failed:', testResponse.status, testData);
-        setLoading(false);
-        return;
-      }
 
       // Fetch all endpoints in parallel using GET requests
       const [
@@ -480,7 +373,10 @@ export default function Dashboard() {
         interactionsOverTime,
         impressionsOverTime
       ] = await Promise.all([
-        Promise.resolve(testData),
+        fetch(`${baseUrl}/total-interactions?${params}`, { 
+          method: 'GET',
+          headers 
+        }).then(r => r.json()),
         fetch(`${baseUrl}/impressions-by-widget?${params}`, { 
           method: 'GET',
           headers 
@@ -500,15 +396,6 @@ export default function Dashboard() {
       ]);
 
       setStats({
-        totalInteractions,
-        impressionsByWidget,
-        impressionsByLocation,
-        interactionsOverTime,
-        impressionsOverTime
-      });
-      
-      // Debug logging
-      console.log('Stats fetched:', {
         totalInteractions,
         impressionsByWidget,
         impressionsByLocation,
