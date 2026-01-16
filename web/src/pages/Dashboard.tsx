@@ -416,13 +416,61 @@ export default function Dashboard() {
       });
       
       console.log('Fetching stats with date range:', { start: startDate, end: endDate });
-      console.log('Using token:', session.access_token.substring(0, 20) + '...');
+      console.log('Access token:', session.access_token);
+      
+      // Manually decode JWT to inspect it
+      try {
+        const parts = session.access_token.split('.');
+        if (parts.length === 3) {
+          const header = JSON.parse(atob(parts[0]));
+          const payload = JSON.parse(atob(parts[1]));
+          console.log('JWT Header:', header);
+          console.log('JWT Payload:', payload);
+          console.log('JWT Expiry:', new Date(payload.exp * 1000));
+          console.log('JWT Issuer:', payload.iss);
+          console.log('JWT Role:', payload.role);
+          
+          // Check if token is expired
+          if (payload.exp * 1000 < Date.now()) {
+            console.error('JWT is EXPIRED!');
+            alert('Your session has expired. Please log in again.');
+            return;
+          }
+        } else {
+          console.error('Invalid JWT format - should have 3 parts separated by dots');
+        }
+      } catch (e) {
+        console.error('Failed to decode JWT:', e);
+      }
 
       const headers = {
         'Authorization': `Bearer ${session.access_token}`,
         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         'Content-Type': 'application/json'
       };
+      
+      console.log('Request headers:', headers);
+      console.log('Anon key:', import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+      // Test a single request first with full error handling
+      const testUrl = `${baseUrl}/total-interactions?${params}`;
+      console.log('Test request to:', testUrl);
+      
+      const testResponse = await fetch(testUrl, { 
+        method: 'GET',
+        headers 
+      });
+      
+      console.log('Response status:', testResponse.status);
+      console.log('Response headers:', Object.fromEntries(testResponse.headers.entries()));
+      const testData = await testResponse.json();
+      console.log('Response data:', testData);
+      
+      if (!testResponse.ok) {
+        console.error('Request failed:', testResponse.status, testData);
+        setLoading(false);
+        return;
+      }
 
       // Fetch all endpoints in parallel using GET requests
       const [
@@ -432,10 +480,7 @@ export default function Dashboard() {
         interactionsOverTime,
         impressionsOverTime
       ] = await Promise.all([
-        fetch(`${baseUrl}/total-interactions?${params}`, { 
-          method: 'GET',
-          headers 
-        }).then(r => r.json()),
+        Promise.resolve(testData),
         fetch(`${baseUrl}/impressions-by-widget?${params}`, { 
           method: 'GET',
           headers 

@@ -13,23 +13,15 @@ interface StatsParams {
   endDate: string;
 }
 
-// Helper to create Supabase client
-// Use service role for bypassing RLS on analytics tables
-function getSupabaseClient() {
-  return createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-  );
-}
-
-// Verify JWT and get user from token
-async function verifyUser(authHeader: string | null) {
+// Helper to verify user JWT and return service role client
+async function getAuthenticatedClient(authHeader: string | null) {
+  console.log("Verifying token...");
   if (!authHeader) {
     throw new Error("Missing authorization header");
   }
-  
-  // Create client with anon key to verify the JWT
-  const supabase = createClient(
+
+  // Create client with the user's token
+  const authClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     {
@@ -38,14 +30,27 @@ async function verifyUser(authHeader: string | null) {
       },
     }
   );
+
+  // Verify the user by asking Supabase Auth
+  const { data: { user }, error } = await authClient.auth.getUser();
   
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error || !user) {
-    throw new Error("Invalid authentication token");
+  if (error) {
+    console.error("Token verification failed:", error);
+    throw new Error(`Invalid JWT: ${error.message}`);
   }
   
-  return user;
+  if (!user) {
+    console.error("No user found for token");
+    throw new Error("Invalid JWT: No user found");
+  }
+  
+  console.log(`User verified: ${user.id}`);
+
+  // Return service role client for querying analytics (bypasses RLS)
+  return createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
 }
 
 // Helper to parse and validate query parameters
@@ -294,11 +299,8 @@ Deno.serve(async (req: Request) => {
     const path = url.pathname;
     const authHeader = req.headers.get("Authorization");
     
-    // Verify the user's JWT token
-    await verifyUser(authHeader);
-    
-    // Use service role client for database queries (bypasses RLS)
-    const supabase = getSupabaseClient();
+    // Verify JWT manually (Gateway verification disabled)
+    const supabase = await getAuthenticatedClient(authHeader);
     
     // Parse common parameters
     const params = parseParams(url);
