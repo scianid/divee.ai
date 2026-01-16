@@ -10,13 +10,13 @@
      amber_flame:     #ffb703
      princeton_orange:#fb8500
   */
-  --primary-dark: #023047;
-  --primary: #219ebc;
+  --primary-dark: #0d326e;
+  --primary: #11418d;
   --accent: #ffb703;
   --secondary: #fb8500;
   --bg: #fdfdfd;
-  --text: #0d3e4b;
-  --heading: #023047;
+  --text: #4c4c66;
+  --heading: #11418d;
 
   --container: 1200px;
   --gutter: 20px;
@@ -287,28 +287,28 @@ p {
 }
 
 .btnPrimary {
-  background: linear-gradient(135deg, #23a3b6 0%, #11418d 100%);
+  background: linear-gradient(135deg, #23a3b6, #11418d);
   color: #ffffff;
   font-weight: 600;
-  border: 1px solid rgba(35, 163, 182, 0.35);
+  border: 1px solid rgba(61, 108, 189, 0.35);
   box-shadow: 0 10px 24px rgba(17, 65, 141, 0.22);
 }
 
 .btnPrimary:hover {
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 16px 36px rgba(17, 65, 141, 0.3);
-  background: linear-gradient(135deg, #2cb7cf 0%, #134a9d 100%);
+  background: #0d326e;
 }
 
 .btnSecondary {
-  background: rgba(142, 202, 230, 0.08);
-  color: #8ecae6;
-  border-color: rgba(142, 202, 230, 0.3);
+  background: rgba(76, 76, 102, 0.05);
+  color: var(--text);
+  border-color: rgba(76, 76, 102, 0.2);
 }
 
 .btnSecondary:hover {
-  background: rgba(142, 202, 230, 0.15);
-  border-color: rgba(142, 202, 230, 0.5);
+  background: rgba(76, 76, 102, 0.1);
+  border-color: rgba(76, 76, 102, 0.4);
   transform: translateY(-1px);
 }
 
@@ -586,7 +586,8 @@ p {
 .cite {
   margin-top: 10px;
   font-size: 12px;
-  color: rgba(33, 158, 188, 0.82);
+  color: var(--text);
+  opacity: 0.8;
 }
 
 .mockInput {
@@ -700,8 +701,8 @@ p {
 
 .sectionAlt {
   background: rgba(255, 255, 255, 0.8);
-  border-top: 1px solid rgba(251, 133, 0, 0.12);
-  border-bottom: 1px solid rgba(251, 133, 0, 0.12);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .sectionTitle {
@@ -714,7 +715,7 @@ p {
   margin-top: 14px;
   font-size: 18px;
   max-width: 70ch;
-  color: rgba(33, 158, 188, 0.92);
+  color: var(--text);
 }
 
 .callout {
@@ -752,7 +753,7 @@ p {
 
 .statLabel {
   margin-top: 10px;
-  color: rgba(33, 158, 188, 0.92);
+  color: var(--text);
 }
 
 .cardGrid {
@@ -765,7 +766,7 @@ p {
 .card {
   padding: 24px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(251, 133, 0, 0.16);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   background: rgba(255, 255, 255, 0.95);
   box-shadow: var(--shadow-sm);
   transition: transform 250ms var(--ease-standard), box-shadow 250ms var(--ease-standard);
@@ -784,7 +785,7 @@ p {
 
 .cardBody {
   margin-top: 10px;
-  color: rgba(33, 158, 188, 0.92);
+  color: var(--text);
 }
 
 .resultGrid {
@@ -811,7 +812,7 @@ p {
 
 .resultLabel {
   margin-top: 8px;
-  color: rgba(33, 158, 188, 0.92);
+  color: var(--text);
 }
 
 .scrolly {
@@ -859,7 +860,7 @@ p {
 
 .stepBody {
   margin-top: 6px;
-  color: rgba(33, 158, 188, 0.92);
+  color: var(--text);
 }
 
 .scrollySticky {
@@ -942,7 +943,7 @@ p {
 
 .securityBody {
   margin-top: 8px;
-  color: rgba(33, 158, 188, 0.92);
+  color: var(--text);
 }
 
 .listGrid {
@@ -1032,7 +1033,7 @@ p {
 .ctaInner {
   border-radius: 20px;
   border: 1px solid rgba(251, 133, 0, 0.16);
-  background: linear-gradient(135deg, rgba(2, 48, 71, 0.96), rgba(33, 158, 188, 0.92));
+  background: linear-gradient(135deg, #11418d, #0d326e);
   box-shadow: 0 40px 90px rgba(0, 0, 0, 0.22);
   padding: 54px 26px;
 }
@@ -1075,7 +1076,7 @@ p {
 
 .footerTag {
   margin-top: 10px;
-  color: rgba(33, 158, 188, 0.9);
+  color: var(--text);
 }
 
 .footerLinks {
