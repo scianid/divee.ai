@@ -2,6 +2,33 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { ProjectFunnelModal } from '../components/ProjectFunnelModal';
 
+// Helper for safe account icons
+const AccountIcon = ({ url, name, size = 20 }: { url?: string | null, name: string, size?: number }) => {
+  const [error, setError] = useState(false);
+  if (url && !error) {
+    return <img 
+      src={url} 
+      alt={name} 
+      onError={() => setError(true)}
+      style={{ width: size, height: size, borderRadius: 4, objectFit: 'cover' }} 
+    />;
+  }
+  return <div style={{ 
+    width: size, 
+    height: size, 
+    borderRadius: 4, 
+    background: '#e5e7eb', 
+    color: '#6b7280', 
+    fontSize: size * 0.6, 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    fontWeight: 600
+  }}>
+    {name.slice(0, 1).toUpperCase()}
+  </div>;
+};
+
 interface Project {
   id: number;
   created_at: string;
@@ -38,7 +65,7 @@ function Inventory() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [_submitting, setSubmitting] = useState(false);
   const [_error, setError] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<string>('all');
   const [sortField, setSortField] = useState<'client_name' | 'client_description' | 'id' | 'language'>('id');
@@ -190,12 +217,26 @@ function Inventory() {
   };
 
   // Render
-  if (loading) return <div className="container section">Loading...</div>;
-
+  if (loading) {
+    return (
+      <div className="container section" style={{ display: 'flex', justifyContent: 'center', paddingTop: '100px' }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid #f3f3f3',
+          borderTop: '3px solid #2563eb',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+  
   return (
     <div className="container section">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h2 style={{ fontSize: 24, fontWeight: 700 }}>Projects Inventory</h2>
+          <h1 className="sectionTitle">Inventory</h1>
         <button
           className="btn btnPrimary"
           style={{ borderRadius: 12 }}
@@ -388,7 +429,7 @@ function Inventory() {
                         const acc = accounts.find(a => a.id === project.account_id);
                         return acc ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            {acc.icon_url && <img src={acc.icon_url} alt="" style={{ width: 20, height: 20, borderRadius: 4, objectFit: 'cover' }} />}
+                            <AccountIcon url={acc.icon_url} name={acc.name} />
                             <span>{acc.name}</span>
                           </div>
                         ) : '—';

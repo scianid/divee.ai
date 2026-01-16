@@ -12,6 +12,27 @@ interface Account {
   icon_url?: string | null;
 }
 
+const AccountAvatar = ({ name, iconUrl }: { name: string; iconUrl?: string | null }) => {
+  const [error, setError] = useState(false);
+
+  if (iconUrl && !error) {
+    return (
+      <img
+        src={iconUrl}
+        alt={name}
+        style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover', background: '#f3f3f3', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+        onError={() => setError(true)}
+      />
+    );
+  }
+
+  return (
+    <div style={{ width: 32, height: 32, borderRadius: 8, background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontSize: 14, fontWeight: 600 }}>
+      {name.charAt(0).toUpperCase()}
+    </div>
+  );
+};
+
 const initialFormState = { name: '', icon_url: '' };
 
 const Accounts: React.FC = () => {
@@ -132,6 +153,22 @@ const Accounts: React.FC = () => {
     setDeleteError(null);
   };
 
+  if (loading) {
+    return (
+      <div className="container section" style={{ display: 'flex', justifyContent: 'center', paddingTop: '100px' }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid #f3f3f3',
+          borderTop: '3px solid #2563eb',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="container section" style={{ paddingTop: '50px' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', gap: 16 }}>
@@ -231,18 +268,7 @@ const Accounts: React.FC = () => {
               {accounts.map((account, idx) => (
                 <tr key={account.id} style={{ borderBottom: '1px solid #f0f0f0', transition: 'background 0.2s', background: idx % 2 === 0 ? '#fff' : '#fafbfc' }}>
                   <td style={{ padding: '12px 16px' }}>
-                    {account.icon_url ? (
-                      <img
-                        src={account.icon_url}
-                        alt={account.name}
-                        style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover', background: '#f3f3f3', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
-                        onError={e => (e.currentTarget.style.display = 'none')}
-                      />
-                    ) : (
-                      <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f3f3f3', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: 18 }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><text x="12" y="16" textAnchor="middle" fontSize="10" fill="#bbb">?</text></svg>
-                      </div>
-                    )}
+                    <AccountAvatar name={account.name} iconUrl={account.icon_url} />
                   </td>
                   <td style={{ padding: '12px 16px', fontWeight: 600 }}>{account.name}</td>
                   <td style={{ padding: '12px 16px', color: '#555', fontSize: 14 }}>{new Date(account.created_at).toLocaleString()}</td>
