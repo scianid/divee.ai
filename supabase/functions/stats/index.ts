@@ -14,16 +14,38 @@ interface StatsParams {
 }
 
 // Helper to create Supabase client
-function getSupabaseClient(authHeader: string | null) {
+// Use service role for bypassing RLS on analytics tables
+function getSupabaseClient() {
   return createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
+}
+
+// Verify JWT and get user from token
+async function verifyUser(authHeader: string | null) {
+  if (!authHeader) {
+    throw new Error("Missing authorization header");
+  }
+  
+  // Create client with anon key to verify the JWT
+  const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     {
       global: {
-        headers: { Authorization: authHeader ?? "" },
+        headers: { Authorization: authHeader },
       },
     }
   );
+  
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  if (error || !user) {
+    throw new Error("Invalid authentication token");
+  }
+  
+  return user;
 }
 
 // Helper to parse and validate query parameters
@@ -265,12 +287,18 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
-
+  console.log("RUNNING");
+  
   try {
     const url = new URL(req.url);
     const path = url.pathname;
     const authHeader = req.headers.get("Authorization");
-    const supabase = getSupabaseClient(authHeader);
+    
+    // Verify the user's JWT token
+    await verifyUser(authHeader);
+    
+    // Use service role client for database queries (bypasses RLS)
+    const supabase = getSupabaseClient();
     
     // Parse common parameters
     const params = parseParams(url);
