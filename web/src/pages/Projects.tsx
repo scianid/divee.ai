@@ -2,7 +2,7 @@ import { Reveal } from '../components/Reveal'
 
 export default function Projects() {
   return (
-    <div className="container section" style={{ paddingTop: '50px' }}>
+    <div className="container py-8">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div>
           <h1 className="sectionTitle">Accounts</h1>

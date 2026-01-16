@@ -234,7 +234,7 @@ function Inventory() {
   }
   
   return (
-    <div className="container section">
+    <div className="container py-8">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <h1 className="sectionTitle">Inventory</h1>
         <button
