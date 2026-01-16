@@ -47,6 +47,21 @@ const Accounts: React.FC = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+
+  // Helper
+  function highlight(text: string | number | null | undefined, query: string) {
+    if (!query || !text) return text;
+    const q = query.trim().toLowerCase();
+    const str = text.toString();
+    const idx = str.toLowerCase().indexOf(q);
+    if (idx === -1) return str;
+    return <>
+      {str.substring(0, idx)}
+      <mark style={{ background: '#ffe066', padding: 0 }}>{str.substring(idx, idx + q.length)}</mark>
+      {str.substring(idx + q.length)}
+    </>;
+  }
 
   useEffect(() => {
     fetchUserAndAccounts();
@@ -242,17 +257,54 @@ const Accounts: React.FC = () => {
         </Reveal>
       )}
 
+      {/* Search Bar */}
+      <div style={{ width: '100%', margin: '0 0 18px 0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 16 }}>
+        <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search accounts..."
+            style={{
+              width: '100%',
+              padding: '10px 36px 10px 36px',
+              borderRadius: 8,
+              border: '1px solid #e5e7eb',
+              fontSize: 15,
+              background: '#fafbfc',
+              outline: 'none',
+            }}
+          />
+          <span style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: '#b0b0b0',
+            pointerEvents: 'none',
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+        </div>
+      </div>
+
       <div style={{ width: '100%', overflowX: 'auto', marginTop: 0 }}>
-        {accounts.length === 0 && !showCreateForm ? (
+        {accounts.filter(a => !search.trim() || a.name.toLowerCase().includes(search.trim().toLowerCase())).length === 0 && !showCreateForm ? (
           <div className="card" style={{ padding: '48px', textAlign: 'center', borderStyle: 'dashed' }}>
-            <p style={{ fontSize: '18px', color: 'var(--text)', opacity: 0.7 }}>No accounts found. Create one to get started!</p>
-            <button 
-              onClick={() => setShowCreateForm(true)}
-              className="btn btnPrimary"
-              style={{ marginTop: '20px' }}
-            >
-              + New Account
-            </button>
+             <p style={{ fontSize: '18px', color: 'var(--text)', opacity: 0.7 }}>
+              {search.trim() ? 'No accounts match your search.' : 'No accounts found. Create one to get started!'}
+            </p>
+            {!search.trim() && (
+              <button 
+                onClick={() => setShowCreateForm(true)}
+                className="btn btnPrimary"
+                style={{ marginTop: '20px' }}
+              >
+                + New Account
+              </button>
+            )}
           </div>
         ) : (
           <table className="table-auto" style={{ width: '100%', minWidth: 500, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
@@ -265,12 +317,12 @@ const Accounts: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {accounts.map((account, idx) => (
+              {accounts.filter(a => !search.trim() || a.name.toLowerCase().includes(search.trim().toLowerCase())).map((account, idx) => (
                 <tr key={account.id} style={{ borderBottom: '1px solid #f0f0f0', transition: 'background 0.2s', background: idx % 2 === 0 ? '#fff' : '#fafbfc' }}>
                   <td style={{ padding: '12px 16px' }}>
                     <AccountAvatar name={account.name} iconUrl={account.icon_url} />
                   </td>
-                  <td style={{ padding: '12px 16px', fontWeight: 600 }}>{account.name}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: 600 }}>{highlight(account.name, search)}</td>
                   <td style={{ padding: '12px 16px', color: '#555', fontSize: 14 }}>{new Date(account.created_at).toLocaleString()}</td>
                   <td style={{ padding: '12px 16px', display: 'flex', gap: 8 }}>
                     <button 
