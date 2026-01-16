@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 interface StatsParams {
   accountId?: string;
@@ -36,6 +38,8 @@ async function getAuthenticatedClient(authHeader: string | null) {
   
   if (error) {
     console.error("Token verification failed:", error);
+    console.log("Auth Header Length:", authHeader.length);
+    console.log("Auth Header Start:", authHeader.substring(0, 20));
     throw new Error(`Invalid JWT: ${error.message}`);
   }
   
@@ -343,10 +347,10 @@ Deno.serve(async (req: Request) => {
     console.error("Error:", error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Internal server error",
+        error: error instanceof Error ? `[Function Internal Error] ${error.message}` : "Internal server error",
       }),
       {
-        status: 500,
+        status: 401, // Using 401 for internal auth failures too
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
