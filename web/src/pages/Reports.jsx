@@ -1,4 +1,4 @@
-export default function Analytics() {
+export default function Reports() {
   return (
     <div className="container py-8">
       <h1 className="sectionTitle">Reports</h1>

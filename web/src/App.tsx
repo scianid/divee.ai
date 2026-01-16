@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Projects from './pages/Projects'
 import Accounts from './pages/Accounts'
 import { RequireAuth } from './components/RequireAuth'
-import Analytics from './pages/Analytics'
+import Reports from './pages/Reports'
 import Inventory from './pages/Inventory'
 import TermsPage from './pages/Terms'
 import PrivacyPage from './pages/Privacy'
@@ -576,7 +576,7 @@ function App() {
         <Route path="/accounts" element={<RequireAuth><Accounts /></RequireAuth>} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/inventory" element={<RequireAuth><Inventory /></RequireAuth>} />
-        <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
+        <Route path="/analytics" element={<RequireAuth><Reports /></RequireAuth>} />
       </Route>
     </Routes>
   )
