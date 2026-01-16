@@ -124,7 +124,8 @@ function Card({ children, style = {}, title, action, className = '' }: { childre
   )
 }
 
-function TrendChart() {
+function TrendChart({ data: timelineData }: { data: any[] }) {
+    const chartData = timelineData.length > 0 ? timelineData.map((d: any) => d.count) : [0];
     const options = {
         responsive: true,
         maintainAspectRatio: false,
@@ -167,10 +168,10 @@ function TrendChart() {
     }
 
     const data = {
-        labels: MOCK_TREND_DATA.map((_, i) => i.toString()),
+        labels: chartData.map((_, i) => i.toString()),
         datasets: [
             {
-                data: MOCK_TREND_DATA,
+                data: chartData,
                 borderColor: '#2563eb',
                 borderWidth: 2,
                 backgroundColor: (context: any) => {
@@ -191,12 +192,26 @@ function TrendChart() {
 
     return (
         <div style={{ position: 'relative', height: '96px', width: '100%', marginTop: 'auto' }}>
-            <Line options={options} data={data} />
+            {timelineData.length > 0 ? (
+              <Line options={options} data={data} />
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', fontSize: '12px' }}>
+                No data
+              </div>
+            )}
         </div>
     )
 }
 
-function ImpressionsMap() {
+function ImpressionsMap({ locations }: { locations: any[] }) {
+    if (locations.length === 0) {
+        return (
+            <div style={{ height: '300px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '14px' }}>
+                No location data available
+            </div>
+        );
+    }
+    
     return (
         <div style={{ height: '300px', width: '100%', borderRadius: '12px', overflow: 'hidden', zIndex: 0 }}>
              <MapContainer 
@@ -229,13 +244,14 @@ function ImpressionsMap() {
     )
 }
 
-function ImpressionsByWidgetChart() {
-    const data = {
-        labels: MOCK_WIDGET_DATA.map(d => d.label),
+function ImpressionsByWidgetChart({ data: widgets }: { data: any[] }) {
+    const colors = ['#3b82f6', '#6366f1', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6'];
+    const chartData = {
+        labels: widgets.map(d => d.name),
         datasets: [
             {
-                data: MOCK_WIDGET_DATA.map(d => d.value),
-                backgroundColor: MOCK_WIDGET_DATA.map(d => d.color),
+                data: widgets.map(d => d.impressions),
+                backgroundColor: colors,
                 borderWidth: 0,
             },
         ],
@@ -258,12 +274,22 @@ function ImpressionsByWidgetChart() {
 
     return (
         <div style={{ height: '250px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Pie data={data} options={options} />
+            {widgets.length > 0 ? (
+              <Pie data={chartData} options={options} />
+            ) : (
+              <div style={{ color: '#94a3b8', fontSize: '14px' }}>No data available</div>
+            )}
         </div>
     );
 }
 
-function DailyInteractionsChart() {
+function DailyInteractionsChart({ data: timelineData }: { data: any[] }) {
+    const chartData = timelineData.length > 0 ? timelineData.map((d: any) => d.count) : [0];
+    const labels = timelineData.length > 0 ? timelineData.map((d: any) => {
+        const date = new Date(d.date);
+        return date.toLocaleDateString('en-US', { weekday: 'short' });
+    }) : [''];
+    
     const options = {
         responsive: true,
         maintainAspectRatio: false,
@@ -289,8 +315,8 @@ function DailyInteractionsChart() {
             },
             y: {
                 display: false,
-                min: Math.min(...MOCK_DAILY_INTERACTIONS) - 20,
-                max: Math.max(...MOCK_DAILY_INTERACTIONS) + 20,
+                min: chartData.length > 0 ? Math.max(0, Math.min(...chartData) - 20) : 0,
+                max: chartData.length > 0 ? Math.max(...chartData) + 20 : 100,
             }
         },
         layout: {
@@ -309,11 +335,11 @@ function DailyInteractionsChart() {
     }
 
     const data = {
-        labels: WEEK_DAYS,
+        labels: labels,
         datasets: [
             {
                 label: 'Interactions',
-                data: MOCK_DAILY_INTERACTIONS,
+                data: chartData,
                 borderColor: '#2563eb',
                 backgroundColor: (context: any) => {
                     const chart = context.chart;
@@ -332,7 +358,13 @@ function DailyInteractionsChart() {
 
     return (
         <div style={{ height: '160px', width: '100%', marginTop: '16px' }}>
-             <Line data={data} options={options} />
+             {timelineData.length > 0 ? (
+               <Line data={data} options={options} />
+             ) : (
+               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', fontSize: '14px' }}>
+                 No data available
+               </div>
+             )}
         </div>
     )
 }
@@ -340,6 +372,74 @@ function DailyInteractionsChart() {
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const navigate = useNavigate()
+  
+  // Calculate default date range (last 7 days)
+  const getDefaultDateRange = () => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 7);
+    return {
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0]
+    };
+  };
+
+  const [dateRange, setDateRange] = useState(getDefaultDateRange());
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<any>({
+    totalInteractions: null,
+    impressionsByWidget: null,
+    impressionsByLocation: null,
+    interactionsOverTime: null,
+    impressionsOverTime: null
+  });
+
+  // Fetch stats from edge function
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const baseUrl = 'https://vdbmhqlogqrxozaibntq.supabase.co/functions/v1/stats';
+      const params = new URLSearchParams({
+        start_date: dateRange.start,
+        end_date: dateRange.end
+      });
+
+      const headers = {
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+      };
+
+      // Fetch all endpoints in parallel
+      const [
+        totalInteractions,
+        impressionsByWidget,
+        impressionsByLocation,
+        interactionsOverTime,
+        impressionsOverTime
+      ] = await Promise.all([
+        fetch(`${baseUrl}/total-interactions?${params}`, { headers }).then(r => r.json()),
+        fetch(`${baseUrl}/impressions-by-widget?${params}`, { headers }).then(r => r.json()),
+        fetch(`${baseUrl}/impressions-by-location?${params}`, { headers }).then(r => r.json()),
+        fetch(`${baseUrl}/interactions-over-time?${params}`, { headers }).then(r => r.json()),
+        fetch(`${baseUrl}/impressions-over-time?${params}`, { headers }).then(r => r.json())
+      ]);
+
+      setStats({
+        totalInteractions,
+        impressionsByWidget,
+        impressionsByLocation,
+        interactionsOverTime,
+        impressionsOverTime
+      });
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -356,15 +456,69 @@ export default function Dashboard() {
           navigate('/login')
         } else {
           setUser(session?.user ?? null)
+          fetchStats()
         }
     })
     return () => subscription.unsubscribe()
   }, [navigate])
+  
+  // Fetch stats on mount
+  useEffect(() => {
+    if (user) {
+      fetchStats();
+    }
+  }, [])
 
   if (!user) return null
 
   // Used for greeting
   const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
+  
+  // Handle date change
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateRange(prev => ({ ...prev, start: e.target.value }));
+  };
+
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateRange(prev => ({ ...prev, end: e.target.value }));
+  };
+
+  // Quick date range presets
+  const setPreset = (days: number) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    setDateRange({
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0]
+    });
+  };
+  
+  const setYesterday = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateStr = yesterday.toISOString().split('T')[0];
+    setDateRange({
+      start: dateStr,
+      end: dateStr
+    });
+  };
+  
+  // Check if a preset is active
+  const isPresetActive = (days: number) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    return dateRange.start === start.toISOString().split('T')[0] && 
+           dateRange.end === end.toISOString().split('T')[0];
+  };
+  
+  const isYesterdayActive = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateStr = yesterday.toISOString().split('T')[0];
+    return dateRange.start === dateStr && dateRange.end === dateStr;
+  };
 
   const btnStyle = {
     display: 'flex',
@@ -393,16 +547,51 @@ export default function Dashboard() {
 
       {/* Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
-        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
-           <div style={btnStyle}>
-             <FilterIcon />
-             <span>Filter</span>
+        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', flexWrap: 'wrap', flex: 1 }}>
+           {/* Date Range Picker */}
+           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', background: '#fff', padding: '8px 12px', borderRadius: '999px', border: '1px solid #e2e8f0' }}>
+             <CalendarIcon />
+             <input
+               type="date"
+               value={dateRange.start}
+               onChange={handleStartDateChange}
+               style={{ border: 'none', outline: 'none', fontSize: '14px', fontWeight: 600, color: '#334155', fontFamily: 'inherit', width: '110px' }}
+             />
+             <span style={{ color: '#94a3b8' }}>→</span>
+             <input
+               type="date"
+               value={dateRange.end}
+               onChange={handleEndDateChange}
+               style={{ border: 'none', outline: 'none', fontSize: '14px', fontWeight: 600, color: '#334155', fontFamily: 'inherit', width: '110px' }}
+             />
            </div>
            
-           <div style={btnStyle}>
-             <CalendarIcon />
-             <span>Monthly</span>
-           </div>
+           {/* Quick Presets */}
+           <button onClick={() => setYesterday()} style={{ ...btnStyle, border: isYesterdayActive() ? '1px solid #2563eb' : '1px solid #e2e8f0', color: isYesterdayActive() ? '#2563eb' : '#334155' }}>
+             Yesterday
+           </button>
+           <button onClick={() => setPreset(7)} style={{ ...btnStyle, border: isPresetActive(7) ? '1px solid #2563eb' : '1px solid #e2e8f0', color: isPresetActive(7) ? '#2563eb' : '#334155' }}>
+             Last 7 days
+           </button>
+           <button onClick={() => setPreset(30)} style={{ ...btnStyle, border: isPresetActive(30) ? '1px solid #2563eb' : '1px solid #e2e8f0', color: isPresetActive(30) ? '#2563eb' : '#334155' }}>
+             Last 30 days
+           </button>
+           
+           {/* Apply Button */}
+           <button 
+             onClick={fetchStats} 
+             disabled={loading}
+             style={{ 
+               ...btnStyle, 
+               background: '#2563eb', 
+               color: '#fff', 
+               border: '1px solid #2563eb',
+               opacity: loading ? 0.6 : 1,
+               cursor: loading ? 'not-allowed' : 'pointer'
+             }}
+           >
+             {loading ? 'Loading...' : 'Apply'}
+           </button>
         </div>
       </div>
 
@@ -416,65 +605,101 @@ export default function Dashboard() {
         {/* Card 1 */}
         <div style={{ gridColumn: 'span 2' }}>
             <Card title="Total Interactions" action={<span style={{ fontSize: '12px', color: '#2563eb', background: '#eff6ff', padding: '4px 10px', borderRadius: '999px', fontWeight: 600 }}>Weekly</span>} style={{ height: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
-                    <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b', lineHeight: 1 }}>{MOCK_DAILY_INTERACTIONS.reduce((a, b) => a + b, 0).toLocaleString()}</span>
-                    <span style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Interactions</span>
-                    <div style={{ fontSize: '12px', color: '#16a34a', background: '#dcfce7', padding: '2px 8px', borderRadius: '999px', marginLeft: 'auto', marginBottom: '4px', fontWeight: 600 }}>
-                        +12% vs last week
+                {loading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
+                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b', lineHeight: 1 }}>{stats.totalInteractions?.total ?? 0}</span>
+                        <span style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Interactions</span>
                     </div>
-                </div>
-                <DailyInteractionsChart />
+                    <DailyInteractionsChart data={stats.interactionsOverTime?.timeline || []} />
+                  </>
+                )}
             </Card>
         </div>
 
         {/* Card 3 */}
          <Card title="Total Impressions" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                 <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>85%</span>
-                 <span style={{ fontSize: '12px', color: '#16a34a', background: '#dcfce7', padding: '4px 8px', borderRadius: '999px', fontWeight: 700 }}>+6.75%</span>
-            </div>
-            <TrendChart />
-             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
-                 <span>Mon</span>
-                 <span>Tue</span>
-                 <span>Wed</span>
-                 <span>Thu</span>
-             </div>
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
+                <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                     <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                       {stats.impressionsByWidget?.widgets?.reduce((sum: number, w: any) => sum + w.impressions, 0) ?? 0}
+                     </span>
+                </div>
+                <TrendChart data={stats.impressionsOverTime?.timeline || []} />
+                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
+                     <span>Mon</span>
+                     <span>Tue</span>
+                     <span>Wed</span>
+                     <span>Thu</span>
+                 </div>
+              </>
+            )}
         </Card>
 
         {/* Card 4 */}
         <Card title="Top 3 Widgets" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '8px' }}>
-                {MOCK_WIDGET_DATA.map((item, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${item.color}15`, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <span style={{ fontWeight: 700, fontSize: '16px' }}>#{idx + 1}</span>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                <div style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>{item.label}</div>
-                                <div style={{ fontSize: '12px', color: '#64748b' }}>{item.value} interactions</div>
-                            </div>
-                            <div style={{ width: '100%', background: '#f1f5f9', height: '6px', borderRadius: '999px', overflow: 'hidden' }}>
-                                 <div 
-                                    style={{ height: '100%', background: item.color, borderRadius: '999px', width: `${(item.value / 600) * 100}%` }}
-                                 ></div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-             </div>
+             {loading ? (
+               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                 <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+               </div>
+             ) : (
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '8px' }}>
+                  {(stats.impressionsByWidget?.widgets || []).slice(0, 3).map((item: any, idx: number) => {
+                    const colors = ['#3b82f6', '#6366f1', '#ec4899'];
+                    const maxImpressions = Math.max(...(stats.impressionsByWidget?.widgets || []).map((w: any) => w.impressions), 1);
+                    return (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${colors[idx]}15`, color: colors[idx], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <span style={{ fontWeight: 700, fontSize: '16px' }}>#{idx + 1}</span>
+                          </div>
+                          <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>{item.name}</div>
+                                  <div style={{ fontSize: '12px', color: '#64748b' }}>{item.impressions} impressions</div>
+                              </div>
+                              <div style={{ width: '100%', background: '#f1f5f9', height: '6px', borderRadius: '999px', overflow: 'hidden' }}>
+                                   <div 
+                                      style={{ height: '100%', background: colors[idx], borderRadius: '999px', width: `${(item.impressions / maxImpressions) * 100}%` }}
+                                   ></div>
+                              </div>
+                          </div>
+                      </div>
+                    );
+                  })}
+               </div>
+             )}
         </Card>
 
         {/* Row 2: Medical Info */}
         <Card title="Impressions by Widget" action={<button style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>See Details</button>}>
-             <ImpressionsByWidgetChart />
+             {loading ? (
+               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '250px' }}>
+                 <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+               </div>
+             ) : (
+               <ImpressionsByWidgetChart data={stats.impressionsByWidget?.widgets || []} />
+             )}
         </Card>
 
         {/* Row 2: Patient health report (Span 2 charts) */}
         <div style={{ gridColumn: 'span 2' }}>
             <Card title="Impressions by Location" action={<button style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>View Map</button>} style={{ height: '100%' }}>
-                <ImpressionsMap />
+                {loading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <ImpressionsMap locations={stats.impressionsByLocation?.locations || []} />
+                )}
             </Card>
         </div>
 
