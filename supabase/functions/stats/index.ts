@@ -215,7 +215,7 @@ async function handleImpressionsByLocation(supabase: any, userId: string, params
   // Get impressions with geo data
   const { data: impressions, error } = await supabase
     .from("analytics_impressions")
-    .select("geo_country, geo_city")
+    .select("geo_country, geo_city, geo_lat, geo_lng")
     .in("project_id", projectIds)
     .gte("created_at", params.startDate)
     .lte("created_at", params.endDate)
@@ -232,6 +232,8 @@ async function handleImpressionsByLocation(supabase: any, userId: string, params
       acc[key] = {
         country: imp.geo_country,
         city: imp.geo_city || "Unknown",
+        latitude: imp.geo_lat,
+        longitude: imp.geo_lng,
         count: 0,
       };
     }
