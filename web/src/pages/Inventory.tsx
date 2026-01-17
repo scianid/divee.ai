@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { ProjectFunnelModal } from '../components/ProjectFunnelModal';
+import { ScanSiteModal } from '../components/ScanSiteModal';
 
 // Helper for safe account icons
 const AccountIcon = ({ url, name, size = 20 }: { url?: string | null, name: string, size?: number }) => {
@@ -59,6 +60,7 @@ function Inventory() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showScanModal, setShowScanModal] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -147,6 +149,10 @@ function Inventory() {
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
+
+  function handleScanSuccess(newProject: Project) {
+    setProjects([newProject, ...projects]);
+  }
 
   async function handleFunnelSubmit(form: any) {
     if (!userId) return;
@@ -237,14 +243,32 @@ function Inventory() {
     <div className="container py-8">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <h1 className="sectionTitle">Inventory</h1>
-        <button
-          className="btn btnPrimary"
-          style={{ borderRadius: 12 }}
-          onClick={() => setShowCreateForm(true)}
-        >
-          + New Item
-        </button>
+        <div style={{ display: 'flex', gap: 12 }}>
+            <button
+            className="btn btnPrimary"
+            style={{ borderRadius: 12 }}
+            onClick={() => setShowScanModal(true)}
+            >
+            New Widget
+            </button>
+            <button
+            className="btn btnSecondary"
+            style={{ borderRadius: 12 }}
+            onClick={() => setShowCreateForm(true)}
+            >
+            Manual Widget
+            </button>
+        </div>
       </div>
+
+      {showScanModal && (
+        <ScanSiteModal
+          open={showScanModal}
+          onClose={() => setShowScanModal(false)}
+          onSuccess={handleScanSuccess}
+          accounts={accounts.map(a => ({ id: a.id, name: a.name }))}
+        />
+      )}
 
       {showCreateForm && (
         <ProjectFunnelModal
