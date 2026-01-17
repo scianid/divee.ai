@@ -142,7 +142,7 @@ function MarketingLayout() {
             <Link className="btn btnSecondary" to="/login" style={{ marginRight: '10px' }}>
               Login
             </Link>
-            <a className="btn btnPrimary" href="/#cta">
+            <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
               See demo
             </a>
           </div>
@@ -156,7 +156,7 @@ function MarketingLayout() {
           <Link to="/terms" onClick={closeMenu}>Terms</Link>
           <Link to="/privacy" onClick={closeMenu}>Privacy</Link>
           <Link to="/login" onClick={closeMenu} className="btn btnSecondary">Login</Link>
-          <a className="btn btnPrimary" href="#cta" onClick={closeMenu}>
+          <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>
             See demo
           </a>
         </nav>
@@ -232,7 +232,7 @@ function LandingPage() {
               </Reveal>
 
               <Reveal className="heroCtas" delay={240}>
-                <a className="btn btnPrimary" href="#cta">
+                <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
                   See Demo
                 </a>
               </Reveal>
