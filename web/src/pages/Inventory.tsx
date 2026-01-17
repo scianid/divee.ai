@@ -61,6 +61,7 @@ function Inventory() {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -152,6 +153,8 @@ function Inventory() {
 
   function handleScanSuccess(newProject: Project) {
     setProjects([newProject, ...projects]);
+    setEditingProject(newProject);
+    setShowCreateForm(true);
   }
 
   async function handleFunnelSubmit(form: any) {
@@ -166,28 +169,45 @@ function Inventory() {
       if (!accounts.length) throw new Error('No account found for this user.');
       const selectedAccountId = form.account_id || accounts[0].id;
       
-      const newProject = {
+      const payload = {
         account_id: selectedAccountId,
         client_name: form.client_name,
         client_description: form.client_description,
-        language: 'English',
-        direction: 'ltr',
         icon_url: form.icon_url || null,
         highlight_color: colors.length > 0 ? colors : null,
         input_text_placeholders: placeholders.length > 0 ? placeholders : ['Ask a question...'],
         allowed_urls: urls.length > 0 ? urls : null,
-        show_ad: true
       };
-      
-      const { data, error } = await supabase
-        .from('project')
-        .insert([newProject])
-        .select();
+
+      let result;
+      if (editingProject) {
+        result = await supabase
+          .from('project')
+          .update(payload)
+          .eq('id', editingProject.id)
+          .select();
+      } else {
+        result = await supabase
+          .from('project')
+          .insert([{
+            ...payload,
+            language: 'English',
+            direction: 'ltr',
+            show_ad: true
+          }])
+          .select();
+      }
         
+      const { data, error } = result;
       if (error) throw error;
       if (data) {
-        setProjects([data[0] as Project, ...projects]);
+        if (editingProject) {
+          setProjects(projects.map(p => p.id === editingProject.id ? (data[0] as Project) : p));
+        } else {
+          setProjects([data[0] as Project, ...projects]);
+        }
         setShowCreateForm(false);
+        setEditingProject(null);
       }
     } catch (err: any) {
       console.error('Error creating project:', err);
@@ -273,9 +293,19 @@ function Inventory() {
       {showCreateForm && (
         <ProjectFunnelModal
           open={showCreateForm}
-          onClose={() => setShowCreateForm(false)}
+          onClose={() => { setShowCreateForm(false); setEditingProject(null); }}
           onSubmit={handleFunnelSubmit}
           accounts={accounts.map(a => ({ id: a.id, name: a.name }))}
+          initialData={editingProject ? {
+            account_id: editingProject.account_id,
+            client_name: editingProject.client_name,
+            icon_url: editingProject.icon_url || '',
+            client_description: editingProject.client_description || '',
+            allowed_urls: editingProject.allowed_urls || [],
+            highlight_color_1: editingProject.highlight_color?.[0],
+            highlight_color_2: editingProject.highlight_color?.[1],
+            input_text_placeholders: editingProject.input_text_placeholders
+          } : undefined}
         />
       )}
 
@@ -474,6 +504,10 @@ function Inventory() {
                       </button>
                       <button 
                         title="Settings"
+                        onClick={() => {
+                          setEditingProject(project);
+                          setShowCreateForm(true);
+                        }}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#374151', padding: 4, display: 'flex', alignItems: 'center' }}
                       >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
