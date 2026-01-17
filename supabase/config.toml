@@ -1,2 +1,5 @@
 [functions.stats]
 verify_jwt = false
+
+[functions.analyze-site]
+verify_jwt = false
