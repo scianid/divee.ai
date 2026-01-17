@@ -266,7 +266,12 @@ function Inventory() {
         <div style={{ display: 'flex', gap: 12 }}>
             <button
             className="btn btnPrimary"
-            style={{ borderRadius: 12 }}
+            style={{ 
+              borderRadius: 12,
+                background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                border: 'none',
+                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+            }}
             onClick={() => setShowScanModal(true)}
             >
             New Widget

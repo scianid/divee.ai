@@ -196,7 +196,12 @@ const Accounts: React.FC = () => {
             <button 
               onClick={() => setShowCreateForm(true)}
               className="btn btnPrimary"
-              style={{ borderRadius: 12 }}
+              style={{ 
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                border: 'none',
+                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+              }}
             >
               + New Account
             </button>
@@ -205,56 +210,100 @@ const Accounts: React.FC = () => {
       </div>
 
       {showCreateForm && (
-        <Reveal className="card" style={{ padding: '32px', marginBottom: '40px' }}>
-          <h2 className="sectionTitle" style={{ fontSize: '24px', marginBottom: '24px' }}>{editingId ? 'Edit Account' : 'Create New Account'}</h2>
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '24px', maxWidth: '500px' }}>
-            <div>
-              <label className="inputLabel">Account Name *</label>
-              <input 
-                required
-                className="inputField"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="e.g. Marketing"
-                disabled={submitting}
-              />
-            </div>
-            <div>
-              <label className="inputLabel">Icon URL</label>
-              <input
-                className="inputField"
-                name="icon_url"
-                value={form.icon_url}
-                onChange={handleChange}
-                placeholder="https://... (optional)"
-                disabled={submitting}
-              />
-            </div>
-            {error && (
-              <div style={{ color: '#ef4444', marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
-                {error}
+        <div style={{ position: 'fixed', zIndex: 1000, left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(23, 23, 28, 0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: 24, boxShadow: '0 24px 48px -12px rgba(0, 0, 0, 0.18)', minWidth: 400, maxWidth: '95vw', width: 600, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            
+            {/* Header Section */}
+            <div style={{ padding: '40px 40px 32px 40px', background: 'linear-gradient(to bottom right, #f8faff, #ffffff)', borderBottom: '1px solid #f3f4f6' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)' }}>
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <div>
+                  <h2 className="sectionTitle" style={{ fontSize: 22, margin: '0 0 4px 0', color: '#111827' }}>{editingId ? 'Edit Account' : 'Create New Account'}</h2>
+                  <div style={{ fontSize: 13, color: '#6b7280', fontWeight: 500, letterSpacing: '0.02em', textTransform: 'uppercase' }}>Organization Management</div>
+                </div>
               </div>
-            )}
-            <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
-              <button 
-                type="submit" 
-                className="btn btnPrimary"
-                disabled={submitting}
-              >
-                {submitting ? (editingId ? 'Saving...' : 'Creating...') : (editingId ? 'Save' : 'Create Account')}
-              </button>
-              <button 
-                type="button" 
-                className="btn btnSecondary"
-                onClick={cancelEdit}
-                disabled={submitting}
-              >
-                Cancel
-              </button>
+              <p style={{ margin: '8px 0 0 0', lineHeight: 1.6, color: '#4b5563', fontSize: 15 }}>
+                 {editingId ? 'Update your account details below.' : 'Create a new sub-account to organize your widgets.'}
+              </p>
             </div>
-          </form>
-        </Reveal>
+
+            <form onSubmit={handleSubmit} style={{ padding: '32px 40px 40px 40px', flex: 1 }}>
+              <div style={{ display: 'grid', gap: 24 }}>
+                <div>
+                  <label className="inputLabel" style={{ marginBottom: 8, display: 'block' }}>Account Name *</label>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <input 
+                      required
+                      className="inputField"
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      placeholder="e.g. Marketing"
+                      disabled={submitting}
+                      style={{ width: '100%', padding: '12px 16px 12px 46px', fontSize: 15 }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="inputLabel" style={{ marginBottom: 8, display: 'block' }}>Icon URL</label>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    </div>
+                    <input
+                      className="inputField"
+                      name="icon_url"
+                      value={form.icon_url}
+                      onChange={handleChange}
+                      placeholder="https://... (optional)"
+                      disabled={submitting}
+                      style={{ width: '100%', padding: '12px 16px 12px 46px', fontSize: 15 }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {error && (
+                <div style={{ marginTop: 24, padding: '12px 16px', background: '#fef2f2', borderRadius: 8, color: '#991b1b', fontSize: 14, display: 'flex', gap: 12, alignItems: 'center' }}>
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                   {error}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 12, marginTop: 40, justifyContent: 'flex-end', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  className="btn"
+                  onClick={cancelEdit}
+                  disabled={submitting}
+                  style={{ background: 'transparent', color: '#6b7280', border: 'none', padding: '0 16px', fontWeight: 500 }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btnPrimary"
+                  disabled={submitting}
+                  style={{ 
+                    minWidth: 160, 
+                    padding: '12px 24px', 
+                    borderRadius: 12,
+                    background: submitting ? '#ccc' : 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                    border: 'none',
+                    boxShadow: submitting ? 'none' : '0 4px 12px rgba(79, 70, 229, 0.3)'
+                  }}
+                >
+                  {submitting ? (editingId ? 'Saving...' : 'Creating...') : (editingId ? 'Save Changes' : 'Create Account')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Search Bar */}
