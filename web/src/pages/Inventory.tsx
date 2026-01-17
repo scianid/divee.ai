@@ -152,9 +152,7 @@ function Inventory() {
   };
 
   function handleScanSuccess(newProject: Project) {
-    setProjects([newProject, ...projects]);
-    setEditingProject(newProject);
-    setShowCreateForm(true);
+    setProjects(prev => [newProject, ...prev]);
   }
 
   async function handleFunnelSubmit(form: any) {
@@ -292,6 +290,7 @@ function Inventory() {
           onClose={() => setShowScanModal(false)}
           onSuccess={handleScanSuccess}
           accounts={accounts.map(a => ({ id: a.id, name: a.name }))}
+          existingProjects={projects}
         />
       )}
 
