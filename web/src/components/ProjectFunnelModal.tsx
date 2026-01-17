@@ -16,22 +16,55 @@ export interface ProjectFunnelProps {
   onClose: () => void;
   onSubmit: (data: ProjectFunnelFormData) => void;
   accounts: { id: string; name: string }[];
+  initialData?: Partial<ProjectFunnelFormData>;
 }
 
-export function ProjectFunnelModal({ open, onClose, onSubmit, accounts }: ProjectFunnelProps) {
+export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialData }: ProjectFunnelProps) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<ProjectFunnelFormData>({
-    account_id: accounts[0]?.id || '',
-    client_name: '',
-    icon_url: '',
-    client_description: '',
-    allowed_urls: [],
-    highlight_color_1: '#68E5FD',
-    highlight_color_2: '#A389E0',
-    input_text_placeholders: ['Ask anything about this article', 'I can help you understand this article'],
+    account_id: initialData?.account_id || accounts[0]?.id || '',
+    client_name: initialData?.client_name || '',
+    icon_url: initialData?.icon_url || '',
+    client_description: initialData?.client_description || '',
+    allowed_urls: initialData?.allowed_urls || [],
+    highlight_color_1: initialData?.highlight_color_1 || '#68E5FD',
+    highlight_color_2: initialData?.highlight_color_2 || '#A389E0',
+    input_text_placeholders: initialData?.input_text_placeholders || ['Ask anything about this article', 'I can help you understand this article'],
   });
   const [tempUrl, setTempUrl] = useState('');
   const [tempPlaceholder, setTempPlaceholder] = useState('');
+
+  // Reset form when modal opens with new initialData
+  React.useEffect(() => {
+    if (open && initialData) {
+      setForm({
+        account_id: initialData.account_id || accounts[0]?.id || '',
+        client_name: initialData.client_name || '',
+        icon_url: initialData.icon_url || '',
+        client_description: initialData.client_description || '',
+        allowed_urls: initialData.allowed_urls || [],
+        highlight_color_1: initialData.highlight_color_1 || '#68E5FD',
+        highlight_color_2: initialData.highlight_color_2 || '#A389E0',
+        input_text_placeholders: initialData.input_text_placeholders || ['Ask anything about this article', 'I can help you understand this article'],
+      });
+      // Skip setup step if we have data (optional, but maybe good for "Edit")
+      // setStep(1); 
+    } else if (open && !initialData) {
+      // Reset to defaults for new project
+      setForm({
+        account_id: accounts[0]?.id || '',
+        client_name: '',
+        icon_url: '',
+        client_description: '',
+        allowed_urls: [],
+        highlight_color_1: '#68E5FD',
+        highlight_color_2: '#A389E0',
+        input_text_placeholders: ['Ask anything about this article', 'I can help you understand this article'],
+      });
+      setStep(1);
+    }
+  }, [open, initialData, accounts]);
+
 
   if (!open) return null;
 
@@ -143,7 +176,7 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts }: Projec
           <div style={{ display: 'flex', gap: 12, marginTop: 32, justifyContent: 'flex-end' }}>
             {step > 1 && <button type="button" className="btn btnSecondary" onClick={back}>Back</button>}
             {step < 3 && <button type="button" className="btn btnPrimary" onClick={next}>Next</button>}
-            {step === 3 && <button type="submit" className="btn btnPrimary">Create Project</button>}
+            {step === 3 && <button type="submit" className="btn btnPrimary">{initialData ? 'Save Changes' : 'Create Project'}</button>}
             <button type="button" className="btn btnSecondary" onClick={onClose}>Cancel</button>
           </div>
         </form>
