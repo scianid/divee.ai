@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Reveal } from '../components/Reveal';
 
 interface Account {
   id: string;
