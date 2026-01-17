@@ -155,7 +155,7 @@ function MarketingLayout() {
           <Link to="/#faq" onClick={closeMenu}>FAQ</Link>
           <Link to="/terms" onClick={closeMenu}>Terms</Link>
           <Link to="/privacy" onClick={closeMenu}>Privacy</Link>
-          <Link to="/login" onClick={closeMenu}>Login</Link>
+          <Link to="/login" onClick={closeMenu} className="btn btnSecondary">Login</Link>
           <a className="btn btnPrimary" href="#cta" onClick={closeMenu}>
             See demo
           </a>
