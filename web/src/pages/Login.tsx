@@ -54,7 +54,7 @@ export default function Login() {
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
              <img 
-               src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/public-files/divee.ai-logo.png" 
+               src="https://srv.divee.ai/storage/v1/object/public/public-files/divee.ai-logo.png" 
                alt="Divee.AI logo" 
                style={{ width: '40px', height: '40px' }}
              />
