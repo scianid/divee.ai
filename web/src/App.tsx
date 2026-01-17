@@ -430,8 +430,8 @@ function LandingPage() {
                 <div className="codeCard" aria-label="Embed snippet">
                   <div className="codeTitle">Embed snippet</div>
                   <pre className="codeBlock">
-{`<script src="https://cdn.prismai.com/widget.js"
-        data-project-id="your-project-id"></script>`}
+{`<script src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/sdk/divee.sdk.v1.js" 
+      data-project-id="your-project-id" data-article-class="your-article-class"></script>`}
                   </pre>
                   <div className="codeHint">Loads asynchronously. No layout shift.</div>
                 </div>
@@ -504,7 +504,7 @@ function LandingPage() {
               Experience the on‑page AI assistant in action before you ship.
             </Reveal>
             <Reveal className="demoActions" delay={140}>
-              <a className="btn btnPrimary" href="#cta">
+              <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
                 <PlayIcon style={{ marginRight: 8 }} aria-hidden="true" />
                 Watch demo
               </a>
