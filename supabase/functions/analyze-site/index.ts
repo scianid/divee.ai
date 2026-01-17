@@ -145,7 +145,7 @@ Deno.serve(async (req: Request) => {
                     content: `Analyze the following website content. Provide a JSON object with:
                     - "language": use the full language name (e.g. "English", "French" etc)
                     - "name": The name of the website or brand.
-                    - "description": A short description of the website (max 80 words).
+                    - "description": A short description of the website (max 80 words) - in the detected language.
                     - "direction": "ltr" or "rtl" based on the language.
                     - "placeholders": Translate these 4 phrases into the detected language of the site: 
                       1. "Summarize this article"

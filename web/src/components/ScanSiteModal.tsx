@@ -60,7 +60,7 @@ export function ScanSiteModal({ open, onClose, onSuccess, accounts }: ScanSiteMo
           <div style={{ display: 'grid', gap: 18 }}>
             <div>
               <label className="inputLabel">Account *</label>
-              <select className="inputField" required value={accountId} onChange={e => setAccountId(e.target.value)}>
+              <select className="inputField" required value={accountId} onChange={e => setAccountId(e.target.value)} disabled={loading}>
                 {accounts.map(acc => (
                   <option key={acc.id} value={acc.id}>{acc.name}</option>
                 ))}
@@ -75,6 +75,7 @@ export function ScanSiteModal({ open, onClose, onSuccess, accounts }: ScanSiteMo
                 value={url} 
                 onChange={e => setUrl(e.target.value)} 
                 placeholder="https://example.com" 
+                disabled={loading}
               />
             </div>
           </div>
