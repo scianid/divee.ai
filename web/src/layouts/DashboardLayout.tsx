@@ -95,7 +95,7 @@ export function DashboardLayout() {
           minWidth: '240px'
         }}>
             <img 
-              src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/public-files/divee.ai-logo.png" 
+              src="https://srv.divee.ai/storage/v1/object/public/public-files/divee.ai-logo.png" 
               alt="Logo"
               style={{ width: '24px', height: '24px', objectFit: 'contain', flexShrink: 0 }}
             />

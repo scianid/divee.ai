@@ -111,7 +111,7 @@ function MarketingLayout() {
         <div className="nav container">
           <a className="brand" href="/#top" aria-label="Divee.AI">
             <img 
-              src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/public-files/divee.ai-logo.png" 
+              src="https://srv.divee.ai/storage/v1/object/public/public-files/divee.ai-logo.png" 
               alt="Divee.AI logo" 
               className="brandLogo"
             />
@@ -169,7 +169,7 @@ function MarketingLayout() {
           <div className="footerBrand">
             <div className="brandRow">
               <img 
-                src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/public-files/divee.ai-logo.png" 
+                src="https://srv.divee.ai/storage/v1/object/public/public-files/divee.ai-logo.png" 
                 alt="Divee.AI logo" 
                 className="brandLogo"
               />
@@ -430,7 +430,7 @@ function LandingPage() {
                 <div className="codeCard" aria-label="Embed snippet">
                   <div className="codeTitle">Embed snippet</div>
                   <pre className="codeBlock">
-{`<script src="https://vdbmhqlogqrxozaibntq.supabase.co/storage/v1/object/public/sdk/divee.sdk.v1.js" 
+{`<script src="https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.v1.js" 
       data-project-id="your-project-id" data-article-class="your-article-class"></script>`}
                   </pre>
                   <div className="codeHint">Loads asynchronously. No layout shift.</div>

@@ -14,7 +14,7 @@ import {
   Filler,
   ArcElement
 } from 'chart.js'
-import { Line, Pie, Doughnut } from 'react-chartjs-2'
+import { Line, Doughnut } from 'react-chartjs-2'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -188,44 +188,6 @@ function ImpressionsMap({ locations }: { locations: any[] }) {
     )
 }
 
-function ImpressionsByWidgetChart({ data: widgets }: { data: any[] }) {
-    const colors = ['#3b82f6', '#6366f1', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6'];
-    const chartData = {
-        labels: widgets.map(d => d.name),
-        datasets: [
-            {
-                data: widgets.map(d => d.impressions),
-                backgroundColor: colors,
-                borderWidth: 0,
-            },
-        ],
-    };
-
-    const options = {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'bottom' as const,
-                labels: {
-                    usePointStyle: true,
-                    padding: 20,
-                    font: { size: 12 }
-                }
-            }
-        },
-        cutout: '60%', // Makes it a donut chart
-    };
-
-    return (
-        <div style={{ height: '250px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            {widgets.length > 0 ? (
-              <Pie data={chartData} options={options} />
-            ) : (
-              <div style={{ color: '#94a3b8', fontSize: '14px' }}>No data available</div>
-            )}
-        </div>
-    );
-}
 
 function DailyInteractionsChart({ data: timelineData }: { data: any[] }) {
     const chartData = timelineData.length > 0 ? timelineData.map((d: any) => d.count) : [0];
@@ -432,7 +394,7 @@ export default function Dashboard() {
         return;
       }
 
-      const baseUrl = 'https://vdbmhqlogqrxozaibntq.supabase.co/functions/v1/stats';
+      const baseUrl = 'https://srv.divee.ai/functions/v1/stats';
       
       let startDate, endDate;
       
