@@ -247,7 +247,7 @@ p {
 }
 
 .mobileMenu.open {
-  max-height: 400px;
+  max-height: 100vh;
   opacity: 1;
   padding: 24px;
 }
@@ -267,6 +267,11 @@ p {
 .mobileMenu .btn {
   width: 100%;
   justify-content: center;
+  padding: 0 18px;
+}
+
+.mobileMenu .btnPrimary {
+  color: #ffffff;
 }
 
 .btn {
@@ -298,6 +303,7 @@ p {
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 16px 36px rgba(17, 65, 141, 0.3);
   background: #0d326e;
+  color: #ffffff;
 }
 
 .btnSecondary {
