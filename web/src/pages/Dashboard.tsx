@@ -365,43 +365,27 @@ export default function Dashboard() {
         'Content-Type': 'application/json'
       };
 
-      // Fetch all endpoints in parallel using GET requests
-      const [
-        totalInteractions,
-        impressionsByWidget,
-        impressionsByLocation,
-        interactionsOverTime,
-        impressionsOverTime
-      ] = await Promise.all([
-        fetch(`${baseUrl}/total-interactions?${params}`, { 
-          method: 'GET',
-          headers 
-        }).then(r => r.json()),
-        fetch(`${baseUrl}/impressions-by-widget?${params}`, { 
-          method: 'GET',
-          headers 
-        }).then(r => r.json()),
-        fetch(`${baseUrl}/impressions-by-location?${params}`, { 
-          method: 'GET',
-          headers 
-        }).then(r => r.json()),
-        fetch(`${baseUrl}/interactions-over-time?${params}`, { 
-          method: 'GET',
-          headers 
-        }).then(r => r.json()),
-        fetch(`${baseUrl}/impressions-over-time?${params}`, { 
-          method: 'GET',
-          headers 
-        }).then(r => r.json())
-      ]);
+      // Fetch all endpoints independently
+      const fetchEndpoint = async (endpoint: string, key: string) => {
+        try {
+          const res = await fetch(`${baseUrl}/${endpoint}?${params}`, { 
+            method: 'GET',
+            headers 
+          });
+          const data = await res.json();
+          setStats((prev: any) => ({ ...prev, [key]: data }));
+        } catch (error) {
+          console.error(`Failed to fetch ${key}:`, error);
+        }
+      };
 
-      setStats({
-        totalInteractions,
-        impressionsByWidget,
-        impressionsByLocation,
-        interactionsOverTime,
-        impressionsOverTime
-      });
+      await Promise.all([
+        fetchEndpoint('total-interactions', 'totalInteractions'),
+        fetchEndpoint('impressions-by-widget', 'impressionsByWidget'),
+        fetchEndpoint('impressions-by-location', 'impressionsByLocation'),
+        fetchEndpoint('interactions-over-time', 'interactionsOverTime'),
+        fetchEndpoint('impressions-over-time', 'impressionsOverTime')
+      ]);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
     } finally {
@@ -572,8 +556,8 @@ export default function Dashboard() {
         
         {/* Card 1 */}
         <div style={{ gridColumn: 'span 2' }}>
-            <Card title="Total Interactions" action={<span style={{ fontSize: '12px', color: '#2563eb', background: '#eff6ff', padding: '4px 10px', borderRadius: '999px', fontWeight: 600 }}>Weekly</span>} style={{ height: '100%' }}>
-                {loading ? (
+            <Card title="Total Interactions" style={{ height: '100%' }}>
+                {(!stats.totalInteractions || !stats.interactionsOverTime) ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                   </div>
@@ -591,7 +575,7 @@ export default function Dashboard() {
 
         {/* Card 3 */}
          <Card title="Total Impressions" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-            {loading ? (
+            {(!stats.impressionsByWidget || !stats.impressionsOverTime) ? (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
                 <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
               </div>
@@ -615,7 +599,7 @@ export default function Dashboard() {
 
         {/* Card 4 */}
         <Card title="Top 3 Widgets" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-             {loading ? (
+             {!stats.impressionsByWidget ? (
                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
                  <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                </div>
@@ -648,8 +632,8 @@ export default function Dashboard() {
         </Card>
 
         {/* Row 2: Medical Info */}
-        <Card title="Impressions by Widget" action={<button style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>See Details</button>}>
-             {loading ? (
+        <Card title="Impressions by Widget">
+             {!stats.impressionsByWidget ? (
                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '250px' }}>
                  <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                </div>
@@ -660,8 +644,8 @@ export default function Dashboard() {
 
         {/* Row 2: Patient health report (Span 2 charts) */}
         <div style={{ gridColumn: 'span 2' }}>
-            <Card title="Impressions by Location" action={<button style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>View Map</button>} style={{ height: '100%' }}>
-                {loading ? (
+            <Card title="Impressions by Location" style={{ height: '100%' }}>
+                {!stats.impressionsByLocation ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                   </div>
