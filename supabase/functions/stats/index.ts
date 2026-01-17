@@ -73,6 +73,13 @@ function parseParams(url: URL): StatsParams {
   return { accountId: accountId || undefined, startDate, endDate };
 }
 
+function getResolution(startDate: string, endDate: string): 'hour' | 'day' {
+  const start = new Date(startDate).getTime();
+  const end = new Date(endDate).getTime();
+  const diffHours = (end - start) / (1000 * 60 * 60);
+  return diffHours <= 50 ? 'hour' : 'day';
+}
+
 // Helper to get project IDs for a user (and optionally specific account)
 async function getProjectIds(supabase: any, userId: string, accountId?: string): Promise<string[]> {
   // 1. Get all accounts for this user
@@ -269,18 +276,27 @@ async function handleInteractionsOverTime(supabase: any, userId: string, params:
     throw new Error(`Failed to fetch events: ${error.message}`);
   }
 
-  // Group by date (day)
-  const dailyCounts = events?.reduce((acc: any, event: any) => {
-    const date = event.created_at.split("T")[0];
-    if (!acc[date]) {
-      acc[date] = { date, count: 0 };
+  const resolution = getResolution(params.startDate, params.endDate);
+
+  // Group by date (day or hour)
+  const groupedCounts = events?.reduce((acc: any, event: any) => {
+    let key;
+    if (resolution === 'hour') {
+        // e.g. 2023-10-27T10:00:00.000Z -> 2023-10-27T10:00
+        key = event.created_at.substring(0, 13) + ":00";
+    } else {
+        key = event.created_at.split("T")[0];
     }
-    acc[date].count++;
+
+    if (!acc[key]) {
+      acc[key] = { date: key, count: 0 };
+    }
+    acc[key].count++;
     return acc;
   }, {});
 
   return {
-    timeline: Object.values(dailyCounts || {}).sort(
+    timeline: Object.values(groupedCounts || {}).sort(
       (a: any, b: any) => a.date.localeCompare(b.date)
     ),
   };
@@ -307,20 +323,61 @@ async function handleImpressionsOverTime(supabase: any, userId: string, params: 
     throw new Error(`Failed to fetch impressions: ${error.message}`);
   }
 
-  // Group by date (day)
-  const dailyCounts = impressions?.reduce((acc: any, imp: any) => {
-    const date = imp.created_at.split("T")[0];
-    if (!acc[date]) {
-      acc[date] = { date, count: 0 };
+  const resolution = getResolution(params.startDate, params.endDate);
+
+  // Group by date (day or hour)
+  const groupedCounts = impressions?.reduce((acc: any, imp: any) => {
+    let key;
+    if (resolution === 'hour') {
+        key = imp.created_at.substring(0, 13) + ":00";
+    } else {
+        key = imp.created_at.split("T")[0];
     }
-    acc[date].count++;
+
+    if (!acc[key]) {
+      acc[key] = { date: key, count: 0 };
+    }
+    acc[key].count++;
     return acc;
   }, {});
 
   return {
-    timeline: Object.values(dailyCounts || {}).sort(
+    timeline: Object.values(groupedCounts || {}).sort(
       (a: any, b: any) => a.date.localeCompare(b.date)
     ),
+  };
+}
+
+// Handler: Impressions by platform
+async function handleImpressionsByPlatform(supabase: any, userId: string, params: StatsParams) {
+  const projectIds = await getProjectIds(supabase, userId, params.accountId);
+
+  if (projectIds.length === 0) {
+    return { platforms: [] };
+  }
+
+  const { data: impressions, error } = await supabase
+    .from("analytics_impressions")
+    .select("platform")
+    .in("project_id", projectIds)
+    .gte("created_at", params.startDate)
+    .lte("created_at", params.endDate);
+
+  if (error) {
+    throw new Error(`Failed to fetch impressions: ${error.message}`);
+  }
+
+  const platformCounts = impressions?.reduce((acc: any, imp: any) => {
+    const platform = imp.platform || "Unknown";
+    acc[platform] = (acc[platform] || 0) + 1;
+    return acc;
+  }, {});
+
+  return {
+    platforms: Object.entries(platformCounts || {}).map(([platform, count]) => ({
+      platform,
+      count,
+    })),
   };
 }
 
@@ -356,6 +413,8 @@ Deno.serve(async (req: Request) => {
       data = await handleInteractionsOverTime(supabase, userId, params);
     } else if (path.endsWith("/impressions-over-time")) {
       data = await handleImpressionsOverTime(supabase, userId, params);
+    } else if (path.endsWith("/impressions-by-platform")) {
+      data = await handleImpressionsByPlatform(supabase, userId, params);
     } else {
       return new Response(
         JSON.stringify({
@@ -366,6 +425,7 @@ Deno.serve(async (req: Request) => {
             "/impressions-by-location",
             "/interactions-over-time",
             "/impressions-over-time",
+            "/impressions-by-platform",
           ],
         }),
         {

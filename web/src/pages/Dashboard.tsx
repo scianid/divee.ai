@@ -14,7 +14,7 @@ import {
   Filler,
   ArcElement
 } from 'chart.js'
-import { Line, Pie } from 'react-chartjs-2'
+import { Line, Pie, Doughnut } from 'react-chartjs-2'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -231,7 +231,9 @@ function DailyInteractionsChart({ data: timelineData }: { data: any[] }) {
     const chartData = timelineData.length > 0 ? timelineData.map((d: any) => d.count) : [0];
     const labels = timelineData.length > 0 ? timelineData.map((d: any) => {
         const date = new Date(d.date);
-        return date.toLocaleDateString('en-US', { weekday: 'short' });
+        return d.date && d.date.includes('T') && d.date.length > 10 
+          ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+          : date.toLocaleDateString('en-US', { weekday: 'short' });
     }) : [''];
     
     const options = {
@@ -313,6 +315,86 @@ function DailyInteractionsChart({ data: timelineData }: { data: any[] }) {
     )
 }
 
+function PlatformsChart({ data }: { data: any[] }) {
+    const sorted = [...data].sort((a, b) => b.count - a.count);
+    const top = sorted.slice(0, 4);
+    const other = sorted.slice(4).reduce((sum, item) => sum + item.count, 0);
+    
+    // Capitalize first letter of platform
+    const formatLabel = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+    
+    const finalData = other > 0 ? [...top, { platform: 'Other', count: other }] : top;
+    
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#64748b'];
+
+    const chartData = {
+        labels: finalData.map(d => formatLabel(d.platform)),
+        datasets: [{
+            data: finalData.map(d => d.count),
+            backgroundColor: colors,
+            borderWidth: 0,
+        }]
+    };
+
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'right' as const,
+                labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+            }
+        },
+        cutout: '70%',
+        maintainAspectRatio: false,
+    };
+
+    return (
+        <div style={{ height: '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            {data.length > 0 ? <Doughnut data={chartData} options={options} /> : <div style={{color: '#94a3b8', fontSize: '14px'}}>No data</div>}
+        </div>
+    );
+}
+
+function FunnelView({ impressions, suggestions, questions }: { impressions: number, suggestions: number, questions: number }) {
+    const max = Math.max(impressions, 1);
+    
+    const steps = [
+        { label: 'Impressions', value: impressions, color: '#3b82f6' },
+        { label: 'Suggestions', value: suggestions, color: '#8b5cf6' },
+        { label: 'Questions', value: questions, color: '#ec4899' }
+    ];
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '12px' }}>
+            {steps.map((step, idx) => {
+                const percent = max > 0 ? Math.round((step.value / max) * 100) : 0;
+                // For questions, show conversion from suggestions too
+                const subPercent = idx === 2 && suggestions > 0 
+                    ? `(${Math.round((step.value / suggestions) * 100)}% of sugg.)` 
+                    : '';
+
+                return (
+                    <div key={idx}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: step.color }}></div>
+                                <span style={{ fontWeight: 600, color: '#334155' }}>{step.label}</span>
+                            </div>
+                            <span style={{ color: '#64748b' }}>
+                                {step.value.toLocaleString()} 
+                                <span style={{ opacity: 0.6, marginLeft: '6px', fontSize: '12px' }}>{percent}% {subPercent}</span>
+                            </span>
+                        </div>
+                        <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${Math.max(percent, 1)}%`, background: step.color, borderRadius: '4px', transition: 'width 1s ease-out' }} />
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const navigate = useNavigate()
@@ -329,13 +411,15 @@ export default function Dashboard() {
   };
 
   const [dateRange, setDateRange] = useState(getDefaultDateRange());
+  const [isLast24Hours, setIsLast24Hours] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<any>({
     totalInteractions: null,
     impressionsByWidget: null,
     impressionsByLocation: null,
     interactionsOverTime: null,
-    impressionsOverTime: null
+    impressionsOverTime: null,
+    impressionsByPlatform: null
   });
 
   // Fetch stats from edge function
@@ -350,9 +434,18 @@ export default function Dashboard() {
 
       const baseUrl = 'https://vdbmhqlogqrxozaibntq.supabase.co/functions/v1/stats';
       
-      // Format dates with time component for proper filtering
-      const startDate = `${dateRange.start}T00:00:00`;
-      const endDate = `${dateRange.end}T23:59:59`;
+      let startDate, endDate;
+      
+      if (isLast24Hours) {
+         const end = new Date();
+         const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+         startDate = start.toISOString();
+         endDate = end.toISOString();
+      } else {
+         // Format dates with time component for proper filtering
+         startDate = `${dateRange.start}T00:00:00`;
+         endDate = `${dateRange.end}T23:59:59`;
+      }
       
       const params = new URLSearchParams({
         start_date: startDate,
@@ -384,7 +477,8 @@ export default function Dashboard() {
         fetchEndpoint('impressions-by-widget', 'impressionsByWidget'),
         fetchEndpoint('impressions-by-location', 'impressionsByLocation'),
         fetchEndpoint('interactions-over-time', 'interactionsOverTime'),
-        fetchEndpoint('impressions-over-time', 'impressionsOverTime')
+        fetchEndpoint('impressions-over-time', 'impressionsOverTime'),
+        fetchEndpoint('impressions-by-platform', 'impressionsByPlatform')
       ]);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
@@ -428,15 +522,18 @@ export default function Dashboard() {
   
   // Handle date change
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsLast24Hours(false);
     setDateRange(prev => ({ ...prev, start: e.target.value }));
   };
 
   const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsLast24Hours(false);
     setDateRange(prev => ({ ...prev, end: e.target.value }));
   };
 
   // Quick date range presets
   const setPreset = (days: number) => {
+    setIsLast24Hours(false);
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - days);
@@ -446,30 +543,26 @@ export default function Dashboard() {
     });
   };
   
-  const setYesterday = () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = yesterday.toISOString().split('T')[0];
+  const setLast24Hours = () => {
+    setIsLast24Hours(true);
+    // UI hack: set range to [Yesterday, Today] so inputs imply recent
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 1);
     setDateRange({
-      start: dateStr,
-      end: dateStr
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0]
     });
   };
   
   // Check if a preset is active
   const isPresetActive = (days: number) => {
+    if (isLast24Hours) return false;
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - days);
     return dateRange.start === start.toISOString().split('T')[0] && 
            dateRange.end === end.toISOString().split('T')[0];
-  };
-  
-  const isYesterdayActive = () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = yesterday.toISOString().split('T')[0];
-    return dateRange.start === dateStr && dateRange.end === dateStr;
   };
 
   const btnStyle = {
@@ -486,6 +579,11 @@ export default function Dashboard() {
     cursor: 'pointer',
     transition: 'background 0.2s',
   }
+  
+  // Derived stats
+  const totalSuggestions = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'get_suggestions')?.count || 0;
+  const totalQuestions = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'ask_question')?.count || 0;
+  const totalImpressions = stats.impressionsByWidget?.widgets?.reduce((sum: number, w: any) => sum + w.impressions, 0) ?? 0;
 
   return (
     <div style={{ fontFamily: 'var(--font-display)', paddingBottom: '48px', color: '#334155' }}>
@@ -519,8 +617,8 @@ export default function Dashboard() {
            </div>
            
            {/* Quick Presets */}
-           <button onClick={() => setYesterday()} style={{ ...btnStyle, border: isYesterdayActive() ? '1px solid #2563eb' : '1px solid #e2e8f0', color: isYesterdayActive() ? '#2563eb' : '#334155' }}>
-             Yesterday
+           <button onClick={() => setLast24Hours()} style={{ ...btnStyle, border: isLast24Hours ? '1px solid #2563eb' : '1px solid #e2e8f0', color: isLast24Hours ? '#2563eb' : '#334155' }}>
+             Last 24h
            </button>
            <button onClick={() => setPreset(7)} style={{ ...btnStyle, border: isPresetActive(7) ? '1px solid #2563eb' : '1px solid #e2e8f0', color: isPresetActive(7) ? '#2563eb' : '#334155' }}>
              Last 7 days
@@ -550,11 +648,45 @@ export default function Dashboard() {
       {/* Grid Layout */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gridTemplateColumns: 'repeat(4, 1fr)', 
         gap: '24px' 
       }}>
         
-        {/* Card 1 */}
+        {/* Row 1: Key Metrics */}
+        <div style={{ gridColumn: 'span 2' }}>
+            <Card title="Total Impressions" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
+                {(!stats.impressionsByWidget || !stats.impressionsOverTime) ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                </div>
+                ) : (
+                <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                        {totalImpressions}
+                        </span>
+                    </div>
+                    {/* Hide static labels, TrendChart handles axis now implicitly by shape, or we can improve it later */}
+                    <TrendChart data={stats.impressionsOverTime?.timeline || []} />
+                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
+                        {/* Simple dynamic labels if data exists, otherwise placeholders or just hide */}
+                        {stats.impressionsOverTime?.timeline?.length > 0 && stats.impressionsOverTime?.timeline[0].date.length > 10 ? (
+                           <>
+                             <span>{new Date(stats.impressionsOverTime.timeline[0].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                             <span>{new Date(stats.impressionsOverTime.timeline[stats.impressionsOverTime.timeline.length - 1].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                           </>
+                        ) : (
+                          <>
+                             <span>{stats.impressionsOverTime?.timeline?.[0] ? new Date(stats.impressionsOverTime.timeline[0].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                             <span>{stats.impressionsOverTime?.timeline?.length > 1 ? new Date(stats.impressionsOverTime.timeline[stats.impressionsOverTime.timeline.length - 1].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                          </>
+                        )}
+                     </div>
+                </>
+                )}
+            </Card>
+        </div>
+
         <div style={{ gridColumn: 'span 2' }}>
             <Card title="Total Interactions" style={{ height: '100%' }}>
                 {(!stats.totalInteractions || !stats.interactionsOverTime) ? (
@@ -573,32 +705,70 @@ export default function Dashboard() {
             </Card>
         </div>
 
-        {/* Card 3 */}
-         <Card title="Total Impressions" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-            {(!stats.impressionsByWidget || !stats.impressionsOverTime) ? (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
-                <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-              </div>
-            ) : (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                     <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                       {stats.impressionsByWidget?.widgets?.reduce((sum: number, w: any) => sum + w.impressions, 0) ?? 0}
-                     </span>
-                </div>
-                <TrendChart data={stats.impressionsOverTime?.timeline || []} />
-                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
-                     <span>Mon</span>
-                     <span>Tue</span>
-                     <span>Wed</span>
-                     <span>Thu</span>
+        {/* Row 2: Funnel & Breakdown */}
+        <div style={{ gridColumn: 'span 1' }}>
+             <Card title="Suggestions">
+                 <div style={{ fontSize: '36px', fontWeight: 700, color: '#8b5cf6', marginTop: '10px' }}>
+                     {loading ? '...' : totalSuggestions}
                  </div>
-              </>
-            )}
-        </Card>
+                 <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
+                     Requested by users
+                 </div>
+             </Card>
+             <div style={{ height: '24px' }}></div>
+             <Card title="Questions">
+                 <div style={{ fontSize: '36px', fontWeight: 700, color: '#ec4899', marginTop: '10px' }}>
+                     {loading ? '...' : totalQuestions}
+                 </div>
+                 <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
+                     Follow-up questions
+                 </div>
+             </Card>
+        </div>
 
-        {/* Card 4 */}
-        <Card title="Top 3 Widgets" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
+        <div style={{ gridColumn: 'span 2' }}>
+             <Card title="Conversion Funnel" style={{ height: '100%' }}>
+                 {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                        <div style={{ display: 'inline-block', width: '30px', height: '30px', border: '3px solid #f3f4f6', borderTop: '3px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    </div>
+                 ) : (
+                    <FunnelView 
+                        impressions={totalImpressions}
+                        suggestions={totalSuggestions}
+                        questions={totalQuestions}
+                    />
+                 )}
+             </Card>
+        </div>
+
+        <div style={{ gridColumn: 'span 1' }}>
+             <Card title="Platforms" style={{ height: '100%' }}>
+                {(!stats.impressionsByPlatform) ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <div style={{ display: 'inline-block', width: '30px', height: '30px', border: '3px solid #f3f4f6', borderTop: '3px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <PlatformsChart data={stats.impressionsByPlatform?.platforms || []} />
+                )}
+             </Card>
+        </div>
+        
+        {/* Row 3: Map & Lists */}
+        <div style={{ gridColumn: 'span 3' }}>
+            <Card title="Impressions by Location" style={{ height: '100%' }}>
+                {!stats.impressionsByLocation ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <ImpressionsMap locations={stats.impressionsByLocation?.locations || []} />
+                )}
+            </Card>
+        </div>
+        
+        <div style={{ gridColumn: 'span 1' }}>
+        <Card title="Top Widgets" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>} style={{ height: '100%' }}>
              {!stats.impressionsByWidget ? (
                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
                  <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
@@ -616,7 +786,7 @@ export default function Dashboard() {
                           <div style={{ flex: 1 }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                   <div style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>{item.name}</div>
-                                  <div style={{ fontSize: '12px', color: '#64748b' }}>{item.impressions} impressions</div>
+                                  <div style={{ fontSize: '12px', color: '#64748b' }}>{item.impressions}</div>
                               </div>
                               <div style={{ width: '100%', background: '#f1f5f9', height: '6px', borderRadius: '999px', overflow: 'hidden' }}>
                                    <div 
@@ -630,72 +800,7 @@ export default function Dashboard() {
                </div>
              )}
         </Card>
-
-        {/* Row 2: Medical Info */}
-        <Card title="Impressions by Widget">
-             {!stats.impressionsByWidget ? (
-               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '250px' }}>
-                 <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-               </div>
-             ) : (
-               <ImpressionsByWidgetChart data={stats.impressionsByWidget?.widgets || []} />
-             )}
-        </Card>
-
-        {/* Row 2: Patient health report (Span 2 charts) */}
-        <div style={{ gridColumn: 'span 2' }}>
-            <Card title="Impressions by Location" style={{ height: '100%' }}>
-                {!stats.impressionsByLocation ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
-                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                  </div>
-                ) : (
-                  <ImpressionsMap locations={stats.impressionsByLocation?.locations || []} />
-                )}
-            </Card>
         </div>
-
-        {/* Row 2: Quick Start */}
-        <Card title="Quick Start">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px', height: '100%', justifyContent: 'center' }}>
-                 <button style={{ 
-                    background: '#eff6ff', 
-                    color: '#2563eb', 
-                    padding: '12px', 
-                    borderRadius: '12px', 
-                    border: '1px solid #bfdbfe', 
-                    fontWeight: 600, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                }}>
-                    <span style={{ fontSize: '18px', lineHeight: 1 }}>+</span> New Widget
-                 </button>
-                 
-                 <button style={{ 
-                    background: '#fff', 
-                    color: '#334155', 
-                    padding: '12px', 
-                    borderRadius: '12px', 
-                    border: '1px solid #e2e8f0', 
-                    fontWeight: 600, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                }}>
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    New Account
-                 </button>
-            </div>
-        </Card>
 
       </div>
     </div>
