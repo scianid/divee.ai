@@ -9,11 +9,7 @@ export interface ScanSiteModalProps {
   existingProjects?: { account_id: string; allowed_urls: string[] | null }[];
 }
 
-const normalizeUrl = (url: string) => {
-  return url.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '').toLowerCase();
-};
-
-export function ScanSiteModal({ open, onClose, onSuccess, accounts, existingProjects = [] }: ScanSiteModalProps) {
+export function ScanSiteModal({ open, onClose, onSuccess, accounts }: ScanSiteModalProps) {
   const [rawInput, setRawInput] = useState('');
   const [accountId, setAccountId] = useState(accounts[0]?.id || '');
   const [loading, setLoading] = useState(false);
