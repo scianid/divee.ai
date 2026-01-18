@@ -1,47 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { getAuthenticatedClient } from "../_shared/supabase.ts";
+import { corsHeaders } from "../_shared/cors.ts";
 
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-// Helper to verify user JWT and return service role client
-async function getAuthenticatedClient(authHeader: string | null) {
-  if (!authHeader) {
-    throw new Error("Missing authorization header");
-  }
-
-  // Create client with the user's token
-  const authClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-    {
-      global: {
-        headers: { Authorization: authHeader },
-      },
-    }
-  );
-
-  // Verify the user by asking Supabase Auth
-  const { data: { user }, error } = await authClient.auth.getUser();
-  
-  if (error || !user) {
-    throw new Error("Invalid JWT: User not found");
-  }
-  
-  // Return service role client for db operations (bypasses RLS logic if we want to handle it manually here, 
-  // or we can just use the authClient if policies are set up. using service role as per stats pattern)
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-  );
-
-  return { supabase, userId: user.id };
-}
-
+// @ts-ignore
 Deno.serve(async (req: Request) => {
+  
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -123,6 +86,7 @@ Deno.serve(async (req: Request) => {
         .substring(0, 15000);
 
     // 2. Call DeepSeek API
+    // @ts-ignore
     const deepseekKey = Deno.env.get("DEEPSEEK_API");
     if (!deepseekKey) throw new Error("Missing DEEPSEEK_API environment variable");
 
