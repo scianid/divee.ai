@@ -302,7 +302,7 @@ function PlatformsChart({ data }: { data: any[] }) {
         responsive: true,
         plugins: {
             legend: {
-                position: 'right' as const,
+                position: 'bottom' as const,
                 labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
             }
         },
@@ -311,7 +311,7 @@ function PlatformsChart({ data }: { data: any[] }) {
     };
 
     return (
-        <div style={{ height: '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ height: '220px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             {data.length > 0 ? <Doughnut data={chartData} options={options} /> : <div style={{color: '#94a3b8', fontSize: '14px'}}>No data</div>}
         </div>
     );
