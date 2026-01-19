@@ -320,7 +320,7 @@ p {
 
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: 80vh;
   display: flex;
   align-items: center;
   overflow: clip;
@@ -406,15 +406,15 @@ p {
 .eyebrow {
   display: inline-block;
   font-weight: 600;
-  color: #23a3b6;
+  color: rgb(37, 99, 235);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   font-size: 12px;
   margin-bottom: 8px;
   padding: 6px 14px;
-  background: rgba(35, 163, 182, 0.08);
+  background: rgba(37, 99, 235, 0.08);
   border-radius: 20px;
-  border: 1px solid rgba(35, 163, 182, 0.2);
+  border: 1px solid rgba(37, 99, 235, 1);
 }
 
 .heroTitle {
@@ -999,7 +999,10 @@ p {
 
 .faqA {
   margin-top: 10px;
-  color: rgba(33, 158, 188, 0.92);
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #11418d, #0d326e);
+  color: #ffffff;
 }
 
 .termsContent {
@@ -1068,7 +1071,11 @@ p {
 
 .ctaHint {
   margin-top: 16px;
-  color: rgba(232, 244, 250, 0.78);
+  color: rgba(232, 244, 250, 0.95);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: inline-block;
 }
 
 .footer {
