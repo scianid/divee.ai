@@ -83,6 +83,7 @@ const useCases = [
 
 function MarketingLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [demoModalOpen, setDemoModalOpen] = useState(false)
   const location = useLocation()
 
   const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen)
@@ -138,9 +139,9 @@ function MarketingLayout() {
             <Link className="btn btnSecondary" to="/login" style={{ marginRight: '10px' }}>
               Login
             </Link>
-            <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
+            <button className="btn btnPrimary" onClick={() => setDemoModalOpen(true)}>
               See Demo
-            </a>
+            </button>
           </div>
         </div>
 
@@ -152,9 +153,9 @@ function MarketingLayout() {
           <Link to="/terms" onClick={closeMenu}>Terms</Link>
           <Link to="/privacy" onClick={closeMenu}>Privacy</Link>
           <Link to="/login" onClick={closeMenu} className="btn btnSecondary">Login</Link>
-          <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>
+          <button className="btn btnPrimary" onClick={() => { setDemoModalOpen(true); closeMenu(); }}>
             See Demo
-          </a>
+          </button>
         </nav>
       </header>
       
@@ -196,6 +197,108 @@ function MarketingLayout() {
           </div>
         </div>
       </footer>
+
+      {/* Demo Modal */}
+      {demoModalOpen && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setDemoModalOpen(false)}
+        >
+          <div 
+            style={{
+              position: 'relative',
+              background: '#fff',
+              borderRadius: 20,
+              boxShadow: '0 40px 90px rgba(0, 0, 0, 0.4)',
+              width: '100%',
+              maxWidth: '1400px',
+              height: '90vh',
+              maxHeight: '900px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'linear-gradient(135deg, rgb(37, 99, 235), rgb(79, 70, 229))'
+            }}>
+              <h3 style={{ 
+                fontSize: 20, 
+                fontWeight: 600, 
+                color: '#ffffff', 
+                margin: 0,
+                fontFamily: 'var(--font-display)'
+              }}>
+                Live Demo
+              </h3>
+              <button
+                onClick={() => setDemoModalOpen(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: '#ffffff',
+                  padding: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
+                title="Close"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            {/* Iframe */}
+            <iframe
+              src="/demo.html#auto-scroll"
+              onLoad={(e) => {
+                setTimeout(() => {
+                  try {
+                    const iframe = e.currentTarget;
+                    iframe.contentWindow?.postMessage({ action: 'scrollToBottom' }, '*');
+                  } catch (err) {
+                    console.log('Could not send message to iframe:', err);
+                  }
+                }, 1000);
+              }}
+              style={{
+                flex: 1,
+                border: 'none',
+                width: '100%',
+                height: '100%'
+              }}
+              title="Divee.AI Demo"
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -228,9 +331,9 @@ function LandingPage() {
               </Reveal>
 
               <Reveal className="heroCtas" delay={240}>
-                <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
+                <button className="btn btnPrimary" onClick={() => setDemoModalOpen(true)}>
                   See Demo
-                </a>
+                </button>
               </Reveal>
 
              
@@ -468,11 +571,9 @@ function LandingPage() {
                 </div>
                 
                 <div className="demoActions" style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <a 
+                  <button 
                     className="btn btnPrimary" 
-                    href="/demo.html" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
+                    onClick={() => setDemoModalOpen(true)}
                     style={{
                       padding: '14px 28px',
                       fontSize: '16px',
@@ -481,7 +582,7 @@ function LandingPage() {
                   >
                     <PlayIcon style={{ width: 20, height: 20 }} aria-hidden="true" />
                     Try Live Demo
-                  </a>
+                  </button>
                   <a 
                     className="btn btnSecondary" 
                     href="#cta"

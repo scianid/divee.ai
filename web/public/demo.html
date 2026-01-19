@@ -95,6 +95,24 @@
       color: #64748b;
       font-size: 14px;
     }
+
+    /* Widget glow animation */
+    @keyframes widgetGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 rgba(79, 70, 229, 0);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(79, 70, 229, 0.6), 0 0 60px rgba(79, 70, 229, 0.3);
+      }
+    }
+
+    /* Target the Divee widget - adjust selector as needed */
+    [class*="divee-widget"],
+    [id*="divee-widget"],
+    iframe[src*="divee"] {
+      animation: widgetGlow 1.5s ease-in-out 2;
+      animation-delay: 1s;
+    }
   </style>
 </head>
 <body>
@@ -205,5 +223,29 @@
       This is a demo article for testing the Divee widget.
     </p>
   </footer>
+
+  <script>
+    // Listen for messages from parent window
+    window.addEventListener('message', (event) => {
+      if (event.data.action === 'scrollToBottom') {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    });
+
+    // Also check for hash on load
+    window.addEventListener('load', () => {
+      if (window.location.hash === '#auto-scroll') {
+        setTimeout(() => {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+          });
+        }, 1000);
+      }
+    });
+  </script>
 </body>
 </html>
