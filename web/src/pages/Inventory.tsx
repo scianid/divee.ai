@@ -424,7 +424,7 @@ function Inventory() {
               Create an account first
             </h3>
             <p style={{ fontSize: '15px', color: '#6b7280', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto 32px' }}>
-              Before creating widgets, you need to set up at least one account. Accounts help you organize your widgets by team, brand, or client.
+              Looks like you haven't set up any accounts yet! <br/><br/> Before creating widgets, you need to set up at least one account. Accounts help you organize your widgets by team, brand, or client.
             </p>
             <a 
               href="/accounts"
