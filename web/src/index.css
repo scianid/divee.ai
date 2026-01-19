@@ -429,7 +429,7 @@ p {
 }
 
 .heroHighlight {
-  background: linear-gradient(135deg, #11418d 0%, #0f6e97 45%, #23a3b6 100%);
+  background: linear-gradient(135deg, rgb(37, 99, 235) 0%, rgb(79, 70, 229) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
