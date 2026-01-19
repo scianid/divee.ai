@@ -104,7 +104,7 @@ export default function Articles() {
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 32, fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>Articles</h1>
         <p style={{ fontSize: 15, color: '#64748b' }}>
-          Articles where your widget is embedded
+          Articles where your widgets are embedded. here you will see articles where the widget already was loaded at least once.
         </p>
       </div>
 
