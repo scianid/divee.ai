@@ -397,16 +397,32 @@ function LandingPage() {
 
         <section className="section sectionAlt">
           <div className="container">
-            <Reveal as="h2" className="sectionTitle" delay={0}>
-              An <span className="heroHighlight">AI assistant</span> for every article
-            </Reveal>
-            <Reveal as="p" className="sectionLead" delay={80}>
-              Embed a conversational widget that knows your content inside and out. Readers get instant answers you get
-              deeper engagement.
-            </Reveal>
-            <Reveal className="callout" delay={140}>
-              <strong>No new tabs.</strong> No external searches. Just pure, on‑page interaction.
-            </Reveal>
+            <div className="splitSection imageLeft">
+              <div>
+                <Reveal as="h2" className="sectionTitle" delay={0}>
+                  An <span className="heroHighlight">AI assistant</span> for every article
+                </Reveal>
+                <Reveal as="p" className="sectionLead" delay={80}>
+                  Embed a conversational widget that knows your content inside and out. Readers get instant answers you get
+                  deeper engagement.
+                </Reveal>
+                <Reveal className="callout" delay={140}>
+                  <strong>No new tabs.</strong> No external searches. Just pure, on‑page interaction.
+                </Reveal>
+              </div>
+              <Reveal delay={180}>
+                <img 
+                  src="https://srv.divee.ai/storage/v1/object/public/public-files/divee.ai.open.1.jpg" 
+                  alt="AI assistant in action" 
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)'
+                  }}
+                />
+              </Reveal>
+            </div>
           </div>
         </section>
 
@@ -454,29 +470,101 @@ function LandingPage() {
 
         <section className="section sectionAlt">
           <div className="container">
-            <Reveal as="h2" className="sectionTitle" delay={0}>
-              <span className="heroHighlight">Results</span> that matter
-            </Reveal>
-            <Reveal as="p" className="sectionLead" delay={80}>
-              Publishers use Divee.AI to turn passive pages into interactive experiences.
-            </Reveal>
+            <div className="splitSection imageRight">
+              <div>
+                <Reveal as="h2" className="sectionTitle" delay={0}>
+                  <span className="heroHighlight">Results</span> that matter
+                </Reveal>
+                <Reveal as="p" className="sectionLead" delay={80}>
+                  Publishers use Divee.AI to turn passive pages into interactive experiences.
+                </Reveal>
 
-            <div className="resultGrid">
-              <Reveal className="result" delay={120}>
-                <div className="resultNum">3×</div>
-                <div className="resultLabel">longer time‑on‑site</div>
+                <div className="resultGrid">
+                  <Reveal className="result" delay={120}>
+                    <div className="resultNum">3×</div>
+                    <div className="resultLabel">longer time‑on‑site</div>
+                  </Reveal>
+                  <Reveal className="result" delay={180}>
+                    <div className="resultNum">45%</div>
+                    <div className="resultLabel">reduction in bounce rate</div>
+                  </Reveal>
+                  <Reveal className="result" delay={240}>
+                    <div className="resultNum">2.8×</div>
+                    <div className="resultLabel">more page views per session</div>
+                  </Reveal>
+                  <Reveal className="result" delay={300}>
+                    <div className="resultNum">Intent data</div>
+                    <div className="resultLabel">see what readers actually want</div>
+                  </Reveal>
+                </div>
+              </div>
+              <Reveal delay={360}>
+                <img 
+                  src="https://srv.divee.ai/storage/v1/object/public/public-files/divee.ai.open.2.jpg" 
+                  alt="Results dashboard" 
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)'
+                  }}
+                />
               </Reveal>
-              <Reveal className="result" delay={180}>
-                <div className="resultNum">45%</div>
-                <div className="resultLabel">reduction in bounce rate</div>
-              </Reveal>
-              <Reveal className="result" delay={240}>
-                <div className="resultNum">2.8×</div>
-                <div className="resultLabel">more page views per session</div>
-              </Reveal>
-              <Reveal className="result" delay={300}>
-                <div className="resultNum">Intent data</div>
-                <div className="resultLabel">see what readers actually want</div>
+            </div>
+          </div>
+        </section>
+
+        
+        <section className="section">
+          <div className="container">
+            <div className="splitSection imageLeft">
+              <div>
+                <Reveal as="h2" className="sectionTitle" delay={0}>
+                  Your <span className="heroHighlight">command center</span>
+                </Reveal>
+                <Reveal as="p" className="sectionLead" delay={80}>
+                  Track engagement, analyze user intent, and optimize performance from a unified dashboard.
+                </Reveal>
+                <Reveal delay={140}>
+                  <div className="cardGrid" style={{ marginTop: '32px', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                    <div className="card">
+                      <div className="cardTitle">Real-time analytics</div>
+                      <p className="cardBody">
+                        Monitor interactions, impressions, and engagement metrics as they happen
+                      </p>
+                    </div>
+                    <div className="card">
+                      <div className="cardTitle">Intent discovery</div>
+                      <p className="cardBody">
+                        See what questions readers are asking to inform your content strategy
+                      </p>
+                    </div>
+                    <div className="card">
+                      <div className="cardTitle">Brand customization</div>
+                      <p className="cardBody">
+                        Match your brand with custom colors, logos, and widget styling
+                      </p>
+                    </div>
+                    <div className="card">
+                      <div className="cardTitle">Instant deployment</div>
+                      <p className="cardBody">
+                        Push changes and manage multiple projects from one place
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
+              </div>
+              <Reveal delay={180}>
+                <img 
+                  src="https://srv.divee.ai/storage/v1/object/public/public-files/dashboard.jpg" 
+                  alt="Dashboard analytics" 
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)'
+                  }}
+                />
               </Reveal>
             </div>
           </div>
@@ -545,6 +633,22 @@ function LandingPage() {
             </Reveal>
             <Reveal as="p" className="sectionLead" delay={80}>
               Try the widget yourself on a live article. Ask questions, explore features, and see how readers will interact with your content.
+            </Reveal>
+            
+            <Reveal delay={120} style={{ marginTop: '32px' }}>
+              <img 
+                src="https://srv.divee.ai/storage/v1/object/public/public-files/divee.ai.jpg" 
+                alt="Divee.AI in action" 
+                style={{
+                  width: '100%',
+                  maxWidth: '900px',
+                  height: 'auto',
+                  borderRadius: '16px',
+                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+                  margin: '0 auto',
+                  display: 'block'
+                }}
+              />
             </Reveal>
             
             <Reveal delay={140} style={{ marginTop: '32px' }}>
