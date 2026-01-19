@@ -142,7 +142,12 @@ function MarketingLayout() {
             <Link className="btn btnSecondary" to="/login" style={{ marginRight: '10px' }}>
               Login
             </Link>
-            <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
+            <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" style={{
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+              border: 'none',
+              boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+            }}>
               See demo
             </a>
           </div>
@@ -156,7 +161,12 @@ function MarketingLayout() {
           <Link to="/terms" onClick={closeMenu}>Terms</Link>
           <Link to="/privacy" onClick={closeMenu}>Privacy</Link>
           <Link to="/login" onClick={closeMenu} className="btn btnSecondary">Login</Link>
-          <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>
+          <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" onClick={closeMenu} style={{
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+            border: 'none',
+            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+          }}>
             See demo
           </a>
         </nav>
@@ -232,7 +242,12 @@ function LandingPage() {
               </Reveal>
 
               <Reveal className="heroCtas" delay={240}>
-                <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
+                <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" style={{
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                  border: 'none',
+                  boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+                }}>
                   See Demo
                 </a>
               </Reveal>
@@ -363,7 +378,7 @@ function LandingPage() {
         <section className="section sectionAlt">
           <div className="container">
             <Reveal as="h2" className="sectionTitle" delay={0}>
-              Results that matter
+              <span className="heroHighlight">Results</span> that matter
             </Reveal>
             <Reveal as="p" className="sectionLead" delay={80}>
               Publishers use Divee.AI to turn passive pages into interactive experiences.
@@ -394,7 +409,7 @@ function LandingPage() {
         <section id="how" className="section sectionAlt">
           <div className="container">
             <Reveal as="h2" className="sectionTitle" delay={0}>
-              Live in minutes, not weeks
+              Live in <span className="heroHighlight">seconds</span>
             </Reveal>
             <Reveal as="p" className="sectionLead" delay={80}>
               One script tag. A few brand settings. You’re ready to ship.
@@ -434,52 +449,65 @@ function LandingPage() {
           </div>
         </section>
 
-        <section className="section sectionAlt">
-          <div className="container">
-            <Reveal as="h2" className="sectionTitle" delay={0}>
-              Enterprise‑grade security
-            </Reveal>
-            <Reveal as="p" className="sectionLead" delay={80}>
-              Built for scale, designed for trust.
-            </Reveal>
-
-            <div className="securityGrid">
-              <Reveal className="securityItem" delay={120}>
-                <div className="securityTitle">Zero direct database access</div>
-                <div className="securityBody">All requests flow through secure edge functions.</div>
-              </Reveal>
-              <Reveal className="securityItem" delay={190}>
-                <div className="securityTitle">GDPR & privacy aligned</div>
-                <div className="securityBody">Your data stays yours always.</div>
-              </Reveal>
-              <Reveal className="securityItem" delay={260}>
-                <div className="securityTitle">99.9% uptime SLA</div>
-                <div className="securityBody">Designed for global publisher traffic patterns.</div>
-              </Reveal>
-              <Reveal className="securityItem" delay={330}>
-                <div className="securityTitle">Row‑level isolation</div>
-                <div className="securityBody">Strict separation across client projects.</div>
-              </Reveal>
-            </div>
-          </div>
-        </section>
-
         <section id="demo" className="section">
           <div className="container">
             <Reveal as="h2" className="sectionTitle" delay={0}>
-              See the widget live
+              See <span className="heroHighlight">Divee.AI in action</span>
             </Reveal>
             <Reveal as="p" className="sectionLead" delay={80}>
-              Experience the on‑page AI assistant in action before you ship.
+              Try the widget yourself on a live article. Ask questions, explore features, and see how readers will interact with your content.
             </Reveal>
-            <Reveal className="demoActions" delay={140}>
-              <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
-                <PlayIcon style={{ marginRight: 8 }} aria-hidden="true" />
-                Watch demo
-              </a>
-              <a className="btn btnSecondary" href="#cta">
-                Get a live walkthrough
-              </a>
+            
+            <Reveal delay={140} style={{ marginTop: '32px' }}>
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(17, 65, 141, 0.05) 0%, rgba(35, 163, 182, 0.05) 100%)',
+                border: '2px solid',
+                borderImage: 'linear-gradient(135deg, #11418d 0%, #23a3b6 100%) 1',
+                borderRadius: '16px',
+                padding: '32px',
+                textAlign: 'center'
+              }}>
+                <div style={{ marginBottom: '24px' }}>
+                
+                  <p style={{ fontSize: '16px', color: '#374151', lineHeight: 1.6, maxWidth: '600px', margin: '0 auto' }}>
+                    Click below to open a real article with Divee.AI embedded. Try asking questions like "Summarize this article" or "What are the key points?"
+                  </p>
+                </div>
+                
+                <div className="demoActions" style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <a 
+                    className="btn btnPrimary" 
+                    href="/demo.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{
+                      borderRadius: 12,
+                      background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                      border: 'none',
+                      boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
+                      padding: '14px 28px',
+                      fontSize: '16px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}
+                  >
+                    <PlayIcon style={{ width: 20, height: 20 }} aria-hidden="true" />
+                    Try Live Demo
+                  </a>
+                  <a 
+                    className="btn btnSecondary" 
+                    href="#cta"
+                    style={{
+                      borderRadius: 12,
+                      padding: '14px 28px',
+                      fontSize: '16px'
+                    }}
+                  >
+                    Schedule Walkthrough
+                  </a>
+                </div>
+              </div>
             </Reveal>
           </div>
         </section>
@@ -513,15 +541,17 @@ function LandingPage() {
             Start engaging readers like never before.
           </Reveal>
           <Reveal className="ctaActions" delay={140}>
-            <a className="btn btnPrimary" href="#top">
+            <a className="btn btnPrimary" href="#top" style={{
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+              border: 'none',
+              boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+            }}>
               Start free trial
             </a>
             <a className="btn btnSecondary" href="mailto:hello@divee.ai">
               Email hello@divee.ai
             </a>
-          </Reveal>
-          <Reveal as="p" className="ctaHint" delay={200}>
-            14 days, no credit card required. Questions? Schedule a demo.
           </Reveal>
         </div>
       </section>
