@@ -321,35 +321,63 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
     const max = Math.max(impressions, 1);
     
     const steps = [
-        { label: 'Impressions', value: impressions, color: '#3b82f6' },
-        { label: 'Suggestions', value: suggestions, color: '#8b5cf6' },
-        { label: 'Questions', value: questions, color: '#ec4899' }
+        { label: 'Impressions', value: impressions, color: '#3b82f6', width: 100 },
+        { label: 'Suggestions', value: suggestions, color: '#8b5cf6', width: 75 },
+        { label: 'Questions', value: questions, color: '#ec4899', width: 50 }
     ];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginTop: '20px', padding: '0 20px' }}>
             {steps.map((step, idx) => {
                 const percent = max > 0 ? Math.round((step.value / max) * 100) : 0;
-                // For questions, show conversion from suggestions too
-                const subPercent = idx === 2 && suggestions > 0 
-                    ? `(${Math.round((step.value / suggestions) * 100)}% of sugg.)` 
-                    : '';
+                const prevValue = idx > 0 ? steps[idx - 1].value : step.value;
+                const conversionRate = prevValue > 0 ? Math.round((step.value / prevValue) * 100) : 0;
 
                 return (
-                    <div key={idx}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: step.color }}></div>
-                                <span style={{ fontWeight: 600, color: '#334155' }}>{step.label}</span>
+                    <div key={idx} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        {/* Funnel Step */}
+                        <div 
+                            style={{ 
+                                width: `${step.width}%`,
+                                background: `linear-gradient(135deg, ${step.color}, ${step.color}dd)`,
+                                borderRadius: '8px',
+                                padding: '20px 24px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                                position: 'relative',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        {step.label}
+                                    </div>
+                                    <div style={{ fontSize: '28px', fontWeight: 700, color: '#fff', marginTop: '4px' }}>
+                                        {step.value.toLocaleString()}
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>
+                                        {percent}%
+                                    </div>
+                                    {idx > 0 && (
+                                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', marginTop: '2px' }}>
+                                            {conversionRate}% conv.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <span style={{ color: '#64748b' }}>
-                                {step.value.toLocaleString()} 
-                                <span style={{ opacity: 0.6, marginLeft: '6px', fontSize: '12px' }}>{percent}% {subPercent}</span>
-                            </span>
                         </div>
-                        <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${Math.max(percent, 1)}%`, background: step.color, borderRadius: '4px', transition: 'width 1s ease-out' }} />
-                        </div>
+                        
+                        {/* Connector Arrow */}
+                        {idx < steps.length - 1 && (
+                            <div style={{ 
+                                width: '2px', 
+                                height: '16px', 
+                                background: 'linear-gradient(180deg, #cbd5e1, transparent)',
+                                margin: '4px 0'
+                            }} />
+                        )}
                     </div>
                 );
             })}

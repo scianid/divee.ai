@@ -59,7 +59,7 @@ export function DashboardLayout() {
     { label: 'Dashboard', path: '/dashboard', icon: DashboardIcon },
     { label: 'Accounts', path: '/accounts', icon: AccountsIcon },
     { label: 'Inventory', path: '/inventory', icon: InventoryIcon },
-    { label: 'Reports', path: '/analytics', icon: ReportsIcon },
+    // { label: 'Reports', path: '/analytics', icon: ReportsIcon },
   ]
 
   return (
