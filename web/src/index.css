@@ -280,7 +280,7 @@ p {
   justify-content: center;
   height: 44px;
   padding: 0 18px;
-  border-radius: 9999px;
+  border-radius: 12px;
   font-weight: 600;
   font-size: 15px;
   letter-spacing: 0.01em;
@@ -877,11 +877,11 @@ p {
 
 .codeCard {
   border-radius: 16px;
-  background: rgba(2, 48, 71, 0.94);
-  color: rgba(232, 244, 250, 0.94);
+  background: linear-gradient(135deg, rgb(37, 99, 235), rgb(79, 70, 229));
+  color: #ffffff;
   padding: 18px;
-  border: 1px solid rgba(142, 202, 230, 0.22);
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  box-shadow: 0 28px 70px rgba(79, 70, 229, 0.35);
 }
 
 .codeTitle {
@@ -903,7 +903,7 @@ p {
 .codeHint {
   margin-top: 12px;
   font-size: 13px;
-  color: rgba(232, 244, 250, 0.86);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .quoteGrid {

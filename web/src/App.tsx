@@ -418,11 +418,23 @@ function LandingPage() {
               <div className="codeCard" aria-label="Embed snippet" style={{ maxWidth: '800px', margin: '0 auto' }}>
                 <div className="codeTitle">Embed snippet</div>
                 <pre className="codeBlock" style={{ overflow: 'auto' }}>
-{`<script 
-  src="https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.latest.js" 
-  data-project-id="your-project-id" 
-  data-article-class="your-article-class">
-</script>`}
+                  <code>
+                    <span style={{ color: '#ff6b9d' }}>&lt;script</span>{' '}
+                    <span style={{ color: '#ffc777' }}>src</span>
+                    <span style={{ color: '#c8d3f5' }}>=</span>
+                    <span style={{ color: '#c3e88d' }}>"https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.latest.js"</span>{' '}
+                    {'\n  '}
+                    <span style={{ color: '#ffc777' }}>data-project-id</span>
+                    <span style={{ color: '#c8d3f5' }}>=</span>
+                    <span style={{ color: '#c3e88d' }}>"your-project-id"</span>{' '}
+                    {'\n  '}
+                    <span style={{ color: '#ffc777' }}>data-article-class</span>
+                    <span style={{ color: '#c8d3f5' }}>=</span>
+                    <span style={{ color: '#c3e88d' }}>"your-article-class"</span>
+                    <span style={{ color: '#ff6b9d' }}>&gt;</span>
+                    {'\n'}
+                    <span style={{ color: '#ff6b9d' }}>&lt;/script&gt;</span>
+                  </code>
                 </pre>
                 <div className="codeHint">Loads asynchronously. No layout shift.</div>
               </div>
