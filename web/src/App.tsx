@@ -53,15 +53,15 @@ const faqs: FAQ[] = [
 const features = [
   {
     title: 'Context-Aware Intelligence',
-    body: 'Answers are derived from your article—not generic web results. Every response stays grounded with citations.',
+    body: 'Answers are derived from your article not generic web results. Every response stays grounded with citations.',
   },
   {
     title: 'Smart Question Suggestions',
     body: 'AI-generated prompts invite engagement before readers think about leaving.',
   },
   {
-    title: 'Real-Time Streaming',
-    body: 'Typewriter-style responses that feel natural and immediate.',
+    title: 'Lightweight & Fast',
+    body: 'Our lean SDK loads asynchronously without blocking your page. Zero layout shift, minimal footprint.',
   },
   {
     title: 'Multi-Language + RTL',
@@ -69,7 +69,7 @@ const features = [
   },
   {
     title: 'Fully Customizable',
-    body: 'Match your brand—colors, messaging, positioning, and behavior.',
+    body: 'Match your brand colors, messaging, positioning, and behavior.',
   },
   {
     title: 'Built-In Monetization',
@@ -227,7 +227,7 @@ function LandingPage() {
               </Reveal>
 
               <Reveal as="p" className="heroSub" delay={160}>
-                Divee.AI keeps readers on‑page with instant, citation‑grounded answers—so they can explore deeper without
+                Divee.AI keeps readers on‑page with instant, citation‑grounded answers so they can explore deeper without
                 opening new tabs.
               </Reveal>
 
@@ -258,7 +258,7 @@ function LandingPage() {
                   </div>
                   <div className="bubble bubbleUser">What does this mean for 2026?</div>
                   <div className="bubble bubbleAi">
-                    It means readers will expect instant, citation‑grounded answers on‑page—and publishers who deliver
+                    It means readers will expect instant, citation‑grounded answers on‑page and publishers who deliver
                     that will see longer sessions and higher retention.
                   </div>
                   <div className="bubble bubbleThinking" aria-label="Assistant is thinking" />
@@ -276,7 +276,7 @@ function LandingPage() {
         <section className="section">
           <div className="container">
             <Reveal as="h2" className="sectionTitle" delay={0}>
-              Your readers are leaving money on the table
+              Your readers are leaving <span className="heroHighlight">money on the table</span>
             </Reveal>
             <Reveal as="p" className="sectionLead" delay={80}>
               Readers skim, bounce, and open new tabs to understand your content. Each exit is lost engagement,
@@ -288,9 +288,12 @@ function LandingPage() {
                 <div className="statNum">73%</div>
                 <div className="statLabel">skim and leave within 2 minutes</div>
               </Reveal>
-              <Reveal className="statCard" delay={180}>
-                <div className="statNum">Every bounce</div>
-                <div className="statLabel">is a lost opportunity to engage</div>
+              <Reveal className="statCard" delay={180} style={{ 
+                background: 'linear-gradient(135deg, #11418d, #0d326e)',
+                borderColor: '#1e5bb8'
+              }}>
+                <div className="statNum" style={{ color: 'rgba(232, 244, 250, 0.98)' }}>Every bounce</div>
+                <div className="statLabel" style={{ color: 'rgba(232, 244, 250, 0.86)' }}>is a lost opportunity to engage</div>
               </Reveal>
               <Reveal className="statCard" delay={240}>
                 <div className="statNum">Every search</div>
@@ -303,10 +306,10 @@ function LandingPage() {
         <section className="section sectionAlt">
           <div className="container">
             <Reveal as="h2" className="sectionTitle" delay={0}>
-              An AI assistant for every article
+              An <span className="heroHighlight">AI assistant</span> for every article
             </Reveal>
             <Reveal as="p" className="sectionLead" delay={80}>
-              Embed a conversational widget that knows your content inside and out. Readers get instant answers—you get
+              Embed a conversational widget that knows your content inside and out. Readers get instant answers you get
               deeper engagement.
             </Reveal>
             <Reveal className="callout" delay={140}>
@@ -318,7 +321,7 @@ function LandingPage() {
         <section id="features" className="section">
           <div className="container">
             <Reveal as="h2" className="sectionTitle" delay={0}>
-              Built for publishers, loved by readers
+              Built for publishers, <span className="heroHighlight">loved by readers</span>
             </Reveal>
             <Reveal as="p" className="sectionLead" delay={80}>
               Production-grade features designed to improve engagement without disrupting the reading flow.
@@ -326,9 +329,31 @@ function LandingPage() {
 
             <div className="cardGrid">
               {features.map((f, idx) => (
-                <Reveal key={f.title} className="card" delay={120 + idx * 70}>
-                  <h3 className="cardTitle">{f.title}</h3>
-                  <p className="cardBody">{f.body}</p>
+                <Reveal 
+                  key={f.title} 
+                  className="card" 
+                  delay={120 + idx * 70}
+                  style={f.title === 'Context-Aware Intelligence' || f.title === 'Built-In Monetization' ? {
+                    background: 'linear-gradient(135deg, #11418d, #0d326e)',
+                    borderColor: '#1e5bb8'
+                  } : undefined}
+                >
+                  <h3 
+                    className="cardTitle"
+                    style={f.title === 'Context-Aware Intelligence' || f.title === 'Built-In Monetization' ? {
+                      color: 'rgba(232, 244, 250, 0.98)'
+                    } : undefined}
+                  >
+                    {f.title}
+                  </h3>
+                  <p 
+                    className="cardBody"
+                    style={f.title === 'Context-Aware Intelligence' || f.title === 'Built-In Monetization' ? {
+                      color: 'rgba(232, 244, 250, 0.86)'
+                    } : undefined}
+                  >
+                    {f.body}
+                  </p>
                 </Reveal>
               ))}
             </div>
@@ -365,26 +390,7 @@ function LandingPage() {
           </div>
         </section>
 
-        <section className="section">
-          <div className="container">
-            <Reveal as="h2" className="sectionTitle" delay={0}>
-              Perfect for
-            </Reveal>
-            <Reveal as="p" className="sectionLead" delay={80}>
-              Teams who publish content and want to keep readers engaged—right where they already are.
-            </Reveal>
-
-            <div className="cardGrid">
-              {useCases.map((u, idx) => (
-                <Reveal key={u.title} className="card" delay={120 + idx * 70}>
-                  <h3 className="cardTitle">{u.title}</h3>
-                  <p className="cardBody">{u.body}</p>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
+        
         <section id="how" className="section sectionAlt">
           <div className="container">
             <Reveal as="h2" className="sectionTitle" delay={0}>
@@ -444,7 +450,7 @@ function LandingPage() {
               </Reveal>
               <Reveal className="securityItem" delay={190}>
                 <div className="securityTitle">GDPR & privacy aligned</div>
-                <div className="securityBody">Your data stays yours—always.</div>
+                <div className="securityBody">Your data stays yours always.</div>
               </Reveal>
               <Reveal className="securityItem" delay={260}>
                 <div className="securityTitle">99.9% uptime SLA</div>
