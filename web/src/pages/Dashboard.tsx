@@ -327,7 +327,7 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
     ];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginTop: '20px', padding: '0 20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginTop: '20px', padding: '0 20px' }}>
             {steps.map((step, idx) => {
                 const percent = max > 0 ? Math.round((step.value / max) * 100) : 0;
                 const prevValue = idx > 0 ? steps[idx - 1].value : step.value;
@@ -341,7 +341,7 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
                                 width: `${step.width}%`,
                                 background: `linear-gradient(135deg, ${step.color}, ${step.color}dd)`,
                                 borderRadius: '8px',
-                                padding: '20px 24px',
+                                padding: '6px 15px',
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                                 position: 'relative',
                                 transition: 'all 0.3s ease'
@@ -373,9 +373,9 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
                         {idx < steps.length - 1 && (
                             <div style={{ 
                                 width: '2px', 
-                                height: '16px', 
+                                height: '8px', 
                                 background: 'linear-gradient(180deg, #cbd5e1, transparent)',
-                                margin: '4px 0'
+                                margin: '2px 0'
                             }} />
                         )}
                     </div>
