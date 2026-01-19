@@ -33,7 +33,7 @@ function PlayIcon(props: React.SVGProps<SVGSVGElement>) {
 type FAQ = { q: string; a: string }
 
 const faqs: FAQ[] = [
-  { q: 'How long does setup take?', a: 'Less than 5 minutes. One script tag and you’re live.' },
+  { q: 'How long does setup take?', a: 'Less than a minute. One script tag and you’re live.' },
   {
     q: 'Does it work with my CMS?',
     a: 'Yes. Works with WordPress, Webflow, Custom HTML, React, Vue, and any platform that supports JavaScript.',
@@ -42,10 +42,6 @@ const faqs: FAQ[] = [
   {
     q: "Can I customize the AI's tone and personality?",
     a: 'Absolutely. Configure voice, formality, and guardrails per project.',
-  },
-  {
-    q: 'What if the AI gives wrong answers?',
-    a: 'Responses are grounded in the article with citations, so readers can verify instantly. You can also review and tune behavior in the dashboard.',
   },
   { q: 'Do I need technical skills?', a: 'Nope. If you can copy‑paste, you can install Divee.AI.' },
 ]
@@ -142,13 +138,8 @@ function MarketingLayout() {
             <Link className="btn btnSecondary" to="/login" style={{ marginRight: '10px' }}>
               Login
             </Link>
-            <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" style={{
-              borderRadius: 12,
-              background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-              border: 'none',
-              boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
-            }}>
-              See demo
+            <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
+              See Demo
             </a>
           </div>
         </div>
@@ -161,13 +152,8 @@ function MarketingLayout() {
           <Link to="/terms" onClick={closeMenu}>Terms</Link>
           <Link to="/privacy" onClick={closeMenu}>Privacy</Link>
           <Link to="/login" onClick={closeMenu} className="btn btnSecondary">Login</Link>
-          <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" onClick={closeMenu} style={{
-            borderRadius: 12,
-            background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-            border: 'none',
-            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
-          }}>
-            See demo
+          <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>
+            See Demo
           </a>
         </nav>
       </header>
@@ -242,12 +228,7 @@ function LandingPage() {
               </Reveal>
 
               <Reveal className="heroCtas" delay={240}>
-                <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer" style={{
-                  borderRadius: 12,
-                  background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-                  border: 'none',
-                  boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
-                }}>
+                <a className="btn btnPrimary" href="/demo.html" target="_blank" rel="noopener noreferrer">
                   See Demo
                 </a>
               </Reveal>
@@ -304,8 +285,8 @@ function LandingPage() {
                 <div className="statLabel">skim and leave within 2 minutes</div>
               </Reveal>
               <Reveal className="statCard" delay={180} style={{ 
-                background: 'linear-gradient(135deg, #11418d, #0d326e)',
-                borderColor: '#1e5bb8'
+                background: 'linear-gradient(135deg, rgb(37, 99, 235), rgb(79, 70, 229))',
+                borderColor: 'rgba(79, 70, 229, 0.4)'
               }}>
                 <div className="statNum" style={{ color: 'rgba(232, 244, 250, 0.98)' }}>Every bounce</div>
                 <div className="statLabel" style={{ color: 'rgba(232, 244, 250, 0.86)' }}>is a lost opportunity to engage</div>
@@ -349,8 +330,8 @@ function LandingPage() {
                   className="card" 
                   delay={120 + idx * 70}
                   style={f.title === 'Context-Aware Intelligence' || f.title === 'Built-In Monetization' ? {
-                    background: 'linear-gradient(135deg, #11418d, #0d326e)',
-                    borderColor: '#1e5bb8'
+                    background: 'linear-gradient(135deg, rgb(37, 99, 235), rgb(79, 70, 229))',
+                    borderColor: 'rgba(79, 70, 229, 0.4)'
                   } : undefined}
                 >
                   <h3 
@@ -481,14 +462,8 @@ function LandingPage() {
                     target="_blank" 
                     rel="noopener noreferrer"
                     style={{
-                      borderRadius: 12,
-                      background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-                      border: 'none',
-                      boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
                       padding: '14px 28px',
                       fontSize: '16px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
                       gap: '10px'
                     }}
                   >
@@ -541,15 +516,12 @@ function LandingPage() {
             Start engaging readers like never before.
           </Reveal>
           <Reveal className="ctaActions" delay={140}>
-            <a className="btn btnPrimary" href="#top" style={{
-              borderRadius: 12,
-              background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-              border: 'none',
-              boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+            <a className="btn" href="mailto:hello@divee.ai" style={{
+              color: '#ffffff',
+              borderColor: '#ffffff',
+              background: 'transparent',
+              borderRadius: 12
             }}>
-              Start free trial
-            </a>
-            <a className="btn btnSecondary" href="mailto:hello@divee.ai">
               Email hello@divee.ai
             </a>
           </Reveal>
