@@ -776,6 +776,9 @@ p {
   background: rgba(255, 255, 255, 0.95);
   box-shadow: var(--shadow-sm);
   transition: transform 250ms var(--ease-standard), box-shadow 250ms var(--ease-standard);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .card:hover {
