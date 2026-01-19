@@ -379,8 +379,50 @@ function Inventory() {
         </div>
       </div>
 
-      <div style={{ width: '100%', overflowX: 'auto', marginTop: 0 }}>
-        {projects.filter(p => {
+      <div style={{ width: '100%', marginTop: 0 }}>
+        {accounts.length === 0 ? (
+          <div className="card" style={{ padding: '64px 48px', textAlign: 'center', borderStyle: 'dashed', borderColor: '#e5e7eb' }}>
+            <div style={{ 
+              width: 80, 
+              height: 80, 
+              borderRadius: 20, 
+              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+              color: '#f59e0b'
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', marginBottom: '12px' }}>
+              Create an account first
+            </h3>
+            <p style={{ fontSize: '15px', color: '#6b7280', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto 32px' }}>
+              Before creating widgets, you need to set up at least one account. Accounts help you organize your widgets by team, brand, or client.
+            </p>
+            <a 
+              href="/accounts"
+              className="btn btnPrimary"
+              style={{ 
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                border: 'none',
+                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
+                padding: '12px 24px',
+                fontSize: '15px',
+                textDecoration: 'none',
+                display: 'inline-block'
+              }}
+            >
+              Go to Accounts
+            </a>
+          </div>
+        ) : projects.filter(p => {
           const q = search.trim().toLowerCase();
           if (!q) return true;
           return (
@@ -390,15 +432,61 @@ function Inventory() {
             (typeof p.id === 'number' && p.id.toString().includes(q))
           );
         }).length === 0 && !showCreateForm ? (
-          <div className="card" style={{ padding: '48px', textAlign: 'center', borderStyle: 'dashed' }}>
-            <p style={{ fontSize: '18px', color: 'var(--text)', opacity: 0.7 }}>No items found. Create one to get started!</p>
-            <button 
-              onClick={() => setShowCreateForm(true)}
-              className="btn btnPrimary"
-              style={{ marginTop: '20px' }}
-            >
-              + New Item
-            </button>
+          <div className="card" style={{ padding: '64px 48px', textAlign: 'center', borderStyle: 'dashed', borderColor: '#e5e7eb' }}>
+            <div style={{ 
+              width: 80, 
+              height: 80, 
+              borderRadius: 20, 
+              background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+              color: '#9ca3af'
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+              </svg>
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', marginBottom: '12px' }}>
+              {search.trim() || selectedAccount !== 'all' ? 'No widgets found' : 'No widgets yet'}
+            </h3>
+            <p style={{ fontSize: '15px', color: '#6b7280', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto 32px' }}>
+              {search.trim() || selectedAccount !== 'all'
+                ? 'Try adjusting your filters or search terms to find what you\'re looking for.' 
+                : 'Widgets are AI-powered chat interfaces that you can embed on your website. Create your first widget to get started with engaging your visitors.'}
+            </p>
+            {!search.trim() && selectedAccount === 'all' && (
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'center' }}>
+                <button 
+                  onClick={() => setShowScanModal(true)}
+                  className="btn btnPrimary"
+                  style={{ 
+                    borderRadius: 12,
+                    background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                    border: 'none',
+                    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
+                    padding: '12px 24px',
+                    fontSize: '15px'
+                  }}
+                >
+                  New Widget
+                </button>
+                <button 
+                  onClick={() => setShowCreateForm(true)}
+                  className="btn btnSecondary"
+                  style={{ 
+                    borderRadius: 12,
+                    padding: '12px 24px',
+                    fontSize: '15px'
+                  }}
+                >
+                  Manual Widget
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <table className="table-auto" style={{ width: '100%', minWidth: 800, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>

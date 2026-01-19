@@ -338,24 +338,52 @@ const Accounts: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ width: '100%', overflowX: 'auto', marginTop: 0 }}>
+      <div style={{ width: '100%', marginTop: 0, padding: '2px' }}>
         {accounts.filter(a => !search.trim() || a.name.toLowerCase().includes(search.trim().toLowerCase())).length === 0 && !showCreateForm ? (
-          <div className="card" style={{ padding: '48px', textAlign: 'center', borderStyle: 'dashed' }}>
-             <p style={{ fontSize: '18px', color: 'var(--text)', opacity: 0.7 }}>
-              {search.trim() ? 'No accounts match your search.' : 'No accounts found. Create one to get started!'}
+          <div className="card" style={{ padding: '64px 48px', textAlign: 'center', borderStyle: 'dashed', borderColor: '#e5e7eb' }}>
+            <div style={{ 
+              width: 80, 
+              height: 80, 
+              borderRadius: 20, 
+              background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+              color: '#9ca3af'
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', marginBottom: '12px' }}>
+              {search.trim() ? 'No accounts match your search' : 'No accounts yet'}
+            </h3>
+            <p style={{ fontSize: '15px', color: '#6b7280', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto 32px' }}>
+              {search.trim() 
+                ? 'Try adjusting your search terms to find what you\'re looking for.' 
+                : 'Accounts help you organize your widgets into separate sub-accounts. Create different accounts for teams, brands, or clients to keep everything organized.'}
             </p>
             {!search.trim() && (
               <button 
                 onClick={() => setShowCreateForm(true)}
                 className="btn btnPrimary"
-                style={{ marginTop: '20px' }}
+                style={{ 
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                  border: 'none',
+                  boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
+                  padding: '12px 24px',
+                  fontSize: '15px'
+                }}
               >
                 + New Account
               </button>
             )}
           </div>
         ) : (
-          <table className="table-auto" style={{ width: '100%', minWidth: 500, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <table className="table-auto" style={{ width: '100%', minWidth: 500, background: '#fff', borderRadius: 12, boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px -5px rgba(0, 0, 0, 0.08)' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid #ececec' }}>
                 <th style={{ padding: '14px 16px', fontWeight: 600, fontSize: 15, borderBottom: '1px solid #ececec', background: 'none' }}>Icon</th>
