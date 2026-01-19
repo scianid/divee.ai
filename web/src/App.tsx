@@ -394,49 +394,37 @@ function LandingPage() {
               One script tag. A few brand settings. You’re ready to ship.
             </Reveal>
 
-            <div className="scrolly">
-              <div className="scrollySteps">
-                <Reveal className="step" delay={120}>
-                  <div className="stepNum">1</div>
-                  <div>
-                    <div className="stepTitle">Sign up</div>
-                    <div className="stepBody">Get your unique project ID instantly—no credit card required.</div>
-                  </div>
-                </Reveal>
-                <Reveal className="step" delay={170}>
-                  <div className="stepNum">2</div>
-                  <div>
-                    <div className="stepTitle">Customize</div>
-                    <div className="stepBody">Set colors, welcome message, and behavior in your dashboard.</div>
-                  </div>
-                </Reveal>
-                <Reveal className="step" delay={220}>
-                  <div className="stepNum">3</div>
-                  <div>
-                    <div className="stepTitle">Embed</div>
-                    <div className="stepBody">Add one line of code to your site.</div>
-                  </div>
-                </Reveal>
-                <Reveal className="step" delay={270}>
-                  <div className="stepNum">4</div>
-                  <div>
-                    <div className="stepTitle">Go live</div>
-                    <div className="stepBody">Readers can now chat with every article. Track engagement in real time.</div>
-                  </div>
-                </Reveal>
-              </div>
-
-              <Reveal className="scrollySticky" delay={140}>
-                <div className="codeCard" aria-label="Embed snippet">
-                  <div className="codeTitle">Embed snippet</div>
-                  <pre className="codeBlock">
-{`<script src="https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.v1.js" 
-      data-project-id="your-project-id" data-article-class="your-article-class"></script>`}
-                  </pre>
-                  <div className="codeHint">Loads asynchronously. No layout shift.</div>
-                </div>
+            <div className="cardGrid" style={{ marginTop: '48px' }}>
+              <Reveal className="card" delay={120}>
+                <div className="stepNum" style={{ marginBottom: '16px' }}>1</div>
+                <div className="cardTitle">Sign up & Customize</div>
+                <p className="cardBody">Get your unique project ID for your website instantly.</p>
+              </Reveal>
+              <Reveal className="card" delay={220}>
+                <div className="stepNum" style={{ marginBottom: '16px' }}>2</div>
+                <div className="cardTitle">Embed</div>
+                <p className="cardBody">Add one line of code to your site, super small and fast loading.</p>
+              </Reveal>
+              <Reveal className="card" delay={270}>
+                <div className="stepNum" style={{ marginBottom: '16px' }}>3</div>
+                <div className="cardTitle">Go live</div>
+                <p className="cardBody">Readers can now chat with every article. Track engagement in real time.</p>
               </Reveal>
             </div>
+
+            <Reveal delay={140} style={{ marginTop: '48px' }}>
+              <div className="codeCard" aria-label="Embed snippet" style={{ maxWidth: '800px', margin: '0 auto' }}>
+                <div className="codeTitle">Embed snippet</div>
+                <pre className="codeBlock" style={{ overflow: 'auto' }}>
+{`<script 
+  src="https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.latest.js" 
+  data-project-id="your-project-id" 
+  data-article-class="your-article-class">
+</script>`}
+                </pre>
+                <div className="codeHint">Loads asynchronously. No layout shift.</div>
+              </div>
+            </Reveal>
           </div>
         </section>
 
