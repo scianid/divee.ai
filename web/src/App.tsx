@@ -205,7 +205,7 @@ function MarketingLayout() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '20px'
+            padding: '0'
           }}
           onClick={() => setDemoModalOpen(false)}
         >
@@ -213,11 +213,11 @@ function MarketingLayout() {
             style={{
               position: 'relative',
               background: '#fff',
-              borderRadius: 20,
+              borderRadius: '0',
               boxShadow: '0 40px 90px rgba(0, 0, 0, 0.4)',
               width: '100%',
               maxWidth: '1400px',
-              height: '90vh',
+              height: '100vh',
               maxHeight: '900px',
               display: 'flex',
               flexDirection: 'column',
