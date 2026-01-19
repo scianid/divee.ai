@@ -428,31 +428,6 @@ function LandingPage() {
           </div>
         </section>
 
-        <section className="section">
-          <div className="container">
-            <Reveal as="h2" className="sectionTitle" delay={0}>
-              What publishers are saying
-            </Reveal>
-
-            <div className="quoteGrid">
-              <Reveal className="quote" delay={120}>
-                <p>
-                  “Divee.AI turned our long‑form guides into interactive experiences. Engagement is through the roof.”
-                </p>
-                <div className="quoteBy">— Sarah M., Content Director</div>
-              </Reveal>
-              <Reveal className="quote" delay={190}>
-                <p>“The Hebrew RTL support is flawless. Our readers love asking follow‑ups in their native language.”</p>
-                <div className="quoteBy">— David L., Editor</div>
-              </Reveal>
-              <Reveal className="quote" delay={260}>
-                <p>“We finally have data on what our readers actually care about. Game changer.”</p>
-                <div className="quoteBy">— Maria K., Analytics Lead</div>
-              </Reveal>
-            </div>
-          </div>
-        </section>
-
         <section className="section sectionAlt">
           <div className="container">
             <Reveal as="h2" className="sectionTitle" delay={0}>

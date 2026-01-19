@@ -73,6 +73,9 @@ function Inventory() {
   const [selectedAccount, setSelectedAccount] = useState<string>('all');
   const [sortField, setSortField] = useState<'client_name' | 'client_description' | 'id' | 'language'>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [embedModalProject, setEmbedModalProject] = useState<Project | null>(null);
+  const [embedCopied, setEmbedCopied] = useState(false);
 
   // Helpers
   function handleSort(field: 'client_name' | 'client_description' | 'id' | 'language') {
@@ -238,6 +241,24 @@ function Inventory() {
   const cancelDelete = () => {
     setDeleteId(null);
     setDeleteError(null);
+  };
+
+  const handleCopySDK = (projectId: string) => {
+    const sdkCode = `<script 
+  src="https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.latest.js" 
+  data-project-id="${projectId}" 
+  data-article-class="article-content">
+</script>`;
+    
+    navigator.clipboard.writeText(sdkCode);
+    setEmbedCopied(true);
+    setTimeout(() => setEmbedCopied(false), 2000);
+  };
+
+  const handleOpenEmbedModal = (project: Project) => {
+    setEmbedModalProject(project);
+    setOpenMenuId(null);
+    setEmbedCopied(false);
   };
 
   // Render
@@ -581,7 +602,7 @@ function Inventory() {
                         ) : '—';
                       })()}
                     </td>
-                    <td style={{ padding: '12px 16px', display: 'flex', gap: 8 }}>
+                    <td style={{ padding: '12px 16px', display: 'flex', gap: 8, position: 'relative' }}>
                       <button 
                         onClick={() => handleDelete(project.id)}
                         title="Delete"
@@ -607,6 +628,56 @@ function Inventory() {
                           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 5 15.4a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 16 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 8c.14.31.22.65.22 1v.09A1.65 1.65 0 0 0 21 12c0 .35-.08.69-.22 1z" />
                         </svg>
                       </button>
+                      <button 
+                        title="More options"
+                        onClick={() => setOpenMenuId(openMenuId === project.id ? null : project.id)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 4, display: 'flex', alignItems: 'center' }}
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="1" />
+                          <circle cx="12" cy="5" r="1" />
+                          <circle cx="12" cy="19" r="1" />
+                        </svg>
+                      </button>
+                      {openMenuId === project.id && (
+                        <div style={{
+                          position: 'absolute',
+                          right: 0,
+                          top: '100%',
+                          background: '#fff',
+                          borderRadius: 8,
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                          minWidth: 180,
+                          zIndex: 100,
+                          overflow: 'hidden'
+                        }}>
+                          <button
+                            onClick={() => handleOpenEmbedModal(project)}
+                            style={{
+                              width: '100%',
+                              padding: '12px 16px',
+                              background: 'none',
+                              border: 'none',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 10,
+                              fontSize: 14,
+                              color: '#374151',
+                              transition: 'background 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="16 18 22 12 16 6"></polyline>
+                              <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                            Embed
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -614,6 +685,177 @@ function Inventory() {
           </table>
         )}
       </div>
+
+      {/* Embed Modal */}
+      {embedModalProject && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{ 
+            background: '#fff', 
+            borderRadius: 16, 
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)', 
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }}>
+            {/* Header */}
+            <div style={{ 
+              padding: '32px 32px 24px 32px', 
+              borderBottom: '1px solid #f3f4f6'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <h3 style={{ fontSize: 20, fontWeight: 600, color: '#111827', margin: 0 }}>Embed Widget</h3>
+                <button
+                  onClick={() => setEmbedModalProject(null)}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    cursor: 'pointer', 
+                    color: '#9ca3af',
+                    padding: 4,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  title="Close"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+              <p style={{ fontSize: 14, color: '#6b7280', margin: 0, lineHeight: 1.5 }}>
+                Copy this code and paste it into your HTML page, just before the closing <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>&lt;/body&gt;</code> tag.
+              </p>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '24px 32px 32px 32px' }}>
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                  <div style={{ 
+                    width: 32, 
+                    height: 32, 
+                    borderRadius: 8,
+                    background: embedModalProject.icon_url ? 'transparent' : '#f3f4f6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden'
+                  }}>
+                    {embedModalProject.icon_url ? (
+                      <img src={embedModalProject.icon_url} alt={embedModalProject.client_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#111827' }}>{embedModalProject.client_name}</div>
+                    <div style={{ fontSize: 13, color: '#6b7280' }}>Project ID: {embedModalProject.project_id}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ 
+                background: '#1e293b', 
+                borderRadius: 12, 
+                padding: '20px',
+                position: 'relative',
+                overflow: 'auto'
+              }}>
+                <pre style={{ 
+                  margin: 0, 
+                  fontSize: 13, 
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                  lineHeight: 1.6,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all'
+                }}>
+                  <span style={{ color: '#7dd3fc' }}>&lt;script</span>{'\n'}
+                  <span style={{ color: '#a5b4fc' }}>  src</span>
+                  <span style={{ color: '#e2e8f0' }}>=</span>
+                  <span style={{ color: '#a3e635' }}>"https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.latest.js"</span>{'\n'}
+                  <span style={{ color: '#a5b4fc' }}>  data-project-id</span>
+                  <span style={{ color: '#e2e8f0' }}>=</span>
+                  <span style={{ color: '#a3e635' }}>"{embedModalProject.project_id}"</span>{'\n'}
+                  <span style={{ color: '#a5b4fc' }}>  data-article-class</span>
+                  <span style={{ color: '#e2e8f0' }}>=</span>
+                  <span style={{ color: '#a3e635' }}>"article-content"</span>
+                  <span style={{ color: '#7dd3fc' }}>&gt;</span>{'\n'}
+                  <span style={{ color: '#7dd3fc' }}>&lt;/script&gt;</span>
+                </pre>
+              </div>
+
+              <div style={{ 
+                marginTop: 20,
+                padding: '16px',
+                background: '#eff6ff',
+                borderRadius: 8,
+                borderLeft: '3px solid #3b82f6'
+              }}>
+                <div style={{ fontSize: 13, color: '#1e40af', lineHeight: 1.6 }}>
+                  <strong style={{ display: 'block', marginBottom: 4 }}>💡 Tip:</strong>
+                  Replace <code style={{ background: '#dbeafe', padding: '2px 6px', borderRadius: 4 }}>article-content</code> with the CSS class of your article container for optimal widget positioning.
+                </div>
+              </div>
+
+              <button
+                onClick={() => handleCopySDK(embedModalProject.project_id)}
+                className="btn btnPrimary"
+                style={{ 
+                  width: '100%',
+                  marginTop: 24,
+                  borderRadius: 12,
+                  background: embedCopied ? '#10b981' : 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                  border: 'none',
+                  boxShadow: embedCopied ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 4px 12px rgba(79, 70, 229, 0.3)',
+                  padding: '14px 24px',
+                  fontSize: 15,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 10,
+                  transition: 'all 0.2s'
+                }}
+              >
+                {embedCopied ? (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy to Clipboard
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal (Global) */}
       {deleteId !== null && (
