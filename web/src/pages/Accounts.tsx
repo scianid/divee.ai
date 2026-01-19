@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useLocation } from 'react-router-dom';
 
 interface Account {
   id: string;
@@ -35,6 +36,7 @@ const AccountAvatar = ({ name, iconUrl }: { name: string; iconUrl?: string | nul
 const initialFormState = { name: '', icon_url: '' };
 
 const Accounts: React.FC = () => {
+  const location = useLocation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -64,7 +66,11 @@ const Accounts: React.FC = () => {
 
   useEffect(() => {
     fetchUserAndAccounts();
-  }, []);
+    // Check if we should auto-open create form
+    if (location.state?.openCreateForm) {
+      setShowCreateForm(true);
+    }
+  }, [location]);
 
   async function fetchUserAndAccounts() {
     setLoading(true);

@@ -359,6 +359,8 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
+  const [hasAccounts, setHasAccounts] = useState<boolean | null>(null)
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
   const navigate = useNavigate()
   
   // Calculate default date range (last 7 days)
@@ -455,6 +457,8 @@ export default function Dashboard() {
         navigate('/login')
       } else {
         setUser(session.user)
+        // Check if user has accounts
+        checkAccounts(session.user.id)
       }
     })
     
@@ -464,20 +468,49 @@ export default function Dashboard() {
           navigate('/login')
         } else {
           setUser(session?.user ?? null)
+          if (session?.user) {
+            checkAccounts(session.user.id)
+          }
           fetchStats()
         }
     })
     return () => subscription.unsubscribe()
   }, [navigate])
+
+  // Check if user has accounts
+  const checkAccounts = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('account')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1)
+      
+      if (error) {
+        console.error('Error checking accounts:', error)
+        return
+      }
+      
+      if (!data || data.length === 0) {
+        // No accounts, show welcome modal
+        setHasAccounts(false)
+        setShowWelcomeModal(true)
+      } else {
+        setHasAccounts(true)
+      }
+    } catch (error) {
+      console.error('Failed to check accounts:', error)
+    }
+  }
   
   // Fetch stats on mount
   useEffect(() => {
-    if (user) {
+    if (user && hasAccounts) {
       fetchStats();
     }
-  }, [])
+  }, [hasAccounts])
 
-  if (!user) return null
+  if (!user || hasAccounts === null) return null
 
   // Used for greeting
   const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
@@ -550,6 +583,93 @@ export default function Dashboard() {
   return (
     <div style={{ fontFamily: 'var(--font-display)', paddingBottom: '48px', color: '#334155' }}>
       
+      {/* Welcome Modal */}
+      {showWelcomeModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(255, 255, 255, 0.4)',
+            backdropFilter: 'blur(2px)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgb(37, 99, 235), rgb(79, 70, 229))',
+              borderRadius: 24,
+              boxShadow: '0 40px 90px rgba(79, 70, 229, 0.4)',
+              maxWidth: '500px',
+              width: '100%',
+              padding: '48px 40px',
+              textAlign: 'center',
+              color: '#ffffff'
+            }}
+          >
+            <div style={{ fontSize: 48, marginBottom: 16 }}>👋</div>
+            <h2 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 16px 0', color: '#ffffff' }}>
+              Welcome to Divee.AI!
+            </h2>
+            <p style={{ fontSize: 16, lineHeight: 1.6, margin: '0 0 32px 0', color: 'rgba(255, 255, 255, 0.9)' }}>
+              To get started, you'll need to create an account to organize your widgets. 
+              This helps you manage multiple projects and track analytics separately.
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => navigate('/accounts', { state: { openCreateForm: true } })}
+                style={{
+                  padding: '14px 28px',
+                  borderRadius: 12,
+                  background: '#ffffff',
+                  color: 'rgb(79, 70, 229)',
+                  border: 'none',
+                  fontSize: 16,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                }}
+              >
+                Create Your First Account
+              </button>
+              <button
+                onClick={() => setShowWelcomeModal(false)}
+                style={{
+                  padding: '14px 28px',
+                  borderRadius: 12,
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  color: '#ffffff',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  fontSize: 16,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
+              >
+                I'll do it later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
         <h1 style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', margin: 0 }}>
