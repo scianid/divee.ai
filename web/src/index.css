@@ -1148,7 +1148,26 @@ p {
   filter: blur(0);
 }
 
+.splitSection {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+}
+
 @media (min-width: 900px) {
+  .splitSection {
+    grid-template-columns: 1.2fr 1fr;
+    gap: 48px;
+  }
+
+  .splitSection.imageLeft {
+    grid-template-columns: 1.2fr 1fr;
+  }
+
+  .splitSection.imageRight {
+    grid-template-columns: 1fr 1.2fr;
+  }
   .navLinks {
     display: inline-flex;
   }
@@ -1225,7 +1244,7 @@ p {
   }
 
   .resultGrid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .scrolly {
