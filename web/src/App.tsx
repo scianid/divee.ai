@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Routes, Route, Outlet, useLocation } from 'react-router-dom'
+import { Link, Routes, Route, Outlet, useLocation, useOutletContext } from 'react-router-dom'
 import { Reveal } from './components/Reveal'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -71,14 +71,6 @@ const features = [
     title: 'Built-In Monetization',
     body: 'Integrated ad slots that don’t interrupt the reading experience.',
   },
-]
-
-const useCases = [
-  { title: 'News Publishers', body: 'Keep readers engaged with breaking stories.' },
-  { title: 'Content Marketers', body: 'Turn educational content into lead magnets.' },
-  { title: 'Technical Writers', body: 'Make complex topics accessible instantly.' },
-  { title: 'Educational Platforms', body: 'Enhance learning with interactive Q&A.' },
-  { title: 'Enterprise Blogs', body: 'Build authority and capture intent data.' },
 ]
 
 function MarketingLayout() {
@@ -159,7 +151,7 @@ function MarketingLayout() {
         </nav>
       </header>
       
-      <Outlet />
+      <Outlet context={{ setDemoModalOpen }} />
 
       <footer className="footer">
         <div className="container footerInner">
@@ -305,6 +297,7 @@ function MarketingLayout() {
 
 
 function LandingPage() {
+  const { setDemoModalOpen } = useOutletContext<{ setDemoModalOpen: (open: boolean) => void }>();
   return (
     <main id="main">
       <section id="top" className="hero">
