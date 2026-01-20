@@ -873,22 +873,64 @@ export default function Dashboard() {
         </div>
 
         {/* Row 2: Funnel & Breakdown */}
-        <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
-             <Card title="Suggestions">
-                 <div style={{ fontSize: '36px', fontWeight: 700, color: '#8b5cf6', marginTop: '10px' }}>
-                     {loading ? '...' : totalSuggestions}
-                 </div>
-                 <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-                     Requested by users
-                 </div>
-             </Card>
-             <div style={{ height: '24px' }}></div>
-             <Card title="Questions">
-                 <div style={{ fontSize: '36px', fontWeight: 700, color: '#ec4899', marginTop: '10px' }}>
-                     {loading ? '...' : totalQuestions}
-                 </div>
-                 <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-                     Follow-up questions
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
+             <Card title="User Engagement" style={{ height: '100%' }}>
+                 <div style={{ 
+                     display: 'grid', 
+                     gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                     gap: '16px', 
+                     marginTop: '16px' 
+                 }}>
+                     {/* Suggestions */}
+                     <div style={{ 
+                         display: 'flex', 
+                         flexDirection: 'column', 
+                         padding: '20px', 
+                         background: '#fff', 
+                         borderRadius: '12px',
+                         border: '1px solid #e2e8f0'
+                     }}>
+                         <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
+                             Suggestions
+                         </div>
+                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                             {loading ? '...' : totalSuggestions}
+                         </div>
+                     </div>
+                     
+                     {/* Questions */}
+                     <div style={{ 
+                         display: 'flex', 
+                         flexDirection: 'column', 
+                         padding: '20px', 
+                         background: '#fff', 
+                         borderRadius: '12px',
+                         border: '1px solid #e2e8f0'
+                     }}>
+                         <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
+                             Questions
+                         </div>
+                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                             {loading ? '...' : totalQuestions}
+                         </div>
+                     </div>
+                     
+                     {/* Articles */}
+                     <div style={{ 
+                         display: 'flex', 
+                         flexDirection: 'column', 
+                         padding: '20px', 
+                         background: '#fff', 
+                         borderRadius: '12px',
+                         border: '1px solid #e2e8f0'
+                     }}>
+                         <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
+                             Articles
+                         </div>
+                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                             {loading ? '...' : articlesCount}
+                         </div>
+                     </div>
                  </div>
              </Card>
         </div>
@@ -918,17 +960,6 @@ export default function Dashboard() {
                 ) : (
                   <PlatformsChart data={stats.impressionsByPlatform?.platforms || []} />
                 )}
-             </Card>
-        </div>
-        
-        <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
-             <Card title="Articles" style={{ height: '100%' }}>
-                 <div style={{ fontSize: '36px', fontWeight: 700, color: '#3b82f6', marginTop: '10px' }}>
-                     {loading ? '...' : articlesCount}
-                 </div>
-                 <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-                     Embedded articles
-                 </div>
              </Card>
         </div>
         
