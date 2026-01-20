@@ -58,7 +58,7 @@ function Card({ children, style = {}, title, action, className = '' }: { childre
       }}
     >
       {(title || action) && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
           {title && <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#1e293b' }}>{title}</h3>}
           {action && <div>{action}</div>}
         </div>
@@ -327,7 +327,7 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
     ];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginTop: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', marginTop: '20px' }}>
             {steps.map((step, idx) => {
                 const percent = max > 0 ? Math.round((step.value / max) * 100) : 0;
                 const prevValue = idx > 0 ? steps[idx - 1].value : step.value;
