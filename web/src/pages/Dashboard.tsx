@@ -2,33 +2,9 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import { useNavigate } from 'react-router-dom'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  ArcElement
-} from 'chart.js'
-import { Line, Doughnut } from 'react-chartjs-2'
+import ReactECharts from 'echarts-for-react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  ArcElement
-)
 
 // --- Icons ---
 
@@ -70,74 +46,41 @@ function Card({ children, style = {}, title, action, className = '' }: { childre
 
 function TrendChart({ data: timelineData }: { data: any[] }) {
     const chartData = timelineData.length > 0 ? timelineData.map((d: any) => d.count) : [0];
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                enabled: true,
-                backgroundColor: '#1e293b',
-                padding: 12,
-                titleFont: { size: 13 },
-                bodyFont: { size: 13 },
-                displayColors: false,
-                callbacks: {
-                    title: () => '',
-                    label: (context: any) => `${context.parsed.y} impressions`
+    
+    const option = {
+        grid: { left: 0, right: 0, top: 10, bottom: 0 },
+        xAxis: { type: 'category', show: false },
+        yAxis: { type: 'value', show: false },
+        series: [{
+            data: chartData,
+            type: 'line',
+            smooth: true,
+            symbol: 'none',
+            lineStyle: { color: '#2563eb', width: 2 },
+            areaStyle: {
+                color: {
+                    type: 'linear',
+                    x: 0, y: 0, x2: 0, y2: 1,
+                    colorStops: [
+                        { offset: 0, color: 'rgba(37, 99, 235, 0.2)' },
+                        { offset: 1, color: 'rgba(37, 99, 235, 0)' }
+                    ]
                 }
             }
-        },
-        scales: {
-            x: { display: false },
-            y: { display: false, min: 0 }
-        },
-        elements: {
-            line: { tension: 0.4 },
-            point: {
-                radius: 0,
-                hoverRadius: 4,
-                backgroundColor: '#fff',
-                borderColor: '#2563eb',
-                borderWidth: 2
-             }
-        },
-        layout: {
-            padding: 0
-        },
-        interaction: {
-            mode: 'index' as const,
-            intersect: false,
-        },
-    }
-
-    const data = {
-        labels: chartData.map((_, i) => i.toString()),
-        datasets: [
-            {
-                data: chartData,
-                borderColor: '#2563eb',
-                borderWidth: 2,
-                backgroundColor: (context: any) => {
-                    const chart = context.chart;
-                    const {ctx, chartArea} = chart;
-                    if (!chartArea) {
-                        return null;
-                    }
-                    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.2)');
-                    gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
-                    return gradient;
-                },
-                fill: true,
-            }
-        ]
-    }
+        }],
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: '#1e293b',
+            borderWidth: 0,
+            textStyle: { color: '#fff' },
+            formatter: (params: any) => `${params[0].value} impressions`
+        }
+    };
 
     return (
-        <div style={{ position: 'relative', height: '96px', width: '100%', marginTop: 'auto' }}>
+        <div style={{ height: '96px', width: '100%', marginTop: 'auto' }}>
             {timelineData.length > 0 ? (
-              <Line options={options} data={data} />
+              <ReactECharts option={option} style={{ height: '100%', width: '100%' }} opts={{ renderer: 'svg' }} />
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', fontSize: '12px' }}>
                 No data
@@ -198,76 +141,55 @@ function DailyInteractionsChart({ data: timelineData }: { data: any[] }) {
           : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
     }) : [''];
     
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: '#1e293b',
-                padding: 12,
-                titleFont: { size: 13 },
-                bodyFont: { size: 13 },
-                cornerRadius: 8,
-                displayColors: false,
-                callbacks: {
-                    label: (context: any) => `${context.parsed.y} interactions`
-                }
-            }
+    const option = {
+        grid: { left: 10, right: 10, top: 20, bottom: 30 },
+        xAxis: {
+            type: 'category',
+            data: labels,
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: '#94a3b8', fontSize: 11 }
         },
-        scales: {
-            x: {
-                grid: { display: false, drawBorder: false },
-                ticks: { font: { size: 11 }, color: '#94a3b8' },
-                border: { display: false }
-            },
-            y: {
-                display: false,
-                min: chartData.length > 0 ? Math.max(0, Math.min(...chartData) - 20) : 0,
-                max: chartData.length > 0 ? Math.max(...chartData) + 20 : 100,
-            }
+        yAxis: {
+            type: 'value',
+            show: false
         },
-        layout: {
-            padding: { left: 10, right: 10, top: 10, bottom: 0 }
-        },
-        elements: {
-            line: { tension: 0.4 },
-            point: {
-                radius: 4,
-                hoverRadius: 6,
-                backgroundColor: '#ffffff',
+        series: [{
+            data: chartData,
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 6,
+            itemStyle: {
+                color: '#2563eb',
                 borderColor: '#2563eb',
                 borderWidth: 2
-            }
-        }
-    }
-
-    const data = {
-        labels: labels,
-        datasets: [
-            {
-                label: 'Interactions',
-                data: chartData,
-                borderColor: '#2563eb',
-                backgroundColor: (context: any) => {
-                    const chart = context.chart;
-                    const {ctx, chartArea} = chart;
-                    if (!chartArea) return null;
-                    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.25)');
-                    gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
-                    return gradient;
-                },
-                fill: true,
-                borderWidth: 3,
             },
-        ],
-    }
+            lineStyle: { color: '#2563eb', width: 3 },
+            areaStyle: {
+                color: {
+                    type: 'linear',
+                    x: 0, y: 0, x2: 0, y2: 1,
+                    colorStops: [
+                        { offset: 0, color: 'rgba(37, 99, 235, 0.25)' },
+                        { offset: 1, color: 'rgba(37, 99, 235, 0)' }
+                    ]
+                }
+            }
+        }],
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: '#1e293b',
+            borderWidth: 0,
+            textStyle: { color: '#fff' },
+            formatter: (params: any) => `${params[0].value} interactions`
+        }
+    };
 
     return (
         <div style={{ height: '160px', width: '100%', marginTop: '16px' }}>
              {timelineData.length > 0 ? (
-               <Line data={data} options={options} />
+               <ReactECharts option={option} style={{ height: '100%', width: '100%' }} opts={{ renderer: 'svg' }} />
              ) : (
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', fontSize: '14px' }}>
                  No data available
@@ -282,105 +204,134 @@ function PlatformsChart({ data }: { data: any[] }) {
     const top = sorted.slice(0, 4);
     const other = sorted.slice(4).reduce((sum, item) => sum + item.count, 0);
     
-    // Capitalize first letter of platform
     const formatLabel = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-    
     const finalData = other > 0 ? [...top, { platform: 'Other', count: other }] : top;
-    
     const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#64748b'];
 
-    const chartData = {
-        labels: finalData.map(d => formatLabel(d.platform)),
-        datasets: [{
-            data: finalData.map(d => d.count),
-            backgroundColor: colors,
+    const option = {
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: '#1e293b',
             borderWidth: 0,
-        }]
-    };
-
-    const options = {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'bottom' as const,
-                labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
-            }
+            textStyle: { color: '#fff' },
+            formatter: '{b}: {c} ({d}%)'
         },
-        cutout: '70%',
-        maintainAspectRatio: false,
+        legend: {
+            bottom: 10,
+            left: 'center',
+            itemWidth: 8,
+            itemHeight: 8,
+            icon: 'circle',
+            textStyle: { fontSize: 11 }
+        },
+        series: [{
+            type: 'pie',
+            radius: ['50%', '70%'],
+            center: ['50%', '45%'],
+            data: finalData.map((d, i) => ({
+                value: d.count,
+                name: formatLabel(d.platform),
+                itemStyle: { color: colors[i] }
+            })),
+            label: { show: false },
+            emphasis: {
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.2)'
+                }
+            }
+        }]
     };
 
     return (
         <div style={{ height: '220px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            {data.length > 0 ? <Doughnut data={chartData} options={options} /> : <div style={{color: '#94a3b8', fontSize: '14px'}}>No data</div>}
+            {data.length > 0 ? (
+                <ReactECharts option={option} style={{ height: '100%', width: '100%' }} opts={{ renderer: 'svg' }} />
+            ) : (
+                <div style={{color: '#94a3b8', fontSize: '14px'}}>No data</div>
+            )}
         </div>
     );
 }
 
 function FunnelView({ impressions, suggestions, questions }: { impressions: number, suggestions: number, questions: number }) {
-    const max = Math.max(impressions, 1);
+    const total = impressions || 1;
+    const suggestionsPercent = Math.round((suggestions / total) * 100);
+    const questionsPercent = Math.round((questions / total) * 100);
     
-    const steps = [
-        { label: 'Impressions', value: impressions, color: '#3b82f6', width: 100 },
-        { label: 'Suggestions', value: suggestions, color: '#8b5cf6', width: 75 },
-        { label: 'Questions', value: questions, color: '#ec4899', width: 50 }
-    ];
+    const option = {
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: '#1e293b',
+            borderWidth: 0,
+            textStyle: { color: '#fff' },
+            formatter: (params: any) => {
+                const prevValue = params.dataIndex === 1 ? impressions : params.dataIndex === 2 ? suggestions : null;
+                const conversionRate = prevValue 
+                    ? `<br/>Conversion: ${Math.round(params.value / prevValue * 100)}%`
+                    : '';
+                return `${params.name}<br/>Count: ${params.value.toLocaleString()}${conversionRate}`;
+            }
+        },
+        series: [{
+            type: 'funnel',
+            left: '5%',
+            right: '5%',
+            top: 30,
+            bottom: 30,
+            minSize: '30%',
+            maxSize: '100%',
+            sort: 'descending',
+            gap: 10,
+            label: {
+                show: true,
+                position: 'inside',
+                formatter: (params: any) => {
+                    const percent = Math.round((params.value / total) * 100);
+                    return `{name|${params.name}}\n{value|${params.value.toLocaleString()}} {percent|(${percent}%)}`;
+                },
+                rich: {
+                    name: {
+                        fontSize: 13,
+                        fontWeight: 'normal',
+                        color: '#fff',
+                        lineHeight: 20
+                    },
+                    value: {
+                        fontSize: 24,
+                        fontWeight: 'normal',
+                        color: '#fff',
+                        lineHeight: 32
+                    },
+                    percent: {
+                        fontSize: 12,
+                        fontWeight: 'normal',
+                        color: 'rgba(255,255,255,0.85)',
+                        lineHeight: 32
+                    }
+                }
+            },
+            labelLine: { show: false },
+            itemStyle: {
+                borderWidth: 0
+            },
+            emphasis: {
+                label: {
+                    fontSize: 14
+                }
+            },
+            data: [
+                { value: impressions, name: 'Impressions', itemStyle: { color: '#3b82f6' } },
+                { value: suggestions, name: 'Suggestions', itemStyle: { color: '#8b5cf6' } },
+                { value: questions, name: 'Questions', itemStyle: { color: '#ec4899' } }
+            ]
+        }]
+    };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', marginTop: '20px' }}>
-            {steps.map((step, idx) => {
-                const percent = max > 0 ? Math.round((step.value / max) * 100) : 0;
-                const prevValue = idx > 0 ? steps[idx - 1].value : step.value;
-                const conversionRate = prevValue > 0 ? Math.round((step.value / prevValue) * 100) : 0;
-
-                return (
-                    <div key={idx} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        {/* Funnel Step */}
-                        <div 
-                            style={{ 
-                                width: `${step.width}%`,
-                                background: `linear-gradient(135deg, ${step.color}, ${step.color}dd)`,
-                                borderRadius: '8px',
-                                padding: '6px 15px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                                position: 'relative',
-                                transition: 'all 0.3s ease'
-                            }}
-                        >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <div style={{ padding: '3px 0 0 0', fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                        {step.label}
-                                    </div>
-                                    <div style={{ fontSize: '26px', fontWeight: 700, color: '#fff', marginTop: '4px' }}>
-                                        {step.value.toLocaleString()}
-                                    </div>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>
-                                        {percent}%
-                                    </div>
-                                    {idx > 0 && (
-                                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', marginTop: '2px' }}>
-                                            {conversionRate}% conv.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {/* Connector Arrow */}
-                        {idx < steps.length - 1 && (
-                            <div style={{ 
-                                width: '2px', 
-                                height: '8px', 
-                                background: 'linear-gradient(180deg, #cbd5e1, transparent)',
-                                margin: '2px 0'
-                            }} />
-                        )}
-                    </div>
-                );
-            })}
+        <div style={{ height: '300px', width: '100%', padding: '10px 0' }}>
+            <ReactECharts option={option} style={{ height: '100%', width: '100%' }} opts={{ renderer: 'svg' }} />
         </div>
     );
 }
@@ -893,8 +844,11 @@ export default function Dashboard() {
                          <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
                              Suggestions
                          </div>
-                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
                              {loading ? '...' : totalSuggestions}
+                         </div>
+                         <div style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4' }}>
+                             Requested by users
                          </div>
                      </div>
                      
@@ -910,8 +864,11 @@ export default function Dashboard() {
                          <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
                              Questions
                          </div>
-                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
                              {loading ? '...' : totalQuestions}
+                         </div>
+                         <div style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4' }}>
+                             Follow-up questions
                          </div>
                      </div>
                      
@@ -927,8 +884,11 @@ export default function Dashboard() {
                          <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
                              Articles
                          </div>
-                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
                              {loading ? '...' : articlesCount}
+                         </div>
+                         <div style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4' }}>
+                             Embedded articles
                          </div>
                      </div>
                  </div>
