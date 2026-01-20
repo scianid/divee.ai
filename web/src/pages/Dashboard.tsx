@@ -195,7 +195,7 @@ function DailyInteractionsChart({ data: timelineData }: { data: any[] }) {
         const date = new Date(d.date);
         return d.date && d.date.includes('T') && d.date.length > 10 
           ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-          : date.toLocaleDateString('en-US', { weekday: 'short' });
+          : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
     }) : [''];
     
     const options = {
@@ -327,7 +327,7 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
     ];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginTop: '20px', padding: '0 20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginTop: '20px' }}>
             {steps.map((step, idx) => {
                 const percent = max > 0 ? Math.round((step.value / max) * 100) : 0;
                 const prevValue = idx > 0 ? steps[idx - 1].value : step.value;
@@ -349,15 +349,15 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    <div style={{ padding: '3px 0 0 0', fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                         {step.label}
                                     </div>
-                                    <div style={{ fontSize: '28px', fontWeight: 700, color: '#fff', marginTop: '4px' }}>
+                                    <div style={{ fontSize: '26px', fontWeight: 700, color: '#fff', marginTop: '4px' }}>
                                         {step.value.toLocaleString()}
                                     </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>
+                                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>
                                         {percent}%
                                     </div>
                                     {idx > 0 && (
@@ -413,6 +413,7 @@ export default function Dashboard() {
     impressionsOverTime: null,
     impressionsByPlatform: null
   });
+  const [articlesCount, setArticlesCount] = useState<number>(0);
 
   // Fetch stats from edge function
   const fetchStats = async () => {
@@ -472,6 +473,25 @@ export default function Dashboard() {
         fetchEndpoint('impressions-over-time', 'impressionsOverTime'),
         fetchEndpoint('impressions-by-platform', 'impressionsByPlatform')
       ]);
+      
+      // Fetch articles count
+      const { count } = await supabase
+        .from('article')
+        .select('*', { count: 'exact', head: true })
+        .in('project_id', [
+          ...(await supabase
+            .from('project')
+            .select('project_id')
+            .in('account_id', [
+              ...(await supabase
+                .from('account')
+                .select('id')
+                .eq('user_id', session.user.id)
+              ).data?.map(a => a.id) || []
+            ])
+          ).data?.map(p => p.project_id) || []
+        ]);
+      setArticlesCount(count || 0);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
     } finally {
@@ -609,7 +629,11 @@ export default function Dashboard() {
   const totalImpressions = stats.impressionsByWidget?.widgets?.reduce((sum: number, w: any) => sum + w.impressions, 0) ?? 0;
 
   return (
-    <div style={{ fontFamily: 'var(--font-display)', paddingBottom: '48px', color: '#334155' }}>
+    <div style={{ 
+      fontFamily: 'var(--font-display)', 
+      padding: '0 clamp(16px, 4vw, 24px) 48px', 
+      color: '#334155' 
+    }}>
       
       {/* Welcome Modal */}
       {showWelcomeModal && (
@@ -709,32 +733,65 @@ export default function Dashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
         <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', flexWrap: 'wrap', flex: 1 }}>
            {/* Date Range Picker */}
-           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', background: '#fff', padding: '8px 12px', borderRadius: '999px', border: '1px solid #e2e8f0' }}>
+           <div style={{ 
+             display: 'flex', 
+             gap: '8px', 
+             alignItems: 'center', 
+             background: '#fff', 
+             padding: '8px 12px', 
+             borderRadius: '999px', 
+             border: '1px solid #e2e8f0',
+             flexShrink: 0
+           }}>
              <CalendarIcon />
-             <input
-               type="date"
-               value={dateRange.start}
-               onChange={handleStartDateChange}
-               style={{ border: 'none', outline: 'none', fontSize: '14px', fontWeight: 600, color: '#334155', fontFamily: 'inherit', width: '110px' }}
-             />
-             <span style={{ color: '#94a3b8' }}>→</span>
-             <input
-               type="date"
-               value={dateRange.end}
-               onChange={handleEndDateChange}
-               style={{ border: 'none', outline: 'none', fontSize: '14px', fontWeight: 600, color: '#334155', fontFamily: 'inherit', width: '110px' }}
-             />
+             <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flex: 1 }}>
+               <input
+                 type="date"
+                 value={dateRange.start}
+                 onChange={handleStartDateChange}
+                 style={{ 
+                   border: 'none', 
+                   outline: 'none', 
+                   fontSize: '14px', 
+                   fontWeight: 600, 
+                   color: '#334155', 
+                   fontFamily: 'inherit', 
+                   width: 'clamp(90px, 20vw, 110px)',
+                   minWidth: 0,
+                   cursor: 'pointer'
+                 }}
+               />
+             </label>
+             <span style={{ color: '#94a3b8', flexShrink: 0 }}>→</span>
+             <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flex: 1 }}>
+               <input
+                 type="date"
+                 value={dateRange.end}
+                 onChange={handleEndDateChange}
+                 style={{ 
+                   border: 'none', 
+                   outline: 'none', 
+                   fontSize: '14px', 
+                   fontWeight: 600, 
+                   color: '#334155', 
+                   fontFamily: 'inherit', 
+                   width: 'clamp(90px, 20vw, 110px)',
+                   minWidth: 0,
+                   cursor: 'pointer'
+                 }}
+               />
+             </label>
            </div>
            
            {/* Quick Presets */}
            <button onClick={() => setLast24Hours()} style={{ ...btnStyle, border: isLast24Hours ? '1px solid #2563eb' : '1px solid #e2e8f0', color: isLast24Hours ? '#2563eb' : '#334155' }}>
-             Last 24h
+             24h
            </button>
            <button onClick={() => setPreset(7)} style={{ ...btnStyle, border: isPresetActive(7) ? '1px solid #2563eb' : '1px solid #e2e8f0', color: isPresetActive(7) ? '#2563eb' : '#334155' }}>
-             Last 7 days
+             7 days
            </button>
            <button onClick={() => setPreset(30)} style={{ ...btnStyle, border: isPresetActive(30) ? '1px solid #2563eb' : '1px solid #e2e8f0', color: isPresetActive(30) ? '#2563eb' : '#334155' }}>
-             Last 30 days
+             30 days
            </button>
            
            {/* Apply Button */}
@@ -758,12 +815,12 @@ export default function Dashboard() {
       {/* Grid Layout */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(4, 1fr)', 
-        gap: '24px' 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', 
+        gap: 'clamp(16px, 3vw, 24px)'
       }}>
         
         {/* Row 1: Key Metrics */}
-        <div style={{ gridColumn: 'span 2' }}>
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
             <Card title="Total Impressions" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
                 {(!stats.impressionsByWidget || !stats.impressionsOverTime) ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
@@ -797,7 +854,7 @@ export default function Dashboard() {
             </Card>
         </div>
 
-        <div style={{ gridColumn: 'span 2' }}>
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
             <Card title="Total Interactions" style={{ height: '100%' }}>
                 {(!stats.totalInteractions || !stats.interactionsOverTime) ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -816,7 +873,7 @@ export default function Dashboard() {
         </div>
 
         {/* Row 2: Funnel & Breakdown */}
-        <div style={{ gridColumn: 'span 1' }}>
+        <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
              <Card title="Suggestions">
                  <div style={{ fontSize: '36px', fontWeight: 700, color: '#8b5cf6', marginTop: '10px' }}>
                      {loading ? '...' : totalSuggestions}
@@ -836,7 +893,7 @@ export default function Dashboard() {
              </Card>
         </div>
 
-        <div style={{ gridColumn: 'span 2' }}>
+        <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
              <Card title="Conversion Funnel" style={{ height: '100%' }}>
                  {loading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -852,7 +909,7 @@ export default function Dashboard() {
              </Card>
         </div>
 
-        <div style={{ gridColumn: 'span 1' }}>
+        <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
              <Card title="Platforms" style={{ height: '100%' }}>
                 {(!stats.impressionsByPlatform) ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -864,8 +921,19 @@ export default function Dashboard() {
              </Card>
         </div>
         
+        <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
+             <Card title="Articles" style={{ height: '100%' }}>
+                 <div style={{ fontSize: '36px', fontWeight: 700, color: '#3b82f6', marginTop: '10px' }}>
+                     {loading ? '...' : articlesCount}
+                 </div>
+                 <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
+                     Embedded articles
+                 </div>
+             </Card>
+        </div>
+        
         {/* Row 3: Map & Lists */}
-        <div style={{ gridColumn: 'span 3' }}>
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
             <Card title="Impressions by Location" style={{ height: '100%' }}>
                 {!stats.impressionsByLocation ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
@@ -877,7 +945,7 @@ export default function Dashboard() {
             </Card>
         </div>
         
-        <div style={{ gridColumn: 'span 1' }}>
+        <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
         <Card title="Top Widgets" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>} style={{ height: '100%' }}>
              {!stats.impressionsByWidget ? (
                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
