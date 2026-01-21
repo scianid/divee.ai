@@ -170,7 +170,6 @@ function MarketingLayout() {
 
           <div className="footerLinks" aria-label="Footer">
             <Link to="/#features">Features</Link>
-            <Link to="/#pricing">Pricing</Link>
             <Link to="/#demo">Demo</Link>
             <Link to="/#faq">FAQ</Link>
             <Link to="/terms">Terms</Link>
