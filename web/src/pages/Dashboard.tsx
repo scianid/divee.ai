@@ -257,8 +257,6 @@ function PlatformsChart({ data }: { data: any[] }) {
 
 function FunnelView({ impressions, suggestions, questions }: { impressions: number, suggestions: number, questions: number }) {
     const total = impressions || 1;
-    const suggestionsPercent = Math.round((suggestions / total) * 100);
-    const questionsPercent = Math.round((questions / total) * 100);
     
     const option = {
         tooltip: {
