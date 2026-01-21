@@ -3,7 +3,7 @@ import { StatsParams } from "./params.ts";
 
 // Handler: Impressions by location
 export async function handleImpressionsByLocation(supabase: any, userId: string, params: StatsParams) {
-  const projectIds = await getProjectIdsForUser(supabase, userId, params.accountId);
+  const projectIds = await getProjectIdsForUser(supabase, userId, params.accountId, params.projectId);
 
   if (projectIds.length === 0) {
     return { locations: [] };

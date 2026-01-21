@@ -1,5 +1,6 @@
 export interface StatsParams {
   accountId?: string;
+  projectId?: string;
   startDate: string;
   endDate: string;
 }
@@ -7,6 +8,7 @@ export interface StatsParams {
 // Helper to parse and validate query parameters
 export function parseParams(url: URL): StatsParams {
   const accountId = url.searchParams.get("account_id");
+  const projectId = url.searchParams.get("project_id");
   const startDate = url.searchParams.get("start_date");
   const endDate = url.searchParams.get("end_date");
 
@@ -25,5 +27,5 @@ export function parseParams(url: URL): StatsParams {
     throw new Error("Invalid format for parameter: end_date");
   }
 
-  return { accountId: accountId || undefined, startDate, endDate };
+  return { accountId: accountId || undefined, projectId: projectId || undefined, startDate, endDate };
 }

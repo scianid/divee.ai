@@ -363,6 +363,10 @@ export default function Dashboard() {
     impressionsByPlatform: null
   });
   const [articlesCount, setArticlesCount] = useState<number>(0);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string>('');
+  const [projectSearch, setProjectSearch] = useState<string>('');
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
 
   // Fetch stats from edge function
   const fetchStats = async () => {
@@ -394,6 +398,11 @@ export default function Dashboard() {
         end_date: endDate
       });
       
+      // Add project_id if a project is selected
+      if (selectedProject) {
+        params.append('project_id', selectedProject);
+      }
+      
       const headers = {
         'Authorization': `Bearer ${session.access_token}`,
         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
@@ -424,10 +433,16 @@ export default function Dashboard() {
       ]);
       
       // Fetch articles count
-      const { count } = await supabase
+      let articlesQuery = supabase
         .from('article')
-        .select('*', { count: 'exact', head: true })
-        .in('project_id', [
+        .select('*', { count: 'exact', head: true });
+      
+      if (selectedProject) {
+        // Filter by selected project
+        articlesQuery = articlesQuery.eq('project_id', selectedProject);
+      } else {
+        // Filter by all user's projects
+        articlesQuery = articlesQuery.in('project_id', [
           ...(await supabase
             .from('project')
             .select('project_id')
@@ -440,6 +455,9 @@ export default function Dashboard() {
             ])
           ).data?.map(p => p.project_id) || []
         ]);
+      }
+      
+      const { count } = await articlesQuery;
       setArticlesCount(count || 0);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
@@ -500,9 +518,35 @@ export default function Dashboard() {
     }
   }
   
+  // Fetch projects for filter
+  const fetchProjects = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data: accounts } = await supabase
+        .from('account')
+        .select('id')
+        .eq('user_id', session.user.id);
+      
+      if (!accounts || accounts.length === 0) return;
+      
+      const { data: projectData } = await supabase
+        .from('project')
+        .select('project_id, client_name, icon_url')
+        .in('account_id', accounts.map(a => a.id))
+        .order('client_name');
+      
+      setProjects(projectData || []);
+    } catch (error) {
+      console.error('Failed to fetch projects:', error);
+    }
+  };
+  
   // Fetch stats on mount
   useEffect(() => {
     if (user && hasAccounts) {
+      fetchProjects();
       fetchStats();
     }
   }, [hasAccounts])
@@ -679,8 +723,8 @@ export default function Dashboard() {
       </div>
 
       {/* Toolbar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
-        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', flexWrap: 'wrap', flex: 1 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 10 }}>
+        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', flexWrap: 'wrap', flex: 1, overflow: 'visible' }}>
            {/* Date Range Picker */}
            <div style={{ 
              display: 'flex', 
@@ -730,6 +774,116 @@ export default function Dashboard() {
                  }}
                />
              </label>
+           </div>
+           
+           {/* Project Filter */}
+           <div style={{ position: 'relative' }}>
+             <input
+               type="text"
+               placeholder="All Widgets"
+               value={projectSearch || (selectedProject ? projects.find(p => p.project_id === selectedProject)?.client_name || 'All Widgets' : 'All Widgets')}
+               onChange={(e) => setProjectSearch(e.target.value)}
+               onFocus={() => {
+                 setProjectSearch('');
+                 setShowProjectDropdown(true);
+               }}
+               onBlur={() => {
+                 setTimeout(() => setShowProjectDropdown(false), 200);
+               }}
+               style={{
+                 minWidth: '120px',
+                 width: 'auto',
+                 padding: '8px 36px 8px 16px',
+                 borderRadius: '999px',
+                 border: '1px solid #e2e8f0',
+                 fontSize: '14px',
+                 fontWeight: 600,
+                 outline: 'none',
+                 background: '#fff',
+                 cursor: 'pointer',
+                 color: '#334155'
+               }}
+             />
+             <div style={{ 
+               position: 'absolute', 
+               right: '12px', 
+               top: '50%', 
+               transform: 'translateY(-50%)',
+               pointerEvents: 'none',
+               color: '#94a3b8'
+             }}>
+               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+               </svg>
+             </div>
+             {showProjectDropdown && (
+               <div style={{
+                 position: 'absolute',
+                 top: '100%',
+                 left: 0,
+                 minWidth: '200px',
+                 marginTop: '4px',
+                 background: '#fff',
+                 border: '1px solid #e2e8f0',
+                 borderRadius: '12px',
+                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                 maxHeight: '240px',
+                 overflowY: 'auto',
+                 zIndex: 9999
+               }}>
+                 <div 
+                   onMouseDown={(e) => {
+                     e.preventDefault();
+                     setSelectedProject('');
+                     setProjectSearch('');
+                     setShowProjectDropdown(false);
+                   }}
+                   style={{
+                     padding: '10px 12px',
+                     cursor: 'pointer',
+                     fontSize: '14px',
+                     color: selectedProject === '' ? '#2563eb' : '#334155',
+                     fontWeight: selectedProject === '' ? 600 : 400,
+                     background: selectedProject === '' ? '#f0f9ff' : 'transparent'
+                   }}
+                   onMouseEnter={(e) => { if (selectedProject !== '') e.currentTarget.style.background = '#f8fafc'; }}
+                   onMouseLeave={(e) => { if (selectedProject !== '') e.currentTarget.style.background = 'transparent'; }}
+                 >
+                   All Widgets
+                 </div>
+                 {projects
+                   .filter(p => p.client_name.toLowerCase().includes(projectSearch.toLowerCase()))
+                   .map(project => (
+                     <div
+                       key={project.project_id}
+                       onMouseDown={(e) => {
+                         e.preventDefault();
+                         setSelectedProject(project.project_id);
+                         setProjectSearch('');
+                         setShowProjectDropdown(false);
+                       }}
+                       style={{
+                         padding: '10px 12px',
+                         cursor: 'pointer',
+                         fontSize: '14px',
+                         color: selectedProject === project.project_id ? '#2563eb' : '#334155',
+                         fontWeight: selectedProject === project.project_id ? 600 : 400,
+                         background: selectedProject === project.project_id ? '#f0f9ff' : 'transparent',
+                         display: 'flex',
+                         alignItems: 'center',
+                         gap: '8px'
+                       }}
+                       onMouseEnter={(e) => { if (selectedProject !== project.project_id) e.currentTarget.style.background = '#f8fafc'; }}
+                       onMouseLeave={(e) => { if (selectedProject !== project.project_id) e.currentTarget.style.background = 'transparent'; }}
+                     >
+                       {project.icon_url && (
+                         <img src={project.icon_url} alt="" style={{ width: '16px', height: '16px', borderRadius: '4px' }} />
+                       )}
+                       {project.client_name}
+                     </div>
+                   ))}
+               </div>
+             )}
            </div>
            
            {/* Quick Presets */}
