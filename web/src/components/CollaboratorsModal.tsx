@@ -73,7 +73,7 @@ export default function CollaboratorsModal({ accountId, accountName, isOwner, on
       // For now, we'll need to implement this via an edge function
       // Simplified version: just show error that user must exist
       
-      const { data: users, error: searchError } = await supabase
+      const { error: searchError } = await supabase
         .from('account')
         .select('user_id')
         .limit(1)
