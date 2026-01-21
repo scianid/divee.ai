@@ -569,6 +569,13 @@ export default function Dashboard() {
     };
   }, [showProjectDropdown]);
 
+  // Auto-fetch when filters change
+  useEffect(() => {
+    if (user && hasAccounts) {
+      fetchStats();
+    }
+  }, [selectedProject, dateRange, isLast24Hours]);
+
   if (!user || hasAccounts === null) return null
 
   // Used for greeting
