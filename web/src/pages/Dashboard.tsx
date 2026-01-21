@@ -441,20 +441,31 @@ export default function Dashboard() {
         // Filter by selected project
         articlesQuery = articlesQuery.eq('project_id', selectedProject);
       } else {
-        // Filter by all user's projects
-        articlesQuery = articlesQuery.in('project_id', [
-          ...(await supabase
-            .from('project')
-            .select('project_id')
-            .in('account_id', [
-              ...(await supabase
-                .from('account')
-                .select('id')
-                .eq('user_id', session.user.id)
-              ).data?.map(a => a.id) || []
-            ])
-          ).data?.map(p => p.project_id) || []
-        ]);
+        // Filter by all user's projects (owned and collaborated)
+        const { data: ownedAccounts } = await supabase
+          .from('account')
+          .select('id')
+          .eq('user_id', session.user.id);
+        
+        const { data: collaboratedAccounts } = await supabase
+          .from('account_collaborator')
+          .select('account_id')
+          .eq('user_id', session.user.id);
+        
+        const ownedIds = ownedAccounts?.map(a => a.id) || [];
+        const collaboratedIds = collaboratedAccounts?.map(a => a.account_id) || [];
+        const allAccountIds = [...new Set([...ownedIds, ...collaboratedIds])];
+        
+        const { data: projects } = await supabase
+          .from('project')
+          .select('project_id')
+          .in('account_id', allAccountIds);
+        
+        const projectIds = projects?.map(p => p.project_id) || [];
+        
+        if (projectIds.length > 0) {
+          articlesQuery = articlesQuery.in('project_id', projectIds);
+        }
       }
       
       const { count } = await articlesQuery;
@@ -534,23 +545,35 @@ export default function Dashboard() {
     }
   }
   
-  // Fetch projects for filter
+  // Fetch projects for filter (includes owned and collaborated accounts)
   const fetchProjects = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       
-      const { data: accounts } = await supabase
+      // Get owned accounts
+      const { data: ownedAccounts } = await supabase
         .from('account')
         .select('id')
         .eq('user_id', session.user.id);
       
-      if (!accounts || accounts.length === 0) return;
+      // Get collaborated accounts
+      const { data: collaboratedAccounts } = await supabase
+        .from('account_collaborator')
+        .select('account_id')
+        .eq('user_id', session.user.id);
+      
+      // Combine all account IDs
+      const ownedIds = ownedAccounts?.map(a => a.id) || [];
+      const collaboratedIds = collaboratedAccounts?.map(a => a.account_id) || [];
+      const allAccountIds = [...new Set([...ownedIds, ...collaboratedIds])];
+      
+      if (allAccountIds.length === 0) return;
       
       const { data: projectData } = await supabase
         .from('project')
         .select('project_id, client_name, icon_url')
-        .in('account_id', accounts.map(a => a.id))
+        .in('account_id', allAccountIds)
         .order('client_name');
       
       setProjects(projectData || []);
