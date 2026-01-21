@@ -43,9 +43,22 @@ CREATE TABLE public.article (
   title text NOT NULL,
   content text,
   cache jsonb,
-  project_id text NOT NULL UNIQUE,
+  project_id text NOT NULL,
   unique_id text NOT NULL UNIQUE,
-  CONSTRAINT article_pkey PRIMARY KEY (project_id)
+  CONSTRAINT article_pkey PRIMARY KEY (unique_id)
+);
+CREATE TABLE public.freeform_qa (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  project_id text NOT NULL,
+  article_unique_id text NOT NULL,
+  visitor_id uuid,
+  session_id uuid,
+  question text NOT NULL,
+  answer text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT freeform_qa_pkey PRIMARY KEY (id),
+  CONSTRAINT freeform_qa_article_unique_id_fkey FOREIGN KEY (article_unique_id) REFERENCES public.article(unique_id)
 );
 CREATE TABLE public.project (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
