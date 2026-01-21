@@ -116,22 +116,42 @@ function Inventory() {
       if (!user) return;
       setUserId(user.id);
       
-      // Fetch accounts
-      const { data: accountsData, error: accountsError } = await supabase
+      // Fetch owned accounts
+      const { data: ownedAccounts, error: ownedError } = await supabase
         .from('account')
         .select('id, name, user_id, created_at, icon_url')
         .eq('user_id', user.id);
       
-      if (accountsError) throw accountsError;
-      setAccounts(accountsData as Account[]);
+      if (ownedError) throw ownedError;
 
-      const accountIds = (accountsData as Account[]).map(a => a.id);
+      // Fetch collaborated accounts
+      const { data: collaboratedAccounts, error: collabError } = await supabase
+        .from('account_collaborator')
+        .select('account_id, account:account_id(id, name, user_id, created_at, icon_url)')
+        .eq('user_id', user.id);
+      
+      if (collabError) throw collabError;
+
+      // Combine and deduplicate accounts
+      const ownedIds = ownedAccounts?.map((a: any) => a.id) || [];
+      const collaboratedAccountData = collaboratedAccounts?.map((c: any) => c.account).filter(Boolean) || [];
+      
+      // Merge and deduplicate
+      const allAccountsMap = new Map();
+      [...(ownedAccounts || []), ...collaboratedAccountData].forEach(acc => {
+        if (acc && acc.id) allAccountsMap.set(acc.id, acc);
+      });
+      const allAccounts = Array.from(allAccountsMap.values());
+      
+      setAccounts(allAccounts as Account[]);
+
+      const accountIds = allAccounts.map(a => a.id);
       if (accountIds.length === 0) {
         setProjects([]);
         return;
       }
 
-      // Fetch projects
+      // Fetch projects for all accounts (owned + collaborated)
       const { data: projectsData, error: projectsError } = await supabase
         .from('project')
         .select('*')
