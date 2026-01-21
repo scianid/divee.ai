@@ -2,17 +2,29 @@
 export async function getProjectIdsForUser(supabase: any, userId: string, accountId?: string, projectId?: string): Promise<string[]> {
   // If a specific project is requested, verify access and return just that project
   if (projectId) {
-    // Get all accounts for this user
-    const { data: accounts, error: accountError } = await supabase
+    // Get owned accounts
+    const { data: ownedAccounts, error: ownedError } = await supabase
       .from("account")
       .select("id")
       .eq("user_id", userId);
 
-    if (accountError) {
-      throw new Error(`Failed to fetch user accounts: ${accountError.message}`);
+    if (ownedError) {
+      throw new Error(`Failed to fetch user accounts: ${ownedError.message}`);
     }
 
-    const userAccountIds = accounts?.map((a: any) => a.id) || [];
+    // Get collaborated accounts
+    const { data: collaboratedAccounts, error: collabError } = await supabase
+      .from("account_collaborator")
+      .select("account_id")
+      .eq("user_id", userId);
+
+    if (collabError) {
+      throw new Error(`Failed to fetch collaborated accounts: ${collabError.message}`);
+    }
+
+    const ownedIds = ownedAccounts?.map((a: any) => a.id) || [];
+    const collaboratedIds = collaboratedAccounts?.map((a: any) => a.account_id) || [];
+    const userAccountIds = [...new Set([...ownedIds, ...collaboratedIds])];
 
     if (userAccountIds.length === 0) {
       return []; // User has no accounts
@@ -36,23 +48,35 @@ export async function getProjectIdsForUser(supabase: any, userId: string, accoun
     return [projectId];
   }
 
-  // 1. Get all accounts for this user
-  const { data: accounts, error: accountError } = await supabase
+  // 1. Get owned accounts
+  const { data: ownedAccounts, error: ownedError } = await supabase
     .from("account")
     .select("id")
     .eq("user_id", userId);
 
-  if (accountError) {
-    throw new Error(`Failed to fetch user accounts: ${accountError.message}`);
+  if (ownedError) {
+    throw new Error(`Failed to fetch user accounts: ${ownedError.message}`);
   }
 
-  const userAccountIds = accounts?.map((a: any) => a.id) || [];
+  // 2. Get collaborated accounts
+  const { data: collaboratedAccounts, error: collabError } = await supabase
+    .from("account_collaborator")
+    .select("account_id")
+    .eq("user_id", userId);
+
+  if (collabError) {
+    throw new Error(`Failed to fetch collaborated accounts: ${collabError.message}`);
+  }
+
+  const ownedIds = ownedAccounts?.map((a: any) => a.id) || [];
+  const collaboratedIds = collaboratedAccounts?.map((a: any) => a.account_id) || [];
+  const userAccountIds = [...new Set([...ownedIds, ...collaboratedIds])];
 
   if (userAccountIds.length === 0) {
     return []; // User has no accounts
   }
 
-  // 2. If a specific account was requested, verify access
+  // 3. If a specific account was requested, verify access
   if (accountId) {
     if (!userAccountIds.includes(accountId)) {
       throw new Error("Unauthorized: You do not have access to this account.");
@@ -71,7 +95,7 @@ export async function getProjectIdsForUser(supabase: any, userId: string, accoun
     return data?.map((p: any) => p.project_id) || [];
   }
 
-  // 3. Otherwise, fetch projects for ALL user accounts
+  // 4. Otherwise, fetch projects for ALL user accounts (owned + collaborated)
   const { data, error } = await supabase
     .from("project")
     .select("project_id")
