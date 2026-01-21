@@ -551,6 +551,24 @@ export default function Dashboard() {
     }
   }, [hasAccounts])
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showProjectDropdown) {
+        setShowProjectDropdown(false);
+        setProjectSearch('');
+      }
+    };
+    
+    if (showProjectDropdown) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showProjectDropdown]);
+
   if (!user || hasAccounts === null) return null
 
   // Used for greeting
@@ -605,7 +623,7 @@ export default function Dashboard() {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    padding: '8px 16px',
+    padding: '14px 16px',
     borderRadius: '999px',
     border: '1px solid #e2e8f0',
     background: '#fff',
@@ -778,101 +796,107 @@ export default function Dashboard() {
            
            {/* Project Filter */}
            <div style={{ position: 'relative' }}>
-             <input
-               type="text"
-               placeholder="All Widgets"
-               value={projectSearch || (selectedProject ? projects.find(p => p.project_id === selectedProject)?.client_name || 'All Widgets' : 'All Widgets')}
-               onChange={(e) => setProjectSearch(e.target.value)}
-               onFocus={() => {
-                 setProjectSearch('');
-                 setShowProjectDropdown(true);
-               }}
-               onBlur={() => {
-                 setTimeout(() => setShowProjectDropdown(false), 200);
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 setShowProjectDropdown(!showProjectDropdown);
                }}
                style={{
+                 ...btnStyle,
                  minWidth: '120px',
-                 width: 'auto',
-                 padding: '8px 36px 8px 16px',
-                 borderRadius: '999px',
-                 border: '1px solid #e2e8f0',
-                 fontSize: '14px',
-                 fontWeight: 600,
-                 outline: 'none',
-                 background: '#fff',
-                 cursor: 'pointer',
-                 color: '#334155'
+                 justifyContent: 'space-between'
                }}
-             />
-             <div style={{ 
-               position: 'absolute', 
-               right: '12px', 
-               top: '50%', 
-               transform: 'translateY(-50%)',
-               pointerEvents: 'none',
-               color: '#94a3b8'
-             }}>
-               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+             >
+               <span style={{ flex: 1, textAlign: 'left' }}>
+                 {selectedProject ? projects.find(p => p.project_id === selectedProject)?.client_name || 'All Widgets' : 'All Widgets'}
+               </span>
+               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ flexShrink: 0 }}>
                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                </svg>
-             </div>
+             </button>
              {showProjectDropdown && (
-               <div style={{
-                 position: 'absolute',
-                 top: '100%',
-                 left: 0,
-                 minWidth: '200px',
-                 marginTop: '4px',
-                 background: '#fff',
-                 border: '1px solid #e2e8f0',
-                 borderRadius: '12px',
-                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                 maxHeight: '240px',
-                 overflowY: 'auto',
-                 zIndex: 9999
-               }}>
-                 <div 
-                   onMouseDown={(e) => {
-                     e.preventDefault();
-                     setSelectedProject('');
-                     setProjectSearch('');
-                     setShowProjectDropdown(false);
-                   }}
-                   style={{
-                     padding: '10px 12px',
-                     cursor: 'pointer',
-                     fontSize: '14px',
-                     color: selectedProject === '' ? '#2563eb' : '#334155',
-                     fontWeight: selectedProject === '' ? 600 : 400,
-                     background: selectedProject === '' ? '#f0f9ff' : 'transparent'
-                   }}
-                   onMouseEnter={(e) => { if (selectedProject !== '') e.currentTarget.style.background = '#f8fafc'; }}
-                   onMouseLeave={(e) => { if (selectedProject !== '') e.currentTarget.style.background = 'transparent'; }}
-                 >
-                   All Widgets
+               <div 
+                 onMouseDown={(e) => e.preventDefault()}
+                 style={{
+                   position: 'absolute',
+                   top: '100%',
+                   left: 0,
+                   minWidth: '240px',
+                   marginTop: '4px',
+                   background: '#fff',
+                   border: '1px solid #e2e8f0',
+                   borderRadius: '12px',
+                   boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                   maxHeight: '280px',
+                   overflowY: 'auto',
+                   zIndex: 9999
+                 }}>
+                 {/* Search Input */}
+                 <div style={{ padding: '8px', borderBottom: '1px solid #e2e8f0' }}>
+                   <input
+                     type="text"
+                     placeholder="Search widgets..."
+                     value={projectSearch}
+                     onChange={(e) => setProjectSearch(e.target.value)}
+                     autoFocus
+                     style={{
+                       width: '100%',
+                       padding: '8px 12px',
+                       border: '1px solid #e2e8f0',
+                       borderRadius: '8px',
+                       fontSize: '14px',
+                       outline: 'none',
+                       background: '#f8fafc'
+                     }}
+                     onFocus={(e) => e.stopPropagation()}
+                     onMouseDown={(e) => e.stopPropagation()}
+                   />
                  </div>
-                 {projects
-                   .filter(p => p.client_name.toLowerCase().includes(projectSearch.toLowerCase()))
-                   .map(project => (
-                     <div
-                       key={project.project_id}
-                       onMouseDown={(e) => {
-                         e.preventDefault();
-                         setSelectedProject(project.project_id);
-                         setProjectSearch('');
-                         setShowProjectDropdown(false);
-                       }}
-                       style={{
-                         padding: '10px 12px',
-                         cursor: 'pointer',
-                         fontSize: '14px',
-                         color: selectedProject === project.project_id ? '#2563eb' : '#334155',
-                         fontWeight: selectedProject === project.project_id ? 600 : 400,
-                         background: selectedProject === project.project_id ? '#f0f9ff' : 'transparent',
-                         display: 'flex',
-                         alignItems: 'center',
-                         gap: '8px'
-                       }}
+                 
+                 {/* Options */}
+                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                   <div 
+                     onMouseDown={(e) => {
+                       e.preventDefault();
+                       setSelectedProject('');
+                       setProjectSearch('');
+                       setShowProjectDropdown(false);
+                     }}
+                     style={{
+                       padding: '10px 12px',
+                       cursor: 'pointer',
+                       fontSize: '14px',
+                       color: selectedProject === '' ? '#2563eb' : '#334155',
+                       fontWeight: selectedProject === '' ? 600 : 400,
+                       background: selectedProject === '' ? '#f0f9ff' : 'transparent'
+                     }}
+                     onMouseEnter={(e) => { if (selectedProject !== '') e.currentTarget.style.background = '#f8fafc'; }}
+                     onMouseLeave={(e) => { if (selectedProject !== '') e.currentTarget.style.background = 'transparent'; }}
+                   >
+                     All Widgets
+                   </div>
+                   {projects
+                     .filter(p => p.client_name.toLowerCase().includes(projectSearch.toLowerCase()))
+                     .map(project => (
+                       <div
+                         key={project.project_id}
+                         onMouseDown={(e) => {
+                           e.preventDefault();
+                           setSelectedProject(project.project_id);
+                           setProjectSearch('');
+                           setShowProjectDropdown(false);
+                         }}
+                         style={{
+                           padding: '10px 12px',
+                           cursor: 'pointer',
+                           fontSize: '14px',
+                           color: selectedProject === project.project_id ? '#2563eb' : '#334155',
+                           fontWeight: selectedProject === project.project_id ? 600 : 400,
+                           background: selectedProject === project.project_id ? '#f0f9ff' : 'transparent',
+                           display: 'flex',
+                           alignItems: 'center',
+                           gap: '8px'
+                         }}
                        onMouseEnter={(e) => { if (selectedProject !== project.project_id) e.currentTarget.style.background = '#f8fafc'; }}
                        onMouseLeave={(e) => { if (selectedProject !== project.project_id) e.currentTarget.style.background = 'transparent'; }}
                      >
@@ -882,6 +906,7 @@ export default function Dashboard() {
                        {project.client_name}
                      </div>
                    ))}
+                 </div>
                </div>
              )}
            </div>
