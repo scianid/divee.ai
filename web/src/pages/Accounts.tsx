@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLocation } from 'react-router-dom';
+import CollaboratorsModal from '../components/CollaboratorsModal';
 
 interface Account {
   id: string;
@@ -49,6 +50,7 @@ const Accounts: React.FC = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [collaboratorsModal, setCollaboratorsModal] = useState<{ accountId: string; accountName: string; isOwner: boolean } | null>(null);
 
   // Helper
   function highlight(text: string | number | null | undefined, query: string) {
@@ -87,8 +89,7 @@ const Accounts: React.FC = () => {
       console.log('[Accounts] Querying accounts for user_id:', user.id);
       const { data, error } = await supabase
         .from('account')
-        .select('id, name, user_id, created_at')
-        .eq('user_id', user.id)
+        .select('id, name, user_id, created_at, icon_url')
         .order('created_at', { ascending: false });
       console.log('[Accounts] Query result:', { data, error });
       if (error) throw error;
@@ -408,6 +409,13 @@ const Accounts: React.FC = () => {
                   <td style={{ padding: '12px 16px', color: '#555', fontSize: 14 }}>{new Date(account.created_at).toLocaleString()}</td>
                   <td style={{ padding: '12px 16px', display: 'flex', gap: 8 }}>
                     <button 
+                      onClick={() => setCollaboratorsModal({ accountId: account.id, accountName: account.name, isOwner: account.user_id === userId })}
+                      title="Collaborators"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#059669', padding: 4, display: 'flex', alignItems: 'center' }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </button>
+                    <button 
                       onClick={() => startEdit(account)}
                       title="Edit"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', padding: 4, display: 'flex', alignItems: 'center' }}
@@ -455,6 +463,16 @@ const Accounts: React.FC = () => {
           </table>
         )}
       </div>
+
+      {/* Collaborators Modal */}
+      {collaboratorsModal && (
+        <CollaboratorsModal
+          accountId={collaboratorsModal.accountId}
+          accountName={collaboratorsModal.accountName}
+          isOwner={collaboratorsModal.isOwner}
+          onClose={() => setCollaboratorsModal(null)}
+        />
+      )}
     </div>
   );
 };
