@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
+interface QAPair {
+  question: string
+  answer: string
+}
+
 interface Article {
   url: string
   title: string
@@ -21,6 +26,9 @@ export default function Articles() {
   const [loading, setLoading] = useState(true)
   const [selectedProject, setSelectedProject] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [qaModalOpen, setQaModalOpen] = useState(false)
+  const [selectedArticleQA, setSelectedArticleQA] = useState<QAPair[]>([])
+  const [selectedArticleTitle, setSelectedArticleTitle] = useState('')
 
   useEffect(() => {
     fetchData()
@@ -89,6 +97,67 @@ export default function Articles() {
   const getProjectName = (projectId: string) => {
     const project = projects.find(p => p.project_id === projectId)
     return project?.client_name || projectId
+  }
+
+  const getQACount = (cache: any): number => {
+    if (!cache) return 0
+    try {
+      const cacheData = typeof cache === 'string' ? JSON.parse(cache) : cache
+      if (Array.isArray(cacheData)) {
+        return cacheData.length
+      }
+      if (cacheData.suggestions && Array.isArray(cacheData.suggestions)) {
+        return cacheData.suggestions.length
+      }
+      if (cacheData.qa && Array.isArray(cacheData.qa)) {
+        return cacheData.qa.length
+      }
+      if (cacheData.questions && Array.isArray(cacheData.questions)) {
+        return cacheData.questions.length
+      }
+    } catch (e) {
+      console.error('Error parsing cache:', e)
+    }
+    return 0
+  }
+
+  const extractQAPairs = (cache: any): QAPair[] => {
+    if (!cache) return []
+    try {
+      const cacheData = typeof cache === 'string' ? JSON.parse(cache) : cache
+      
+      // Try different possible structures
+      if (Array.isArray(cacheData)) {
+        return cacheData
+      }
+      if (cacheData.suggestions && Array.isArray(cacheData.suggestions)) {
+        return cacheData.suggestions.map((item: any) => ({
+          question: item.question,
+          answer: item.answer || 'No answer yet'
+        }))
+      }
+      if (cacheData.qa && Array.isArray(cacheData.qa)) {
+        return cacheData.qa
+      }
+      if (cacheData.questions && Array.isArray(cacheData.questions)) {
+        return cacheData.questions
+      }
+      
+      // If it's an object with question/answer properties
+      if (cacheData.question && cacheData.answer) {
+        return [{ question: cacheData.question, answer: cacheData.answer }]
+      }
+    } catch (e) {
+      console.error('Error extracting Q&A:', e)
+    }
+    return []
+  }
+
+  const openQAModal = (article: Article) => {
+    const qaPairs = extractQAPairs(article.cache)
+    setSelectedArticleQA(qaPairs)
+    setSelectedArticleTitle(article.title || article.url)
+    setQaModalOpen(true)
   }
 
   if (loading) {
@@ -190,6 +259,9 @@ export default function Articles() {
                 <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   URL
                 </th>
+                <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Q&A
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -253,10 +325,215 @@ export default function Articles() {
                       <span style={{ fontSize: 16 }}>↗</span>
                     </a>
                   </td>
+                  <td style={{ padding: '16px', textAlign: 'center' }}>
+                    {(() => {
+                      const qaCount = getQACount(article.cache)
+                      if (qaCount === 0) {
+                        return (
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>
+                            —
+                          </span>
+                        )
+                      }
+                      return (
+                        <button
+                          onClick={() => openQAModal(article)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '6px 12px',
+                            borderRadius: 6,
+                            border: '1px solid #e2e8f0',
+                            background: '#fff',
+                            color: '#4f46e5',
+                            fontSize: 13,
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#f8fafc'
+                            e.currentTarget.style.borderColor = '#4f46e5'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#fff'
+                            e.currentTarget.style.borderColor = '#e2e8f0'
+                          }}
+                        >
+                          <span style={{ fontSize: 14, fontWeight: 600 }}>Q</span>
+                          {qaCount} {qaCount === 1 ? 'Q&A' : 'Q&As'}
+                        </button>
+                      )
+                    })()}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Q&A Modal */}
+      {qaModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: 20
+          }}
+          onClick={() => setQaModalOpen(false)}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 16,
+              maxWidth: 800,
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{
+              padding: '24px 28px',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>
+                  Questions & Answers
+                </h2>
+                <p style={{ fontSize: 14, color: '#64748b' }}>
+                  {selectedArticleTitle}
+                </p>
+              </div>
+              <button
+                onClick={() => setQaModalOpen(false)}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#f8fafc',
+                  color: '#64748b',
+                  fontSize: 20,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.15s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#f1f5f9'
+                  e.currentTarget.style.color = '#334155'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#f8fafc'
+                  e.currentTarget.style.color = '#64748b'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Content */}
+            <div style={{
+              padding: '24px 28px',
+              overflowY: 'auto',
+              flex: 1
+            }}>
+              {selectedArticleQA.length === 0 ? (
+                <div style={{
+                  padding: 40,
+                  textAlign: 'center',
+                  color: '#64748b'
+                }}>
+                  <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }}>?</div>
+                  <p>No questions and answers found</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  {selectedArticleQA.map((qa, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: 20,
+                        borderRadius: 12,
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0'
+                      }}
+                    >
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#4f46e5',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          marginBottom: 8
+                        }}>
+                          <span style={{ fontWeight: 700 }}>Q</span>
+                          Question
+                        </div>
+                        <p style={{
+                          fontSize: 15,
+                          fontWeight: 500,
+                          color: '#0f172a',
+                          lineHeight: 1.6,
+                          margin: 0
+                        }}>
+                          {qa.question}
+                        </p>
+                      </div>
+                      <div>
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#059669',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          marginBottom: 8
+                        }}>
+                          <span style={{ fontWeight: 700 }}>A</span>
+                          Answer
+                        </div>
+                        <p style={{
+                          fontSize: 14,
+                          color: '#334155',
+                          lineHeight: 1.7,
+                          margin: 0,
+                          whiteSpace: 'pre-wrap'
+                        }}>
+                          {qa.answer}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
