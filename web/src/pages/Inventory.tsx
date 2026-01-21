@@ -133,7 +133,6 @@ function Inventory() {
       if (collabError) throw collabError;
 
       // Combine and deduplicate accounts
-      const ownedIds = ownedAccounts?.map((a: any) => a.id) || [];
       const collaboratedAccountData = collaboratedAccounts?.map((c: any) => c.account).filter(Boolean) || [];
       
       // Merge and deduplicate
