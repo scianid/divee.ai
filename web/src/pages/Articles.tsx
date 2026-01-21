@@ -6,12 +6,22 @@ interface QAPair {
   answer: string
 }
 
+interface FreeformQA {
+  id: number
+  question: string
+  answer: string | null
+  created_at: string
+  visitor_id: string | null
+  session_id: string | null
+}
+
 interface Article {
   url: string
   title: string
   content: string | null
   cache: any
   project_id: string
+  unique_id: string
 }
 
 interface Project {
@@ -29,6 +39,9 @@ export default function Articles() {
   const [qaModalOpen, setQaModalOpen] = useState(false)
   const [selectedArticleQA, setSelectedArticleQA] = useState<QAPair[]>([])
   const [selectedArticleTitle, setSelectedArticleTitle] = useState('')
+  const [freeformQAMap, setFreeformQAMap] = useState<Record<string, FreeformQA[]>>({})
+  const [selectedFreeformQA, setSelectedFreeformQA] = useState<FreeformQA[]>([])
+  const [activeTab, setActiveTab] = useState<'suggestions' | 'freeform'>('suggestions')
 
   useEffect(() => {
     fetchData()
@@ -74,6 +87,26 @@ export default function Articles() {
 
         if (articlesData) {
           setArticles(articlesData)
+          
+          // Fetch freeform Q&A for all articles
+          const articleIds = articlesData.map(a => a.unique_id)
+          const { data: freeformData } = await supabase
+            .from('freeform_qa')
+            .select('*')
+            .in('article_unique_id', articleIds)
+            .order('created_at', { ascending: false })
+          
+          if (freeformData) {
+            // Group by article_unique_id
+            const qaMap: Record<string, FreeformQA[]> = {}
+            freeformData.forEach((qa: any) => {
+              if (!qaMap[qa.article_unique_id]) {
+                qaMap[qa.article_unique_id] = []
+              }
+              qaMap[qa.article_unique_id].push(qa)
+            })
+            setFreeformQAMap(qaMap)
+          }
         }
       }
     } catch (error) {
@@ -97,6 +130,10 @@ export default function Articles() {
   const getProjectName = (projectId: string) => {
     const project = projects.find(p => p.project_id === projectId)
     return project?.client_name || projectId
+  }
+
+  const getFreeformQACount = (articleId: string): number => {
+    return freeformQAMap[articleId]?.length || 0
   }
 
   const getQACount = (cache: any): number => {
@@ -155,8 +192,18 @@ export default function Articles() {
 
   const openQAModal = (article: Article) => {
     const qaPairs = extractQAPairs(article.cache)
+    const freeformQAs = freeformQAMap[article.unique_id] || []
     setSelectedArticleQA(qaPairs)
+    setSelectedFreeformQA(freeformQAs)
     setSelectedArticleTitle(article.title || article.url)
+    // Set default tab based on which has data
+    if (qaPairs.length > 0) {
+      setActiveTab('suggestions')
+    } else if (freeformQAs.length > 0) {
+      setActiveTab('freeform')
+    } else {
+      setActiveTab('suggestions')
+    }
     setQaModalOpen(true)
   }
 
@@ -327,8 +374,11 @@ export default function Articles() {
                   </td>
                   <td style={{ padding: '16px', textAlign: 'center' }}>
                     {(() => {
-                      const qaCount = getQACount(article.cache)
-                      if (qaCount === 0) {
+                      const suggestionCount = getQACount(article.cache)
+                      const freeformCount = getFreeformQACount(article.unique_id)
+                      const totalCount = suggestionCount + freeformCount
+                      
+                      if (totalCount === 0) {
                         return (
                           <span style={{ fontSize: 13, color: '#94a3b8' }}>
                             —
@@ -362,7 +412,10 @@ export default function Articles() {
                           }}
                         >
                           <span style={{ fontSize: 14, fontWeight: 600 }}>Q</span>
-                          {qaCount} {qaCount === 1 ? 'Q&A' : 'Q&As'}
+                          {totalCount} {totalCount === 1 ? 'Q&A' : 'Q&As'}
+                          {suggestionCount > 0 && freeformCount > 0 && (
+                            <span style={{ fontSize: 11, color: '#94a3b8' }}>({suggestionCount}+{freeformCount})</span>
+                          )}
                         </button>
                       )
                     })()}
@@ -451,86 +504,223 @@ export default function Articles() {
               </button>
             </div>
 
+            {/* Tabs */}
+            <div style={{
+              display: 'flex',
+              gap: 4,
+              padding: '16px 28px 0',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <button
+                onClick={() => setActiveTab('suggestions')}
+                style={{
+                  padding: '10px 16px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: activeTab === 'suggestions' ? '2px solid #4f46e5' : '2px solid transparent',
+                  color: activeTab === 'suggestions' ? '#4f46e5' : '#64748b',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s'
+                }}
+              >
+                Suggestions ({selectedArticleQA.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('freeform')}
+                style={{
+                  padding: '10px 16px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: activeTab === 'freeform' ? '2px solid #4f46e5' : '2px solid transparent',
+                  color: activeTab === 'freeform' ? '#4f46e5' : '#64748b',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s'
+                }}
+              >
+                Free-form ({selectedFreeformQA.length})
+              </button>
+            </div>
+
             {/* Content */}
             <div style={{
               padding: '24px 28px',
               overflowY: 'auto',
               flex: 1
             }}>
-              {selectedArticleQA.length === 0 ? (
-                <div style={{
-                  padding: 40,
-                  textAlign: 'center',
-                  color: '#64748b'
-                }}>
-                  <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }}>?</div>
-                  <p>No questions and answers found</p>
-                </div>
+              {activeTab === 'suggestions' ? (
+                // Suggestions Tab
+                selectedArticleQA.length === 0 ? (
+                  <div style={{
+                    padding: 40,
+                    textAlign: 'center',
+                    color: '#64748b'
+                  }}>
+                    <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }}>?</div>
+                    <p>No suggested questions found</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    {selectedArticleQA.map((qa, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          padding: 20,
+                          borderRadius: 12,
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0'
+                        }}
+                      >
+                        <div style={{ marginBottom: 12 }}>
+                          <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: '#4f46e5',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            marginBottom: 8
+                          }}>
+                            <span style={{ fontWeight: 700 }}>Q</span>
+                            Question
+                          </div>
+                          <p style={{
+                            fontSize: 15,
+                            fontWeight: 500,
+                            color: '#0f172a',
+                            lineHeight: 1.6,
+                            margin: 0
+                          }}>
+                            {qa.question}
+                          </p>
+                        </div>
+                        <div>
+                          <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: '#059669',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            marginBottom: 8
+                          }}>
+                            <span style={{ fontWeight: 700 }}>A</span>
+                            Answer
+                          </div>
+                          <p style={{
+                            fontSize: 14,
+                            color: '#334155',
+                            lineHeight: 1.7,
+                            margin: 0,
+                            whiteSpace: 'pre-wrap'
+                          }}>
+                            {qa.answer}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                  {selectedArticleQA.map((qa, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        padding: 20,
-                        borderRadius: 12,
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0'
-                      }}
-                    >
-                      <div style={{ marginBottom: 12 }}>
-                        <div style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: '#4f46e5',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                          marginBottom: 8
-                        }}>
-                          <span style={{ fontWeight: 700 }}>Q</span>
-                          Question
+                // Free-form Tab
+                selectedFreeformQA.length === 0 ? (
+                  <div style={{
+                    padding: 40,
+                    textAlign: 'center',
+                    color: '#64748b'
+                  }}>
+                    <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }}>?</div>
+                    <p>No free-form questions asked yet</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    {selectedFreeformQA.map((qa) => (
+                      <div
+                        key={qa.id}
+                        style={{
+                          padding: 20,
+                          borderRadius: 12,
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0'
+                        }}
+                      >
+                        <div style={{ marginBottom: 4, fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>
+                          {new Date(qa.created_at).toLocaleString()}
                         </div>
-                        <p style={{
-                          fontSize: 15,
-                          fontWeight: 500,
-                          color: '#0f172a',
-                          lineHeight: 1.6,
-                          margin: 0
-                        }}>
-                          {qa.question}
-                        </p>
-                      </div>
-                      <div>
-                        <div style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: '#059669',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                          marginBottom: 8
-                        }}>
-                          <span style={{ fontWeight: 700 }}>A</span>
-                          Answer
+                        <div style={{ marginBottom: 12 }}>
+                          <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: '#4f46e5',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            marginBottom: 8
+                          }}>
+                            <span style={{ fontWeight: 700 }}>Q</span>
+                            Question
+                          </div>
+                          <p style={{
+                            fontSize: 15,
+                            fontWeight: 500,
+                            color: '#0f172a',
+                            lineHeight: 1.6,
+                            margin: 0
+                          }}>
+                            {qa.question}
+                          </p>
                         </div>
-                        <p style={{
-                          fontSize: 14,
-                          color: '#334155',
-                          lineHeight: 1.7,
-                          margin: 0,
-                          whiteSpace: 'pre-wrap'
-                        }}>
-                          {qa.answer}
-                        </p>
+                        {qa.answer ? (
+                          <div>
+                            <div style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: '#059669',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                              marginBottom: 8
+                            }}>
+                              <span style={{ fontWeight: 700 }}>A</span>
+                              Answer
+                            </div>
+                            <p style={{
+                              fontSize: 14,
+                              color: '#334155',
+                              lineHeight: 1.7,
+                              margin: 0,
+                              whiteSpace: 'pre-wrap'
+                            }}>
+                              {qa.answer}
+                            </p>
+                          </div>
+                        ) : (
+                          <div style={{
+                            padding: 12,
+                            borderRadius: 8,
+                            background: '#fff3cd',
+                            border: '1px solid #ffc107',
+                            fontSize: 13,
+                            color: '#856404'
+                          }}>
+                            No answer yet
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )
               )}
             </div>
           </div>
