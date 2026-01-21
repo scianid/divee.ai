@@ -3,7 +3,7 @@ import { StatsParams } from "./params.ts";
 
 // Handler: Impressions over time
 export async function handleImpressionsOverTime(supabase: any, userId: string, params: StatsParams) {
-    const projectIds = await getProjectIdsForUser(supabase, userId, params.accountId);
+    const projectIds = await getProjectIdsForUser(supabase, userId, params.accountId, params.projectId);
 
     if (projectIds.length === 0) {
         return { timeline: [] };

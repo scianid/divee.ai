@@ -3,7 +3,7 @@ import { StatsParams } from "./params.ts";
 
 // Handler: Impressions by widget (project)
 export async function handleImpressionsByWidget(supabase: any, userId: string, params: StatsParams) {
-    const projectIds = await getProjectIdsForUser(supabase, userId, params.accountId);
+    const projectIds = await getProjectIdsForUser(supabase, userId, params.accountId, params.projectId);
 
     if (projectIds.length === 0) {
         return { widgets: [] };

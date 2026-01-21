@@ -4,7 +4,7 @@ import { StatsParams } from "./params.ts";
 // Handler: Total interactions
 export async function handleTotalInteractions(supabase: any, userId: string, params: StatsParams) {
 
-  const projectIds = await getProjectIdsForUser(supabase, userId, params.accountId);
+  const projectIds = await getProjectIdsForUser(supabase, userId, params.accountId, params.projectId);
 
   if (projectIds.length === 0)
     return { total: 0, breakdown: [] };
