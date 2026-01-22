@@ -1,5 +1,16 @@
 import React, { useState, useCallback } from 'react';
 
+// EditSectionCard component moved outside to prevent recreation on each render
+const EditSectionCard = ({ title, children, icon }: { title: string, children: React.ReactNode, icon?: React.ReactNode }) => (
+  <div style={{ background: '#f9fafb', borderRadius: 16, padding: 20, border: '1px solid #f3f4f6' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, color: '#111827', fontWeight: 600, fontSize: 14 }}>
+      {icon}
+      {title}
+    </div>
+    {children}
+  </div>
+);
+
 export interface ProjectFunnelFormData {
   account_id: string;
   client_name: string;
@@ -386,16 +397,6 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
       </div>
     </div>
   ), [form.input_text_placeholders, tempPlaceholder, handleChange]);
-
-  const EditSectionCard = ({ title, children, icon }: { title: string, children: React.ReactNode, icon?: React.ReactNode }) => (
-    <div style={{ background: '#f9fafb', borderRadius: 16, padding: 20, border: '1px solid #f3f4f6' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, color: '#111827', fontWeight: 600, fontSize: 14 }}>
-        {icon}
-        {title}
-      </div>
-      {children}
-    </div>
-  );
 
   return (
     <div style={{ position: 'fixed', zIndex: 1000, left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(23, 23, 28, 0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
