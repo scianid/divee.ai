@@ -22,18 +22,30 @@ Deno.serve(async (req: Request) => {
       throw new Error("Missing 'url' or 'accountId' in request body");
     }
 
-    // Verify account ownership
-    const { data: account, error: accountError } = await supabase
+    // Verify account access (owner or collaborator)
+    const { data: ownedAccounts, error: ownedError } = await supabase
       .from("account")
-      .select("user_id")
-      .eq("id", accountId)
-      .single();
+      .select("id")
+      .eq("user_id", userId);
 
-    if (accountError || !account) {
-      throw new Error("Account not found");
+    if (ownedError) {
+      throw new Error(`Failed to fetch user accounts: ${ownedError.message}`);
     }
 
-    if (account.user_id !== userId) {
+    const { data: collaboratedAccounts, error: collabError } = await supabase
+      .from("account_collaborator")
+      .select("account_id")
+      .eq("user_id", userId);
+
+    if (collabError) {
+      throw new Error(`Failed to fetch collaborated accounts: ${collabError.message}`);
+    }
+
+    const ownedIds = ownedAccounts?.map((a: any) => a.id) || [];
+    const collaboratedIds = collaboratedAccounts?.map((a: any) => a.account_id) || [];
+    const userAccountIds = [...new Set([...ownedIds, ...collaboratedIds])];
+
+    if (!userAccountIds.includes(accountId)) {
       throw new Error("Unauthorized: You do not have access to this account");
     }
 
