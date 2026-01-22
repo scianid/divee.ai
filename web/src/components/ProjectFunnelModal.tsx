@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 
 export interface ProjectFunnelFormData {
   account_id: string;
@@ -9,6 +9,8 @@ export interface ProjectFunnelFormData {
   highlight_color_1: string;
   highlight_color_2: string;
   input_text_placeholders: string[];
+  language: string;
+  direction: 'ltr' | 'rtl';
 }
 
 export interface ProjectFunnelProps {
@@ -31,6 +33,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
     highlight_color_1: initialData?.highlight_color_1 || '#68E5FD',
     highlight_color_2: initialData?.highlight_color_2 || '#A389E0',
     input_text_placeholders: initialData?.input_text_placeholders || ['Ask anything about this article', 'I can help you understand this article'],
+    language: initialData?.language || 'English',
+    direction: initialData?.direction || 'ltr',
   });
   const [tempUrl, setTempUrl] = useState('');
   const [tempPlaceholder, setTempPlaceholder] = useState('');
@@ -47,6 +51,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         highlight_color_1: initialData.highlight_color_1 || '#68E5FD',
         highlight_color_2: initialData.highlight_color_2 || '#A389E0',
         input_text_placeholders: initialData.input_text_placeholders || ['Ask anything about this article', 'I can help you understand this article'],
+        language: initialData.language || 'English',
+        direction: initialData.direction || 'ltr',
       });
     } else if (open && !initialData) {
       // Reset to defaults for new project
@@ -59,6 +65,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         highlight_color_1: '#68E5FD',
         highlight_color_2: '#A389E0',
         input_text_placeholders: ['Ask anything about this article', 'I can help you understand this article'],
+        language: 'English',
+        direction: 'ltr',
       });
       setStep(1);
     }
@@ -67,16 +75,16 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
 
   if (!open) return null;
 
-  function handleChange(field: keyof ProjectFunnelFormData, value: any) {
+  const handleChange = useCallback((field: keyof ProjectFunnelFormData, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));
-  }
+  }, []);
 
   function next() { setStep(s => Math.min(s + 1, 3)); }
   function back() { setStep(s => Math.max(s - 1, 1)); }
   function handleSubmit(e: React.FormEvent) { e.preventDefault(); onSubmit(form); }
 
   // Component for the Identity Section
-  const IdentitySection = () => (
+  const IdentitySection = React.useMemo(() => (
     <div style={{ display: 'grid', gap: 16 }}>
       {/* Top Row: Account & Name */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: 12 }}>
@@ -165,11 +173,59 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
            </div>
         </div>
       </div>
+
+      {/* Third Row: Language & Direction */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div>
+          <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Language</label>
+          <div style={{ position: 'relative' }}>
+            <select 
+              className="inputField" 
+              value={form.language} 
+              onChange={e => handleChange('language', e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', appearance: 'none', background: '#fff', fontSize: 14, borderRadius: 10, border: '1px solid #e5e7eb' }}
+            >
+              <option value="English">English</option>
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+              <option value="German">German</option>
+              <option value="Italian">Italian</option>
+              <option value="Portuguese">Portuguese</option>
+              <option value="Hebrew">Hebrew</option>
+              <option value="Arabic">Arabic</option>
+              <option value="Chinese">Chinese</option>
+              <option value="Japanese">Japanese</option>
+              <option value="Korean">Korean</option>
+              <option value="Russian">Russian</option>
+            </select>
+            <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Text Direction</label>
+          <div style={{ position: 'relative' }}>
+            <select 
+              className="inputField" 
+              value={form.direction} 
+              onChange={e => handleChange('direction', e.target.value as 'ltr' | 'rtl')}
+              style={{ width: '100%', padding: '10px 12px', appearance: 'none', background: '#fff', fontSize: 14, borderRadius: 10, border: '1px solid #e5e7eb' }}
+            >
+              <option value="ltr">Left to Right (LTR)</option>
+              <option value="rtl">Right to Left (RTL)</option>
+            </select>
+            <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  ), [form.account_id, form.client_name, form.icon_url, form.client_description, form.language, form.direction, accounts, handleChange]);
 
   // Component for Security Section
-  const SecuritySection = () => (
+  const SecuritySection = React.useMemo(() => (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Active List */}
       <div style={{ flex: 1, marginBottom: 16 }}>
@@ -237,10 +293,10 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         </button>
       </div>
     </div>
-  );
+  ), [form.allowed_urls, tempUrl, handleChange]);
 
   // Component for Styling (Colors)
-  const StyleSection = () => (
+  const StyleSection = React.useMemo(() => (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
       <div>
         <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Primary</label>
@@ -271,10 +327,10 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         </div>
       </div>
     </div>
-  );
+  ), [form.highlight_color_1, form.highlight_color_2, handleChange]);
 
   // Component for Prompts
-  const PromptsSection = () => (
+  const PromptsSection = React.useMemo(() => (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <label className="inputLabel" style={{ marginBottom: 8, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Conversation Starters</label>
       
@@ -329,7 +385,7 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         </button>
       </div>
     </div>
-  );
+  ), [form.input_text_placeholders, tempPlaceholder, handleChange]);
 
   const EditSectionCard = ({ title, children, icon }: { title: string, children: React.ReactNode, icon?: React.ReactNode }) => (
     <div style={{ background: '#f9fafb', borderRadius: 16, padding: 20, border: '1px solid #f3f4f6' }}>
@@ -391,14 +447,14 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
                     title="Identity" 
                     icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>}
                   >
-                    <IdentitySection />
+                    {IdentitySection}
                   </EditSectionCard>
                   
                   <EditSectionCard 
                     title="Styling"
                     icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"></line><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"></line><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"></line><line x1="14.83" y1="9.17" x2="18.36" y2="5.64"></line><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"></line></svg>}
                   > 
-                    <StyleSection /> 
+                    {StyleSection}
                   </EditSectionCard>
                 </div>
                 
@@ -407,26 +463,26 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
                     title="Security"
                     icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>}
                   >
-                    <SecuritySection />
+                    {SecuritySection}
                   </EditSectionCard>
                    
                   <EditSectionCard 
                     title="Chat Interface"
                     icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>}
                   >
-                    <PromptsSection />
+                    {PromptsSection}
                   </EditSectionCard>
                 </div>
               </div>
             ) : (
               // Wizard Mode (Create)
               <div style={{ minHeight: 320 }}>
-                {step === 1 && <IdentitySection />}
-                {step === 2 && <SecuritySection />}
+                {step === 1 && IdentitySection}
+                {step === 2 && SecuritySection}
                 {step === 3 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-                    <StyleSection />
-                    <PromptsSection />
+                    {StyleSection}
+                    {PromptsSection}
                   </div>
                 )}
               </div>

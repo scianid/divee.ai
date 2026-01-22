@@ -197,6 +197,8 @@ function Inventory() {
         highlight_color: colors.length > 0 ? colors : null,
         input_text_placeholders: placeholders.length > 0 ? placeholders : ['Ask a question...'],
         allowed_urls: urls.length > 0 ? urls : null,
+        language: form.language || 'English',
+        direction: form.direction || 'ltr',
       };
 
       let result;
@@ -211,8 +213,6 @@ function Inventory() {
           .from('project')
           .insert([{
             ...payload,
-            language: 'English',
-            direction: 'ltr',
             show_ad: true
           }])
           .select();
@@ -348,7 +348,9 @@ function Inventory() {
             allowed_urls: editingProject.allowed_urls || [],
             highlight_color_1: editingProject.highlight_color?.[0],
             highlight_color_2: editingProject.highlight_color?.[1],
-            input_text_placeholders: editingProject.input_text_placeholders
+            input_text_placeholders: editingProject.input_text_placeholders,
+            language: editingProject.language,
+            direction: editingProject.direction
           } : undefined}
         />
       )}
