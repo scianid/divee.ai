@@ -187,30 +187,6 @@ export default function Articles() {
     return project?.client_name || projectId
   }
 
-  const getQACount = (cache: any, articleUniqueId: string): number => {
-    let cacheCount = 0
-    if (cache) {
-      try {
-        const cacheData = typeof cache === 'string' ? JSON.parse(cache) : cache
-        if (Array.isArray(cacheData)) {
-          cacheCount = cacheData.length
-        } else if (cacheData.suggestions && Array.isArray(cacheData.suggestions)) {
-          cacheCount = cacheData.suggestions.length
-        } else if (cacheData.qa && Array.isArray(cacheData.qa)) {
-          cacheCount = cacheData.qa.length
-        } else if (cacheData.questions && Array.isArray(cacheData.questions)) {
-          cacheCount = cacheData.questions.length
-        }
-      } catch (e) {
-        console.error('Error parsing cache:', e)
-      }
-    }
-    
-    // Add freeform questions count
-    const freeformCount = freeformCounts[articleUniqueId] || 0
-    return cacheCount + freeformCount
-  }
-
   const extractQAPairs = (cache: any): QAPair[] => {
     if (!cache) return []
     try {
