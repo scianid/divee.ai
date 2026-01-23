@@ -8,6 +8,8 @@ import { handleImpressionsByLocation } from "./visualizations/impressionsByLocat
 import { handleInteractionsOverTime } from "./visualizations/interactionsOverTime.ts";
 import { handleImpressionsOverTime } from "./visualizations/impressionsOverTime.ts";
 import { handleImpressionsByPlatform } from "./visualizations/impressionsByPlatform.ts";
+import { handleAdImpressions } from "./visualizations/adImpressions.ts";
+import { handleAdClicks } from "./visualizations/adClicks.ts";
 
 // Main handler with routing
 // @ts-ignore
@@ -45,6 +47,10 @@ Deno.serve(async (req: Request) => {
       data = await handleImpressionsOverTime(supabase, userId, params);
     } else if (path.endsWith("/impressions-by-platform")) {
       data = await handleImpressionsByPlatform(supabase, userId, params);
+    } else if (path.endsWith("/ad-impressions")) {
+      data = await handleAdImpressions(supabase, userId, params);
+    } else if (path.endsWith("/ad-clicks")) {
+      data = await handleAdClicks(supabase, userId, params);
     } else {
       return new Response(
         JSON.stringify({
@@ -56,6 +62,8 @@ Deno.serve(async (req: Request) => {
             "/interactions-over-time",
             "/impressions-over-time",
             "/impressions-by-platform",
+            "/ad-impressions",
+            "/ad-clicks",
           ],
         }),
         {

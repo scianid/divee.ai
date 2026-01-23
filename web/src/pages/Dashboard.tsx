@@ -360,7 +360,9 @@ export default function Dashboard() {
     impressionsByLocation: null,
     interactionsOverTime: null,
     impressionsOverTime: null,
-    impressionsByPlatform: null
+    impressionsByPlatform: null,
+    adImpressions: null,
+    adClicks: null
   });
   const [articlesCount, setArticlesCount] = useState<number>(0);
   const [projects, setProjects] = useState<any[]>([]);
@@ -429,7 +431,9 @@ export default function Dashboard() {
         fetchEndpoint('impressions-by-location', 'impressionsByLocation'),
         fetchEndpoint('interactions-over-time', 'interactionsOverTime'),
         fetchEndpoint('impressions-over-time', 'impressionsOverTime'),
-        fetchEndpoint('impressions-by-platform', 'impressionsByPlatform')
+        fetchEndpoint('impressions-by-platform', 'impressionsByPlatform'),
+        fetchEndpoint('ad-impressions', 'adImpressions'),
+        fetchEndpoint('ad-clicks', 'adClicks')
       ]);
       
       // Fetch articles count
@@ -1002,6 +1006,42 @@ export default function Dashboard() {
                         <span style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Interactions</span>
                     </div>
                     <DailyInteractionsChart data={stats.interactionsOverTime?.timeline || []} />
+                  </>
+                )}
+            </Card>
+        </div>
+
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
+            <Card title="Ad Impressions" style={{ height: '100%' }}>
+                {!stats.adImpressions ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
+                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b', lineHeight: 1 }}>{stats.adImpressions?.total ?? 0}</span>
+                        <span style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Ad Events</span>
+                    </div>
+                    <DailyInteractionsChart data={stats.adImpressions?.timeline || []} />
+                  </>
+                )}
+            </Card>
+        </div>
+
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
+            <Card title="Ad Clicks" style={{ height: '100%' }}>
+                {!stats.adClicks ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
+                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b', lineHeight: 1 }}>{stats.adClicks?.total ?? 0}</span>
+                        <span style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Click Events</span>
+                    </div>
+                    <DailyInteractionsChart data={stats.adClicks?.timeline || []} />
                   </>
                 )}
             </Card>
