@@ -77,26 +77,21 @@ const Accounts: React.FC = () => {
   async function fetchUserAndAccounts() {
     setLoading(true);
     try {
-      console.log('[Accounts] Fetching user...');
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('[Accounts] User:', user);
       if (!user) {
         setError('Not logged in');
         setLoading(false);
         return;
       }
       setUserId(user.id);
-      console.log('[Accounts] Querying accounts for user_id:', user.id);
       const { data, error } = await supabase
         .from('account')
         .select('id, name, user_id, created_at, icon_url')
         .order('created_at', { ascending: false });
-      console.log('[Accounts] Query result:', { data, error });
       if (error) throw error;
       setAccounts(data as Account[]);
     } catch (err: any) {
       setError(err.message || 'Error loading accounts');
-      console.error('[Accounts] Error loading accounts:', err);
     } finally {
       setLoading(false);
     }
