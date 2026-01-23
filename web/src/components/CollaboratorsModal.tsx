@@ -40,21 +40,8 @@ export default function CollaboratorsModal({ accountId, accountName, isOwner, on
 
       if (error) throw error
 
-      // Fetch user emails for each collaborator
-      const collaboratorsWithEmails = await Promise.all(
-        (data || []).map(async (collab) => {
-          try {
-            const { data: { user } } = await supabase.auth.admin.getUserById(collab.user_id)
-            return { ...collab, email: user?.email || 'Unknown' }
-          } catch {
-            return { ...collab, email: 'Unknown' }
-          }
-        })
-      )
-
-      setCollaborators(collaboratorsWithEmails)
+      setCollaborators(data || [])
     } catch (err: any) {
-      console.error('Error fetching collaborators:', err)
       setError(err.message)
     } finally {
       setLoading(false)
