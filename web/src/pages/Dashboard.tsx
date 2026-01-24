@@ -46,10 +46,28 @@ function Card({ children, style = {}, title, action, className = '' }: { childre
 
 function TrendChart({ data: timelineData }: { data: any[] }) {
     const chartData = timelineData.length > 0 ? timelineData.map((d: any) => d.count) : [0];
+    const labels = timelineData.length > 0 ? timelineData.map((d: any) => {
+        const date = new Date(d.date);
+        return d.date && d.date.includes('T') && d.date.length > 10 
+          ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+          : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }) : [];
     
     const option = {
-        grid: { left: 0, right: 0, top: 10, bottom: 0 },
-        xAxis: { type: 'category', show: false },
+        grid: { left: 0, right: 0, top: 10, bottom: 20 },
+        xAxis: { 
+            type: 'category',
+            data: labels,
+            show: true,
+            axisLabel: {
+                show: true,
+                color: '#94a3b8',
+                fontSize: 10,
+                interval: Math.max(0, Math.floor(labels.length / 4) - 1),
+            },
+            axisLine: { show: false },
+            axisTick: { show: false }
+        },
         yAxis: { type: 'value', show: false },
         series: [{
             data: chartData,
@@ -73,7 +91,11 @@ function TrendChart({ data: timelineData }: { data: any[] }) {
             backgroundColor: '#1e293b',
             borderWidth: 0,
             textStyle: { color: '#fff' },
-            formatter: (params: any) => `${params[0].value} impressions`
+            formatter: (params: any) => {
+                const index = params[0].dataIndex;
+                const label = labels[index] || '';
+                return `${label}<br/>${params[0].value} impressions`;
+            }
         }
     };
 
