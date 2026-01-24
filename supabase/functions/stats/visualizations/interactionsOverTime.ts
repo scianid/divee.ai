@@ -23,9 +23,23 @@ export async function handleInteractionsOverTime(supabase: any, userId: string, 
     throw new Error(`Failed to fetch events: ${error.message}`);
   }
 
-  // Group by date (day or hour)
+  // Group by date/hour based on time range
+  const startDate = new Date(params.startDate);
+  const endDate = new Date(params.endDate);
+  const hoursDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+  const isHourly = hoursDiff <= 48; // Use hourly grouping for <= 48 hours
+
   const groupedCounts = events?.reduce((acc: any, event: any) => {
-    const key = event.created_at.split("T")[0];
+    const date = new Date(event.created_at);
+    let key: string;
+    
+    if (isHourly) {
+      // Group by hour
+      key = date.toISOString().slice(0, 13) + ":00:00.000Z";
+    } else {
+      // Group by day
+      key = date.toISOString().slice(0, 10);
+    }
 
     if (!acc[key]) {
       acc[key] = { date: key, count: 0 };
