@@ -44,6 +44,10 @@ interface Project {
   allowed_urls: string[] | null;
   project_id: string;
   account_id: string;
+  display_mode: string;
+  display_position: string;
+  article_class: string | null;
+  widget_container_class: string | null;
 }
 
 interface Account {
@@ -199,6 +203,10 @@ function Inventory() {
         allowed_urls: urls.length > 0 ? urls : null,
         language: form.language || 'English',
         direction: form.direction || 'ltr',
+        display_mode: form.display_mode || 'anchored',
+        display_position: form.display_position || 'bottom-right',
+        article_class: form.article_class || '.article',
+        widget_container_class: form.widget_container_class || null,
       };
 
       let result;
@@ -350,7 +358,11 @@ function Inventory() {
             highlight_color_2: editingProject.highlight_color?.[1],
             input_text_placeholders: editingProject.input_text_placeholders,
             language: editingProject.language,
-            direction: editingProject.direction
+            direction: editingProject.direction,
+            display_mode: editingProject.display_mode,
+            display_position: editingProject.display_position,
+            article_class: editingProject.article_class || '',
+            widget_container_class: editingProject.widget_container_class || ''
           } : undefined}
         />
       )}
