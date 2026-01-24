@@ -94,7 +94,7 @@ function TrendChart({ data: timelineData }: { data: any[] }) {
             formatter: (params: any) => {
                 const index = params[0].dataIndex;
                 const label = labels[index] || '';
-                return `${label}<br/>${params[0].value} impressions`;
+                return `${label}<br/>${params[0].value}`;
             }
         }
     };
@@ -383,8 +383,7 @@ export default function Dashboard() {
     interactionsOverTime: null,
     impressionsOverTime: null,
     impressionsByPlatform: null,
-    adImpressions: null,
-    adClicks: null
+    adImpressions: null
   });
   const [articlesCount, setArticlesCount] = useState<number>(0);
   const [projects, setProjects] = useState<any[]>([]);
@@ -454,8 +453,7 @@ export default function Dashboard() {
         fetchEndpoint('interactions-over-time', 'interactionsOverTime'),
         fetchEndpoint('impressions-over-time', 'impressionsOverTime'),
         fetchEndpoint('impressions-by-platform', 'impressionsByPlatform'),
-        fetchEndpoint('ad-impressions', 'adImpressions'),
-        fetchEndpoint('ad-clicks', 'adClicks')
+        fetchEndpoint('ad-impressions', 'adImpressions')
       ]);
       
       // Fetch articles count
@@ -1010,42 +1008,79 @@ export default function Dashboard() {
                           </>
                         )}
                      </div>
+                     <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
+                        Number of times the widget was rendered on a page
+                     </p>
                 </>
                 )}
             </Card>
         </div>
 
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
-            <Card title="Total Interactions" style={{ height: '100%' }}>
+            <Card title="Total Interactions" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
                 {(!stats.totalInteractions || !stats.interactionsOverTime) ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                   </div>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
-                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b', lineHeight: 1 }}>{stats.totalInteractions?.total ?? 0}</span>
-                        <span style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Interactions</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                        {stats.totalInteractions?.total ?? 0}
+                        </span>
                     </div>
-                    <DailyInteractionsChart data={stats.interactionsOverTime?.timeline || []} />
+                    <TrendChart data={stats.interactionsOverTime?.timeline || []} />
+                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
+                        {stats.interactionsOverTime?.timeline?.length > 0 && stats.interactionsOverTime?.timeline[0].date.length > 10 ? (
+                           <>
+                             <span>{new Date(stats.interactionsOverTime.timeline[0].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                             <span>{new Date(stats.interactionsOverTime.timeline[stats.interactionsOverTime.timeline.length - 1].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                           </>
+                        ) : (
+                          <>
+                             <span>{stats.interactionsOverTime?.timeline?.[0] ? new Date(stats.interactionsOverTime.timeline[0].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                             <span>{stats.interactionsOverTime?.timeline?.length > 1 ? new Date(stats.interactionsOverTime.timeline[stats.interactionsOverTime.timeline.length - 1].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                          </>
+                        )}
+                     </div>
+                     <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
+                        User that actually requested suggestions from the widget.
+                     </p>
                   </>
                 )}
             </Card>
         </div>
 
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
-            <Card title="Ad Impressions" style={{ height: '100%' }}>
+            <Card title="Ad Impressions" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
                 {!stats.adImpressions ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                   </div>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
-                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b', lineHeight: 1 }}>{stats.adImpressions?.total ?? 0}</span>
-                        <span style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Ad Events</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                        {stats.adImpressions?.total ?? 0}
+                        </span>
                     </div>
-                    <DailyInteractionsChart data={stats.adImpressions?.timeline || []} />
+                    <TrendChart data={stats.adImpressions?.timeline || []} />
+                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
+                        {stats.adImpressions?.timeline?.length > 0 && stats.adImpressions?.timeline[0].date.length > 10 ? (
+                           <>
+                             <span>{new Date(stats.adImpressions.timeline[0].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                             <span>{new Date(stats.adImpressions.timeline[stats.adImpressions.timeline.length - 1].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                           </>
+                        ) : (
+                          <>
+                             <span>{stats.adImpressions?.timeline?.[0] ? new Date(stats.adImpressions.timeline[0].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                             <span>{stats.adImpressions?.timeline?.length > 1 ? new Date(stats.adImpressions.timeline[stats.adImpressions.timeline.length - 1].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                          </>
+                        )}
+                     </div>
+                     <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
+                        Number of times ads were displayed within the widget interface
+                     </p>
                   </>
                 )}
             </Card>
@@ -1096,7 +1131,7 @@ export default function Dashboard() {
                              {loading ? '...' : totalQuestions}
                          </div>
                          <div style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4' }}>
-                             Follow-up questions
+                             Questions Asked
                          </div>
                      </div>
                      
@@ -1120,6 +1155,9 @@ export default function Dashboard() {
                          </div>
                      </div>
                  </div>
+                 <p style={{ fontSize: '13px', color: '#64748b', marginTop: '20px', marginBottom: 0, lineHeight: '1.5' }}>
+                    Breakdown of user interactions: suggestions requested, questions asked, and number of articles with the widget successfully installed.
+                 </p>
              </Card>
         </div>
 
@@ -1130,11 +1168,16 @@ export default function Dashboard() {
                         <div style={{ display: 'inline-block', width: '30px', height: '30px', border: '3px solid #f3f4f6', borderTop: '3px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                     </div>
                  ) : (
-                    <FunnelView 
-                        impressions={totalImpressions}
-                        suggestions={totalSuggestions}
-                        questions={totalQuestions}
-                    />
+                    <>
+                      <FunnelView 
+                          impressions={totalImpressions}
+                          suggestions={totalSuggestions}
+                          questions={totalQuestions}
+                      />
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '8px', marginBottom: 0, lineHeight: '1.5' }}>
+                          User journey from initial widget view to deeper engagement with questions
+                      </p>
+                    </>
                  )}
              </Card>
         </div>
@@ -1146,7 +1189,12 @@ export default function Dashboard() {
                     <div style={{ display: 'inline-block', width: '30px', height: '30px', border: '3px solid #f3f4f6', borderTop: '3px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                   </div>
                 ) : (
-                  <PlatformsChart data={stats.impressionsByPlatform?.platforms || []} />
+                  <>
+                    <PlatformsChart data={stats.impressionsByPlatform?.platforms || []} />
+                    <p style={{ fontSize: '13px', color: '#64748b', marginTop: '12px', marginBottom: 0, lineHeight: '1.5' }}>
+                        Distribution of widget impressions across different devices and platforms
+                    </p>
+                  </>
                 )}
              </Card>
         </div>
@@ -1159,7 +1207,12 @@ export default function Dashboard() {
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                   </div>
                 ) : (
-                  <ImpressionsMap locations={stats.impressionsByLocation?.locations || []} />
+                  <>
+                    <ImpressionsMap locations={stats.impressionsByLocation?.locations || []} />
+                    <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
+                        Geographic distribution of widget impressions based on user locations
+                    </p>
+                  </>
                 )}
             </Card>
         </div>
@@ -1172,7 +1225,7 @@ export default function Dashboard() {
                </div>
              ) : (
                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '8px' }}>
-                  {(stats.impressionsByWidget?.widgets || []).slice(0, 3).map((item: any, idx: number) => {
+                  {(stats.impressionsByWidget?.widgets || []).sort((a: any, b: any) => b.impressions - a.impressions).slice(0, 3).map((item: any, idx: number) => {
                     const colors = ['#3b82f6', '#6366f1', '#ec4899'];
                     const maxImpressions = Math.max(...(stats.impressionsByWidget?.widgets || []).map((w: any) => w.impressions), 1);
                     return (
@@ -1195,6 +1248,11 @@ export default function Dashboard() {
                     );
                   })}
                </div>
+             )}
+             {stats.impressionsByWidget && (
+               <p style={{ fontSize: '13px', color: '#64748b', marginTop: '20px', marginBottom: 0, lineHeight: '1.5' }}>
+                  Ranking of your widgets by total impressions during the selected period
+               </p>
              )}
         </Card>
         </div>
