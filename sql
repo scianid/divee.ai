@@ -10,6 +10,19 @@ CREATE TABLE public.account (
   CONSTRAINT account_pkey PRIMARY KEY (id),
   CONSTRAINT account_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
+CREATE TABLE public.account_collaborator (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  account_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  role text NOT NULL DEFAULT 'member'::text,
+  invited_by uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  email text,
+  CONSTRAINT account_collaborator_pkey PRIMARY KEY (id),
+  CONSTRAINT account_collaborator_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id),
+  CONSTRAINT account_collaborator_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT account_collaborator_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES auth.users(id)
+);
 CREATE TABLE public.analytics_events (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   project_id text NOT NULL,
@@ -74,6 +87,10 @@ CREATE TABLE public.project (
   project_id text DEFAULT gen_random_uuid() UNIQUE,
   allowed_urls ARRAY,
   account_id uuid DEFAULT gen_random_uuid(),
+  display_mode USER-DEFINED NOT NULL DEFAULT 'anchored'::display_mode,
+  display_position USER-DEFINED NOT NULL DEFAULT 'bottom-right'::display_position,
+  article_class text DEFAULT '.article'::text,
+  widget_container_class text,
   CONSTRAINT project_pkey PRIMARY KEY (id),
   CONSTRAINT project_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id)
 );

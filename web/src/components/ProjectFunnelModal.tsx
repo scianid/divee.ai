@@ -22,6 +22,10 @@ export interface ProjectFunnelFormData {
   input_text_placeholders: string[];
   language: string;
   direction: 'ltr' | 'rtl';
+  display_mode: string;
+  display_position: string;
+  article_class: string;
+  widget_container_class: string;
 }
 
 export interface ProjectFunnelProps {
@@ -46,6 +50,10 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
     input_text_placeholders: initialData?.input_text_placeholders || ['Ask anything about this article', 'I can help you understand this article'],
     language: initialData?.language || 'English',
     direction: initialData?.direction || 'ltr',
+    display_mode: initialData?.display_mode || 'anchored',
+    display_position: initialData?.display_position || 'bottom-right',
+    article_class: initialData?.article_class || '.article',
+    widget_container_class: initialData?.widget_container_class || '',
   });
   const [tempUrl, setTempUrl] = useState('');
   const [tempPlaceholder, setTempPlaceholder] = useState('');
@@ -64,6 +72,10 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         input_text_placeholders: initialData.input_text_placeholders || ['Ask anything about this article', 'I can help you understand this article'],
         language: initialData.language || 'English',
         direction: initialData.direction || 'ltr',
+        display_mode: initialData.display_mode || 'anchored',
+        display_position: initialData.display_position || 'bottom-right',
+        article_class: initialData.article_class || '.article',
+        widget_container_class: initialData.widget_container_class || '',
       });
     } else if (open && !initialData) {
       // Reset to defaults for new project
@@ -78,6 +90,10 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         input_text_placeholders: ['Ask anything about this article', 'I can help you understand this article'],
         language: 'English',
         direction: 'ltr',
+        display_mode: 'anchored',
+        display_position: 'bottom-right',
+        article_class: '.article',
+        widget_container_class: '',
       });
       setStep(1);
     }
@@ -340,6 +356,109 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
     </div>
   ), [form.highlight_color_1, form.highlight_color_2, handleChange]);
 
+  // Component for Widget Display Configuration
+  const WidgetDisplaySection = React.useMemo(() => (
+    <div style={{ display: 'grid', gap: 16 }}>
+      {/* Styling Colors Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div>
+          <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Primary Color</label>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ position: 'relative', width: 38, height: 38, borderRadius: 10, overflow: 'hidden', border: '1px solid #e5e7eb', flexShrink: 0 }}>
+              <input type="color" style={{ position: 'absolute', top: -5, left: -5, width: 50, height: 50, padding: 0, border: 'none', cursor: 'pointer' }} value={form.highlight_color_1} onChange={e => handleChange('highlight_color_1', e.target.value)} />
+            </div>
+            <input 
+              className="inputField" 
+              style={{ width: '100%', padding: '8px 10px', fontSize: 13, borderRadius: 8, border: '1px solid #e5e7eb', color: '#6b7280' }} 
+              value={form.highlight_color_1} 
+              onChange={e => handleChange('highlight_color_1', e.target.value)} 
+            />
+          </div>
+        </div>
+        <div>
+          <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Secondary Color</label>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ position: 'relative', width: 38, height: 38, borderRadius: 10, overflow: 'hidden', border: '1px solid #e5e7eb', flexShrink: 0 }}>
+              <input type="color" style={{ position: 'absolute', top: -5, left: -5, width: 50, height: 50, padding: 0, border: 'none', cursor: 'pointer' }} value={form.highlight_color_2} onChange={e => handleChange('highlight_color_2', e.target.value)} />
+            </div>
+            <input 
+              className="inputField" 
+              style={{ width: '100%', padding: '8px 10px', fontSize: 13, borderRadius: 8, border: '1px solid #e5e7eb', color: '#6b7280' }} 
+              value={form.highlight_color_2} 
+              onChange={e => handleChange('highlight_color_2', e.target.value)} 
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Display Mode & Position Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div>
+          <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Display Mode</label>
+          <div style={{ position: 'relative' }}>
+            <select 
+              className="inputField" 
+              value={form.display_mode} 
+              onChange={e => handleChange('display_mode', e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', appearance: 'none', background: '#fff', fontSize: 14, borderRadius: 10, border: '1px solid #e5e7eb' }}
+            >
+              <option value="anchored">Anchored</option>
+              <option value="floating">Floating</option>
+            </select>
+            <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Display Position</label>
+          <div style={{ position: 'relative' }}>
+            <select 
+              className="inputField" 
+              value={form.display_position} 
+              onChange={e => handleChange('display_position', e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', appearance: 'none', background: '#fff', fontSize: 14, borderRadius: 10, border: '1px solid #e5e7eb' }}
+            >
+              <option value="bottom-right">Bottom Right</option>
+              <option value="bottom-left">Bottom Left</option>
+            </select>
+            <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Article Class & Widget Container Class Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div>
+          <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Article Selector Class</label>
+          <input 
+            className="inputField" 
+            value={form.article_class} 
+            onChange={e => handleChange('article_class', e.target.value)} 
+            placeholder=".article" 
+            style={{ width: '100%', padding: '10px 12px', fontSize: 14, borderRadius: 10, border: '1px solid #e5e7eb' }}
+          />
+          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>CSS selector for the article container</div>
+        </div>
+
+        <div>
+          <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Widget Container Class</label>
+          <input 
+            className="inputField" 
+            value={form.widget_container_class} 
+            onChange={e => handleChange('widget_container_class', e.target.value)} 
+            placeholder="Optional custom container class" 
+            style={{ width: '100%', padding: '10px 12px', fontSize: 14, borderRadius: 10, border: '1px solid #e5e7eb' }}
+          />
+          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Optional: CSS class for widget container</div>
+        </div>
+      </div>
+    </div>
+  ), [form.display_mode, form.display_position, form.article_class, form.widget_container_class, handleChange]);
+
   // Component for Prompts
   const PromptsSection = React.useMemo(() => (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -452,19 +571,19 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
                   </EditSectionCard>
                   
                   <EditSectionCard 
-                    title="Styling"
-                    icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"></line><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"></line><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"></line><line x1="14.83" y1="9.17" x2="18.36" y2="5.64"></line><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"></line></svg>}
-                  > 
-                    {StyleSection}
+                    title="Security"
+                    icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>}
+                  >
+                    {SecuritySection}
                   </EditSectionCard>
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   <EditSectionCard 
-                    title="Security"
-                    icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>}
+                    title="Widget Display"
+                    icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>}
                   >
-                    {SecuritySection}
+                    {WidgetDisplaySection}
                   </EditSectionCard>
                    
                   <EditSectionCard 
