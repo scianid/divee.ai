@@ -23,9 +23,23 @@ export async function handleImpressionsOverTime(supabase: any, userId: string, p
         throw new Error(`Failed to fetch impressions: ${error.message}`);
     }
 
-    // Group by date (day or hour)
+    // Group by date/hour based on time range
+    const startDate = new Date(params.startDate);
+    const endDate = new Date(params.endDate);
+    const hoursDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+    const isHourly = hoursDiff <= 48; // Use hourly grouping for <= 48 hours
+
     const groupedCounts = impressions?.reduce((acc: any, imp: any) => {
-        const key = imp.created_at.split("T")[0];
+        const date = new Date(imp.created_at);
+        let key: string;
+        
+        if (isHourly) {
+            // Group by hour
+            key = date.toISOString().slice(0, 13) + ":00:00.000Z";
+        } else {
+            // Group by day
+            key = date.toISOString().slice(0, 10);
+        }
 
         if (!acc[key]) {
             acc[key] = { date: key, count: 0 };
