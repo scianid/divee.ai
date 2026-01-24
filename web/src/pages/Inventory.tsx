@@ -282,7 +282,6 @@ function Inventory() {
 
   const handleOpenEmbedModal = (project: Project) => {
     setEmbedModalProject(project);
-    setOpenMenuId(null);
     setEmbedCopied(false);
   };
 
