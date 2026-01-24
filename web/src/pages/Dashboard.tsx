@@ -1051,24 +1051,6 @@ export default function Dashboard() {
             </Card>
         </div>
 
-        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
-            <Card title="Ad Clicks" style={{ height: '100%' }}>
-                {!stats.adClicks ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
-                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b', lineHeight: 1 }}>{stats.adClicks?.total ?? 0}</span>
-                        <span style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Click Events</span>
-                    </div>
-                    <DailyInteractionsChart data={stats.adClicks?.timeline || []} />
-                  </>
-                )}
-            </Card>
-        </div>
-
         {/* Row 2: Funnel & Breakdown */}
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
              <Card title="User Engagement" style={{ height: '100%' }}>
