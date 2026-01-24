@@ -77,7 +77,6 @@ function Inventory() {
   const [selectedAccount, setSelectedAccount] = useState<string>('all');
   const [sortField, setSortField] = useState<'client_name' | 'client_description' | 'id' | 'language'>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [embedModalProject, setEmbedModalProject] = useState<Project | null>(null);
   const [embedCopied, setEmbedCopied] = useState(false);
 
