@@ -274,7 +274,6 @@ function Inventory() {
     const sdkCode = `<script 
   src="https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.latest.js" 
   data-project-id="${projectId}" 
-  data-article-class="article-content">
 </script>`;
     
     navigator.clipboard.writeText(sdkCode);
@@ -827,10 +826,7 @@ function Inventory() {
                   <span style={{ color: '#a3e635' }}>"https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.latest.js"</span>{'\n'}
                   <span style={{ color: '#a5b4fc' }}>  data-project-id</span>
                   <span style={{ color: '#e2e8f0' }}>=</span>
-                  <span style={{ color: '#a3e635' }}>"{embedModalProject.project_id}"</span>{'\n'}
-                  <span style={{ color: '#a5b4fc' }}>  data-article-class</span>
-                  <span style={{ color: '#e2e8f0' }}>=</span>
-                  <span style={{ color: '#a3e635' }}>"article-content"</span>
+                  <span style={{ color: '#a3e635' }}>"{embedModalProject.project_id}"</span>
                   <span style={{ color: '#7dd3fc' }}>&gt;</span>{'\n'}
                   <span style={{ color: '#7dd3fc' }}>&lt;/script&gt;</span>
                 </pre>
@@ -845,7 +841,7 @@ function Inventory() {
               }}>
                 <div style={{ fontSize: 13, color: '#1e40af', lineHeight: 1.6 }}>
                   <strong style={{ display: 'block', marginBottom: 4 }}>💡 Tip:</strong>
-                  Replace <code style={{ background: '#dbeafe', padding: '2px 6px', borderRadius: 4 }}>article-content</code> with the CSS class of your article container for optimal widget positioning.
+                  Use the <code style={{ background: '#dbeafe', padding: '2px 6px', borderRadius: 4 }}>cog wheel</code> in the inventory screen to customize your project look and behavior.
                 </div>
               </div>
 
