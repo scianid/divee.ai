@@ -1,5 +1,5 @@
 import { getProjectIdsForUser } from "../../_shared/projectDao.ts";
-import { StatsParams } from "./params.ts";
+import { StatsParams, QUERY_LIMIT } from "./params.ts";
 
 // Handler: Total interactions
 export async function handleTotalInteractions(supabase: any, userId: string, params: StatsParams) {
@@ -15,7 +15,8 @@ export async function handleTotalInteractions(supabase: any, userId: string, par
     .select("event_type")
     .in("project_id", projectIds)
     .gte("created_at", params.startDate)
-    .lte("created_at", params.endDate);
+    .lte("created_at", params.endDate)
+    .limit(QUERY_LIMIT);
 
   if (eventsError) {
     throw new Error(`Failed to fetch events: ${eventsError.message}`);

@@ -5,6 +5,9 @@ export interface StatsParams {
   endDate: string;
 }
 
+// Maximum number of rows to fetch from database queries for performance
+export const QUERY_LIMIT = 10000;
+
 // Helper to parse and validate query parameters
 export function parseParams(url: URL): StatsParams {
   const accountId = url.searchParams.get("account_id");
