@@ -663,12 +663,9 @@ function Inventory() {
                       <button 
                         title="Embed Widget"
                         onClick={() => handleOpenEmbedModal(project)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 4, display: 'flex', alignItems: 'center' }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 4, display: 'flex', alignItems: 'center', fontSize: '16px', fontWeight: 700, fontFamily: 'monospace' }}
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="16 18 22 12 16 6"></polyline>
-                          <polyline points="8 6 2 12 8 18"></polyline>
-                        </svg>
+                        &lt;/&gt;
                       </button>
                     </td>
                   </tr>
