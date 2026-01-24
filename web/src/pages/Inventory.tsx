@@ -661,55 +661,15 @@ function Inventory() {
                         </svg>
                       </button>
                       <button 
-                        title="More options"
-                        onClick={() => setOpenMenuId(openMenuId === project.id ? null : project.id)}
+                        title="Embed Widget"
+                        onClick={() => handleOpenEmbedModal(project)}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 4, display: 'flex', alignItems: 'center' }}
                       >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="1" />
-                          <circle cx="12" cy="5" r="1" />
-                          <circle cx="12" cy="19" r="1" />
+                          <polyline points="16 18 22 12 16 6"></polyline>
+                          <polyline points="8 6 2 12 8 18"></polyline>
                         </svg>
                       </button>
-                      {openMenuId === project.id && (
-                        <div style={{
-                          position: 'absolute',
-                          right: 0,
-                          top: '100%',
-                          background: '#fff',
-                          borderRadius: 8,
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                          minWidth: 180,
-                          zIndex: 100,
-                          overflow: 'hidden'
-                        }}>
-                          <button
-                            onClick={() => handleOpenEmbedModal(project)}
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              background: 'none',
-                              border: 'none',
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 10,
-                              fontSize: 14,
-                              color: '#374151',
-                              transition: 'background 0.2s'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="16 18 22 12 16 6"></polyline>
-                              <polyline points="8 6 2 12 8 18"></polyline>
-                            </svg>
-                            Embed
-                          </button>
-                        </div>
-                      )}
                     </td>
                   </tr>
                 ))}
