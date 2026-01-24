@@ -738,7 +738,7 @@ function Inventory() {
             background: '#fff', 
             borderRadius: 16, 
             boxShadow: '0 20px 60px rgba(0,0,0,0.3)', 
-            maxWidth: '600px',
+            maxWidth: '750px',
             width: '100%',
             maxHeight: '90vh',
             overflow: 'auto'
