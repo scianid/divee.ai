@@ -1,5 +1,5 @@
 import { getProjectIdsForUser } from "../../_shared/projectDao.ts";
-import { StatsParams } from "./params.ts";
+import { StatsParams, QUERY_LIMIT } from "./params.ts";
 
 // Handler: Impressions by platform
 export async function handleImpressionsByPlatform(supabase: any, userId: string, params: StatsParams) {
@@ -14,7 +14,8 @@ export async function handleImpressionsByPlatform(supabase: any, userId: string,
     .select("platform")
     .in("project_id", projectIds)
     .gte("created_at", params.startDate)
-    .lte("created_at", params.endDate);
+    .lte("created_at", params.endDate)
+    .limit(QUERY_LIMIT);
 
   if (error) {
     throw new Error(`Failed to fetch impressions: ${error.message}`);

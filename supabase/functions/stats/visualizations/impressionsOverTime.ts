@@ -1,5 +1,5 @@
 import { getProjectIdsForUser } from "../../_shared/projectDao.ts";
-import { StatsParams } from "./params.ts";
+import { StatsParams, QUERY_LIMIT } from "./params.ts";
 
 // Handler: Impressions over time
 export async function handleImpressionsOverTime(supabase: any, userId: string, params: StatsParams) {
@@ -16,7 +16,8 @@ export async function handleImpressionsOverTime(supabase: any, userId: string, p
         .in("project_id", projectIds)
         .gte("created_at", params.startDate)
         .lte("created_at", params.endDate)
-        .order("created_at");
+        .order("created_at")
+        .limit(QUERY_LIMIT);
 
     if (error) {
         throw new Error(`Failed to fetch impressions: ${error.message}`);

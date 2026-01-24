@@ -1,5 +1,5 @@
 import { getProjectIdsForUser } from "../../_shared/projectDao.ts";
-import { StatsParams } from "./params.ts";
+import { StatsParams, QUERY_LIMIT } from "./params.ts";
 
 // Handler: Ad impressions (event_type = 'ad_impression')
 export async function handleAdImpressions(supabase: any, userId: string, params: StatsParams) {
@@ -17,7 +17,8 @@ export async function handleAdImpressions(supabase: any, userId: string, params:
     .eq("event_type", "ad_impression")
     .gte("created_at", params.startDate)
     .lte("created_at", params.endDate)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .limit(QUERY_LIMIT);
 
   if (eventsError) {
     throw new Error(`Failed to fetch ad impressions: ${eventsError.message}`);
