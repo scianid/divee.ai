@@ -448,22 +448,41 @@ export default function Dashboard() {
     return () => subscription.unsubscribe()
   }, [navigate])
 
-  // Check if user has accounts
+  // Check if user has accounts (owned or collaborator)
   const checkAccounts = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Check if user owns any accounts
+      const { data: ownedAccounts, error: ownedError } = await supabase
         .from('account')
         .select('id')
         .eq('user_id', userId)
         .limit(1)
       
-      if (error) {
-        console.error('Error checking accounts:', error)
+      if (ownedError) {
+        console.error('Error checking owned accounts:', ownedError)
         return
       }
       
-      if (!data || data.length === 0) {
-        // No accounts, show welcome modal
+      // If user owns accounts, they have access
+      if (ownedAccounts && ownedAccounts.length > 0) {
+        setHasAccounts(true)
+        return
+      }
+      
+      // Check if user is a collaborator on any accounts
+      const { data: collaboratorAccounts, error: collaboratorError } = await supabase
+        .from('account_collaborator')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1)
+      
+      if (collaboratorError) {
+        console.error('Error checking collaborator accounts:', collaboratorError)
+        return
+      }
+      
+      if (!collaboratorAccounts || collaboratorAccounts.length === 0) {
+        // No accounts (owned or collaborator), show welcome modal
         setHasAccounts(false)
         setShowWelcomeModal(true)
       } else {
