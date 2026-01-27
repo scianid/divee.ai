@@ -368,8 +368,9 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
               <input type="color" style={{ position: 'absolute', top: -5, left: -5, width: 50, height: 50, padding: 0, border: 'none', cursor: 'pointer' }} value={form.highlight_color_1} onChange={e => handleChange('highlight_color_1', e.target.value)} />
             </div>
             <input 
+              type="text"
               className="inputField" 
-              style={{ width: '100%', padding: '8px 10px', fontSize: 13, borderRadius: 8, border: '1px solid #e5e7eb', color: '#6b7280' }} 
+              style={{ width: '100%', padding: '8px 10px', fontSize: 13, borderRadius: 8, border: '1px solid #e5e7eb', color: '#374151' }} 
               value={form.highlight_color_1} 
               onChange={e => handleChange('highlight_color_1', e.target.value)} 
             />
@@ -382,8 +383,9 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
               <input type="color" style={{ position: 'absolute', top: -5, left: -5, width: 50, height: 50, padding: 0, border: 'none', cursor: 'pointer' }} value={form.highlight_color_2} onChange={e => handleChange('highlight_color_2', e.target.value)} />
             </div>
             <input 
+              type="text"
               className="inputField" 
-              style={{ width: '100%', padding: '8px 10px', fontSize: 13, borderRadius: 8, border: '1px solid #e5e7eb', color: '#6b7280' }} 
+              style={{ width: '100%', padding: '8px 10px', fontSize: 13, borderRadius: 8, border: '1px solid #e5e7eb', color: '#374151' }} 
               value={form.highlight_color_2} 
               onChange={e => handleChange('highlight_color_2', e.target.value)} 
             />
@@ -457,7 +459,7 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         </div>
       </div>
     </div>
-  ), [form.display_mode, form.display_position, form.article_class, form.widget_container_class, handleChange]);
+  ), [form.display_mode, form.display_position, form.article_class, form.widget_container_class, form.highlight_color_1, form.highlight_color_2, handleChange]);
 
   // Component for Prompts
   const PromptsSection = React.useMemo(() => (
