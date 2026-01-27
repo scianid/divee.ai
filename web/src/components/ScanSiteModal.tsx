@@ -191,6 +191,9 @@ export function ScanSiteModal({ open, onClose, onSuccess, accounts }: ScanSiteMo
               <div style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>Create up to 50 widgets at once</div>
             </div>
           </div>
+          <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6, padding: '0 40px', marginTop: 16 }}>
+            Enter the main URL of the site where this widget should be installed, and our powerful AI engine will automatically analyze your content, extract key information, and generate a customized widget tailored to your needs.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: '32px 40px 40px 40px', flex: 1, display: 'flex', flexDirection: 'column', gap: 24 }}>

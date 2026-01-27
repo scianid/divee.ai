@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ProjectFunnelModal } from '../components/ProjectFunnelModal';
 import { ScanSiteModal } from '../components/ScanSiteModal';
@@ -59,6 +60,8 @@ interface Account {
 }
 
 function Inventory() {
+  const location = useLocation();
+  
   // State
   const [projects, setProjects] = useState<Project[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -112,6 +115,15 @@ function Inventory() {
   useEffect(() => {
     fetchUserAndProjects();
   }, []);
+
+  // Open new widget modal if navigated from CreateWidgetModal
+  useEffect(() => {
+    if (location.state?.openNewWidget) {
+      setShowScanModal(true);
+      // Clear the state to prevent reopening on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   async function fetchUserAndProjects() {
     try {

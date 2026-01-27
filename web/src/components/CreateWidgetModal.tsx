@@ -11,7 +11,7 @@ export function CreateWidgetModal({ open, onClose }: CreateWidgetModalProps) {
   if (!open) return null;
 
   const handleCreateWidget = () => {
-    navigate('/inventory');
+    navigate('/inventory', { state: { openNewWidget: true } });
   };
 
   return (
