@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLocation } from 'react-router-dom';
 import CollaboratorsModal from '../components/CollaboratorsModal';
+import { CreateWidgetModal } from '../components/CreateWidgetModal';
 
 interface Account {
   id: string;
@@ -51,6 +52,9 @@ const Accounts: React.FC = () => {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [collaboratorsModal, setCollaboratorsModal] = useState<{ accountId: string; accountName: string; isOwner: boolean } | null>(null);
+  const [widgetCount, setWidgetCount] = useState<number | null>(null);
+  const [showCreateWidgetModal, setShowCreateWidgetModal] = useState(false);
+  const [hasCheckedWidgets, setHasCheckedWidgets] = useState(false);
 
   // Helper
   function highlight(text: string | number | null | undefined, query: string) {
@@ -73,6 +77,37 @@ const Accounts: React.FC = () => {
       setShowCreateForm(true);
     }
   }, [location]);
+
+  // Check widget count
+  useEffect(() => {
+    if (accounts.length > 0 && !hasCheckedWidgets) {
+      checkWidgetCount();
+    }
+  }, [accounts, hasCheckedWidgets]);
+
+  async function checkWidgetCount() {
+    try {
+      const accountIds = accounts.map(a => a.id);
+      if (accountIds.length === 0) return;
+
+      const { count, error } = await supabase
+        .from('project')
+        .select('*', { count: 'exact', head: true })
+        .in('account_id', accountIds);
+      
+      if (error) throw error;
+      
+      setWidgetCount(count || 0);
+      setHasCheckedWidgets(true);
+      
+      // Show modal if user has accounts but 0 widgets
+      if (count === 0) {
+        setShowCreateWidgetModal(true);
+      }
+    } catch (err) {
+      console.error('Error checking widget count:', err);
+    }
+  }
 
   async function fetchUserAndAccounts() {
     setLoading(true);
@@ -468,6 +503,12 @@ const Accounts: React.FC = () => {
           onClose={() => setCollaboratorsModal(null)}
         />
       )}
+
+      {/* Create Widget Modal */}
+      <CreateWidgetModal
+        open={showCreateWidgetModal && widgetCount === 0 && hasCheckedWidgets && accounts.length > 0}
+        onClose={() => setShowCreateWidgetModal(false)}
+      />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import ReactECharts from 'echarts-for-react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
+import { CreateWidgetModal } from '../components/CreateWidgetModal'
 
 // --- Icons ---
 
@@ -292,6 +293,9 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [hasAccounts, setHasAccounts] = useState<boolean | null>(null)
   const [showWelcomeModal, setShowWelcomeModal] = useState(false)
+  const [widgetCount, setWidgetCount] = useState<number | null>(null)
+  const [showCreateWidgetModal, setShowCreateWidgetModal] = useState(false)
+  const [hasCheckedWidgets, setHasCheckedWidgets] = useState(false)
   const navigate = useNavigate()
   
   // Calculate default date range (last 7 days)
@@ -466,6 +470,8 @@ export default function Dashboard() {
       // If user owns accounts, they have access
       if (ownedAccounts && ownedAccounts.length > 0) {
         setHasAccounts(true)
+        // Check widget count after confirming accounts exist
+        checkWidgetCount(userId)
         return
       }
       
@@ -487,9 +493,51 @@ export default function Dashboard() {
         setShowWelcomeModal(true)
       } else {
         setHasAccounts(true)
+        // Check widget count after confirming accounts exist
+        checkWidgetCount(userId)
       }
     } catch (error) {
       console.error('Failed to check accounts:', error)
+    }
+  }
+
+  // Check widget count
+  const checkWidgetCount = async (userId: string) => {
+    try {
+      // Get all account IDs user has access to
+      const { data: ownedAccounts } = await supabase
+        .from('account')
+        .select('id')
+        .eq('user_id', userId)
+      
+      const { data: collaboratorAccounts } = await supabase
+        .from('account_collaborator')
+        .select('account_id')
+        .eq('user_id', userId)
+      
+      const accountIds = [
+        ...(ownedAccounts || []).map(a => a.id),
+        ...(collaboratorAccounts || []).map(c => c.account_id)
+      ]
+      
+      if (accountIds.length === 0) return
+      
+      const { count, error } = await supabase
+        .from('project')
+        .select('*', { count: 'exact', head: true })
+        .in('account_id', accountIds)
+      
+      if (error) throw error
+      
+      setWidgetCount(count || 0)
+      setHasCheckedWidgets(true)
+      
+      // Show modal if user has accounts but 0 widgets
+      if (count === 0) {
+        setShowCreateWidgetModal(true)
+      }
+    } catch (err) {
+      console.error('Error checking widget count:', err)
     }
   }
   
@@ -1209,6 +1257,12 @@ export default function Dashboard() {
         </div>
 
       </div>
+      
+      {/* Create Widget Modal */}
+      <CreateWidgetModal
+        open={showCreateWidgetModal && widgetCount === 0 && hasCheckedWidgets && !showWelcomeModal}
+        onClose={() => setShowCreateWidgetModal(false)}
+      />
     </div>
   )
 }
