@@ -57,6 +57,7 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
   });
   const [tempUrl, setTempUrl] = useState('');
   const [tempPlaceholder, setTempPlaceholder] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   // Reset form when modal opens with new initialData
   React.useEffect(() => {
@@ -462,35 +463,91 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
   ), [form.display_mode, form.display_position, form.article_class, form.widget_container_class, form.highlight_color_1, form.highlight_color_2, handleChange]);
 
   // Component for Prompts
-  const PromptsSection = React.useMemo(() => (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <label className="inputLabel" style={{ marginBottom: 8, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Conversation Starters</label>
+  const PromptsSection = React.useMemo(() => {
+    const handleDragStart = (e: React.DragEvent, idx: number) => {
+      setDraggedIndex(idx);
+      e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (e: React.DragEvent, dropIdx: number) => {
+      e.preventDefault();
+      if (draggedIndex === null || draggedIndex === dropIdx) {
+        setDraggedIndex(null);
+        return;
+      }
+
+      const newArray = [...form.input_text_placeholders];
+      const [draggedItem] = newArray.splice(draggedIndex, 1);
+      newArray.splice(dropIdx, 0, draggedItem);
       
-      {/* Active Prompts List */}
-      <div style={{ flex: 1, marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {form.input_text_placeholders.length === 0 ? (
-           <div style={{ fontSize: 13, color: '#9ca3af', fontStyle: 'italic' }}>No starters added.</div>
-        ) : (
-          form.input_text_placeholders.map((ph, idx) => (
-            <div key={idx} style={{ 
-              background: '#fff', borderRadius: 20, padding: '6px 12px', fontSize: 13, 
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-              color: '#374151', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
-            }}>
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ph}</span>
-              <button 
-                type="button" 
-                onClick={() => handleChange('input_text_placeholders', form.input_text_placeholders.filter((_, i) => i !== idx))}
-                style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#9ca3af', paddingLeft: 8 }}
-                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+      handleChange('input_text_placeholders', newArray);
+      setDraggedIndex(null);
+    };
+
+    const handleDragEnd = () => {
+      setDraggedIndex(null);
+    };
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <label className="inputLabel" style={{ marginBottom: 8, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Conversation Starters</label>
+        
+        {/* Active Prompts List */}
+        <div style={{ flex: 1, marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {form.input_text_placeholders.length === 0 ? (
+            <div style={{ fontSize: 13, color: '#9ca3af', fontStyle: 'italic' }}>No starters added.</div>
+          ) : (
+            form.input_text_placeholders.map((ph, idx) => (
+              <div 
+                key={idx}
+                draggable
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, idx)}
+                onDragEnd={handleDragEnd}
+                style={{ 
+                  background: draggedIndex === idx ? '#f3f4f6' : '#fff', 
+                  borderRadius: 20, 
+                  padding: '6px 12px', 
+                  fontSize: 13, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  color: '#374151', 
+                  border: draggedIndex === idx ? '1px dashed #9ca3af' : '1px solid #e5e7eb', 
+                  boxShadow: draggedIndex === idx ? 'none' : '0 1px 2px rgba(0,0,0,0.02)',
+                  cursor: 'grab',
+                  opacity: draggedIndex === idx ? 0.5 : 1,
+                  transition: 'all 0.15s'
+                }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
-            </div>
-          ))
-        )}
-      </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, overflow: 'hidden' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                  </svg>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{ph}</span>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => handleChange('input_text_placeholders', form.input_text_placeholders.filter((_, i) => i !== idx))}
+                  title="Remove"
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center', color: '#9ca3af', marginLeft: 8, flexShrink: 0 }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+            ))
+          )}
+        </div>
 
       {/* Add Input */}
       <div style={{ background: '#fff', borderRadius: 12, padding: 4, border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
@@ -517,7 +574,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         </button>
       </div>
     </div>
-  ), [form.input_text_placeholders, tempPlaceholder, handleChange]);
+  );
+  }, [form.input_text_placeholders, tempPlaceholder, draggedIndex, handleChange, setDraggedIndex]);
 
   return (
     <div style={{ position: 'fixed', zIndex: 1000, left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(23, 23, 28, 0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
