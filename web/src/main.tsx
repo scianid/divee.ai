@@ -5,11 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './contexts/AuthContext'
 
-// Add immediate console log to verify file is loaded
-console.log('=== MAIN.TSX IS LOADING ===')
-
 const rootElement = document.getElementById('root')
-console.log('Root element found:', !!rootElement)
 
 if (rootElement) {
   createRoot(rootElement).render(
@@ -21,7 +17,6 @@ if (rootElement) {
       </BrowserRouter>
     </StrictMode>,
   )
-  console.log('=== APP RENDERED ===')
 } else {
   console.error('ERROR: Root element not found!')
 }

@@ -32,12 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    console.log('[AuthContext] Initializing...')
-    
     // Initial session check
     getAuthSession()
       .then(session => {
-        console.log('[AuthContext] Session loaded:', session.user?.email, 'Admin:', session.isAdmin)
         setUser(session.user)
         setIsAdmin(session.isAdmin)
         setIsLoading(false)
@@ -51,14 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }))
         }
       })
-      .catch(err => {
-        console.error('[AuthContext] Failed to load session:', err)
+      .catch(() => {
         setIsLoading(false)
       })
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[AuthContext] Auth state changed:', event)
       if (event === 'SIGNED_IN' && session?.user) {
         setUser(session.user)
         
