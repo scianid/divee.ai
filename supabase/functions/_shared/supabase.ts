@@ -23,8 +23,6 @@ export const supabaseClient = createClient(
 
 // Helper to verify user JWT and return service role client
 export async function getAuthenticatedClient(authHeader: string | null) {
-  console.log("Verifying token...");
-  
   if (!authHeader) {
     throw new Error("Missing authorization header");
   }
@@ -36,18 +34,12 @@ export async function getAuthenticatedClient(authHeader: string | null) {
   const { data: { user }, error } = await authClient.auth.getUser();
   
   if (error) {
-    console.error("Token verification failed:", error);
-    console.log("Auth Header Length:", authHeader.length);
-    console.log("Auth Header Start:", authHeader.substring(0, 20));
     throw new Error(`Invalid JWT: ${error.message}`);
   }
   
   if (!user) {
-    console.error("No user found for token");
     throw new Error("Invalid JWT: No user found");
   }
-  
-  console.log(`User verified: ${user.id}`);
 
   // Return service role client for querying analytics (bypasses RLS)
   return { supabase: supabaseClient, userId: user.id };

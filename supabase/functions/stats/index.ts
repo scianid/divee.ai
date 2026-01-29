@@ -19,8 +19,6 @@ Deno.serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders });
   }
   
-  console.log("RUNNING");
-  
   try {
     const url = new URL(req.url);
     const path = url.pathname;
