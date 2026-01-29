@@ -26,17 +26,9 @@ Deno.serve(async (req: Request) => {
 
     const isAdmin = !!adminData;
 
-    // Get user email
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
-    if (userError) {
-      throw new Error("Failed to get user details");
-    }
-
     return new Response(
       JSON.stringify({
         userId,
-        email: user?.email || null,
         isAdmin,
         role: isAdmin ? "admin" : "user",
       }),

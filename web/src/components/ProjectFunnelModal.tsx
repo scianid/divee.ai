@@ -69,6 +69,11 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
   // Reset form when modal opens with new initialData
   React.useEffect(() => {
     if (open && initialData) {
+      console.log('[Modal] Loading project data:', {
+        show_ad: initialData.show_ad,
+        ad_tag_id: initialData.ad_tag_id,
+        project_id: initialData.project_id
+      });
       setForm({
         account_id: initialData.account_id || accounts[0]?.id || '',
         client_name: initialData.client_name || '',
@@ -84,6 +89,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         display_position: initialData.display_position || 'bottom-right',
         article_class: initialData.article_class || '.article',
         widget_container_class: initialData.widget_container_class || '',
+        ad_tag_id: initialData.ad_tag_id || '',
+        show_ad: initialData.show_ad ?? true,
       });
     } else if (open && !initialData) {
       // Reset to defaults for new project
@@ -102,6 +109,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         display_position: 'bottom-right',
         article_class: '.article',
         widget_container_class: '',
+        ad_tag_id: '',
+        show_ad: true,
       });
       setStep(1);
     }
@@ -585,7 +594,9 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
   }, [form.input_text_placeholders, tempPlaceholder, draggedIndex, handleChange, setDraggedIndex]);
 
   // Admin Section - Only visible to admins
-  const AdminSection = React.useMemo(() => (
+  const AdminSection = React.useMemo(() => {
+    console.log('[AdminSection] Current form.show_ad:', form.show_ad, 'Type:', typeof form.show_ad);
+    return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Enable Ads Toggle */}
       <div>
@@ -638,7 +649,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
         </p>
       </div>
     </div>
-  ), [form.show_ad, form.ad_tag_id, handleChange]);
+    );
+  }, [form.show_ad, form.ad_tag_id, handleChange]);
 
   return (
     <div style={{ position: 'fixed', zIndex: 1000, left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(23, 23, 28, 0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

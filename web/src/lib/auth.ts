@@ -11,33 +11,34 @@ export interface AuthSession {
  * Check if the current user is a system admin
  * Uses the /me edge function for secure, RLS-bypassing admin check
  */
-export async function checkIsAdmin(userId: string): Promise<boolean> {
+export async function checkIsAdmin(userId: string, accessToken: string): Promise<boolean> {
   try {
     console.log('[Admin Check] Checking user via /me endpoint:', userId)
-    
-    // Get the current session token
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      console.log('[Admin Check] No session found')
-      return false
-    }
+
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/me`
+    console.log('[Admin Check] Fetching:', url)
 
     // Add timeout to detect hanging queries
     const timeoutPromise = new Promise<never>((_, reject) => 
-      setTimeout(() => reject(new Error('Query timeout after 5s')), 5000)
+      setTimeout(() => reject(new Error('Query timeout after 10s')), 10000)
     )
     
-    const queryPromise = fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/me`, {
+    const queryPromise = fetch(url, {
       headers: {
-        'Authorization': `Bearer ${session.access_token}`,
+        'Authorization': `Bearer ${accessToken}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
       },
     })
 
+    console.log('[Admin Check] Waiting for response...')
     const response = await Promise.race([queryPromise, timeoutPromise])
     
+    console.log('[Admin Check] Response status:', response.status)
+    
     if (!response.ok) {
-      console.error('[Admin Check] HTTP error:', response.status)
+      const errorText = await response.text()
+      console.error('[Admin Check] HTTP error:', response.status, errorText)
       return false
     }
 
@@ -84,8 +85,19 @@ export async function getAuthSession(): Promise<AuthSession> {
 
     console.log('[Auth] ✅ User found:', user.email)
     
+    // Get session for access token
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      console.log('[Auth] No session found for admin check')
+      return {
+        user,
+        isAdmin: false,
+        isLoading: false
+      }
+    }
+    
     // Check admin status
-    const isAdmin = await checkIsAdmin(user.id)
+    const isAdmin = await checkIsAdmin(user.id, session.access_token)
     console.log('[Auth] Final admin status:', isAdmin)
 
     return {
