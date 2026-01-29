@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { AdminBadge } from '../components/AdminBadge'
 
 // Icons
 const DashboardIcon = () => (
@@ -61,8 +62,34 @@ export function DashboardLayout() {
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate('/login')
+    try {
+      console.log('[Logout] Starting sign out...')
+      
+      // Add timeout
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Logout timeout after 5s')), 5000)
+      )
+      
+      const signOutPromise = supabase.auth.signOut()
+      
+      const result = await Promise.race([signOutPromise, timeoutPromise]) as any
+      
+      if (result?.error) {
+        console.error('[Logout] Error:', result.error)
+        alert('Failed to sign out: ' + result.error.message)
+        return
+      }
+      
+      console.log('[Logout] Success! Redirecting to login...')
+      sessionStorage.clear() // Clear admin status
+      navigate('/login')
+    } catch (err: any) {
+      console.error('[Logout] Exception:', err.message)
+      // Even if signOut fails, still redirect to login
+      console.log('[Logout] Forcing redirect anyway...')
+      sessionStorage.clear()
+      navigate('/login')
+    }
   }
 
   const navItems = [
@@ -103,7 +130,8 @@ export function DashboardLayout() {
           alignItems: 'center', 
           padding: '0 20px',
           borderBottom: '1px solid rgba(0,0,0,0.04)',
-          minWidth: '240px'
+          minWidth: '240px',
+          gap: '8px'
         }}>
             <img 
               src="https://srv.divee.ai/storage/v1/object/public/public-files/divee.ai-logo.png" 
@@ -111,7 +139,7 @@ export function DashboardLayout() {
               style={{ width: '24px', height: '24px', objectFit: 'contain', flexShrink: 0 }}
             />
             <span style={{ 
-               marginLeft: '12px', 
+               marginLeft: '4px', 
                fontWeight: 700, 
                fontSize: '18px', 
                color: 'var(--heading)',
@@ -121,6 +149,14 @@ export function DashboardLayout() {
             }}>
               Divee.AI
             </span>
+            <div style={{
+              opacity: collapsed ? 0 : 1,
+              transform: collapsed ? 'scale(0.8)' : 'scale(1)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'left center'
+            }}>
+              <AdminBadge />
+            </div>
         </div>
 
         {/* Navigation */}
@@ -173,7 +209,11 @@ export function DashboardLayout() {
         {/* Bottom Actions */}
         <div style={{ borderTop: '1px solid rgba(0,0,0,0.04)', padding: '10px 0', minWidth: '240px' }}>
             <button
-                onClick={handleLogout}
+                onClick={(e) => {
+                  console.log('[Logout] Button clicked!', e)
+                  handleLogout()
+                }}
+                onMouseDown={() => console.log('[Logout] Mouse down')}
                 style={{
                     width: '100%',
                     height: '48px',
@@ -184,6 +224,7 @@ export function DashboardLayout() {
                     border: 'none',
                     cursor: 'pointer',
                     color: '#ef4444',
+                    pointerEvents: 'auto'
                 }}
             >
                 <div style={{

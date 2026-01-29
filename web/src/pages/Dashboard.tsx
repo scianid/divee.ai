@@ -6,6 +6,7 @@ import ReactECharts from 'echarts-for-react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { CreateWidgetModal } from '../components/CreateWidgetModal'
+import { AdminIndicator } from '../components/AdminBadge'
 
 // --- Icons ---
 
@@ -764,10 +765,15 @@ export default function Dashboard() {
       )}
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
         <h1 style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', margin: 0 }}>
           Hello, {displayName}!
         </h1>
+      </div>
+
+      {/* Admin Status Indicator */}
+      <div style={{ marginBottom: '24px' }}>
+        <AdminIndicator />
       </div>
 
       {/* Toolbar */}
