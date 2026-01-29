@@ -161,6 +161,56 @@ function ImpressionsMap({ locations }: { locations: any[] }) {
     )
 }
 
+function QuestionsBreakdownChart({ suggested, custom }: { suggested: number, custom: number }) {
+    const total = suggested + custom;
+    const suggestedPct = total > 0 ? Math.round((suggested / total) * 100) : 0;
+    const customPct = total > 0 ? Math.round((custom / total) * 100) : 0;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '8px 0' }}>
+            {/* Suggested Questions */}
+            <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8b5cf6' }} />
+                        <span style={{ fontSize: '14px', fontWeight: 500, color: '#374151' }}>Suggested</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                        <span style={{ fontSize: '24px', fontWeight: 700, color: '#1e293b' }}>{suggested.toLocaleString()}</span>
+                        <span style={{ fontSize: '13px', color: '#94a3b8' }}>({suggestedPct}%)</span>
+                    </div>
+                </div>
+                <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${suggestedPct}%`, background: '#8b5cf6', borderRadius: '4px', transition: 'width 0.3s' }} />
+                </div>
+            </div>
+
+            {/* Freeform Questions */}
+            <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6' }} />
+                        <span style={{ fontSize: '14px', fontWeight: 500, color: '#374151' }}>Freeform</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                        <span style={{ fontSize: '24px', fontWeight: 700, color: '#1e293b' }}>{custom.toLocaleString()}</span>
+                        <span style={{ fontSize: '13px', color: '#94a3b8' }}>({customPct}%)</span>
+                    </div>
+                </div>
+                <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${customPct}%`, background: '#3b82f6', borderRadius: '4px', transition: 'width 0.3s' }} />
+                </div>
+            </div>
+
+            {/* Total */}
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>Total Questions</span>
+                <span style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b' }}>{total.toLocaleString()}</span>
+            </div>
+        </div>
+    );
+}
+
 function PlatformsChart({ data }: { data: any[] }) {
     const sorted = [...data].sort((a, b) => b.count - a.count);
     const top = sorted.slice(0, 4);
@@ -671,10 +721,16 @@ export default function Dashboard() {
   }
   
   // Derived stats
-  // Note: Support both old ('ask_question') and new ('question_asked') event type names
+  // Question events: suggestion_question_asked (from suggested) and custom_question_asked (freeform)
+  // Also support legacy event types for backwards compatibility
   const totalSuggestions = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'get_suggestions')?.count || 0;
-  const totalQuestions = (stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'question_asked')?.count || 0) + 
-                         (stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'ask_question')?.count || 0);
+  const suggestedQuestions = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'suggestion_question_asked')?.count || 0;
+  const customQuestions = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'custom_question_asked')?.count || 0;
+  const suggestionClicked = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'suggestion_clicked')?.count || 0;
+  // Legacy support
+  const legacyQuestions = (stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'question_asked')?.count || 0) + 
+                          (stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'ask_question')?.count || 0);
+  const totalQuestions = suggestedQuestions + customQuestions + legacyQuestions;
   const totalImpressions = stats.impressionsByWidget?.total ?? 0;
 
   return (
@@ -1166,9 +1222,29 @@ export default function Dashboard() {
                              Embedded articles
                          </div>
                      </div>
+                     
+                     {/* Suggestion Clicked */}
+                     <div style={{ 
+                         display: 'flex', 
+                         flexDirection: 'column', 
+                         padding: '20px', 
+                         background: '#fff', 
+                         borderRadius: '12px',
+                         border: '1px solid #e2e8f0'
+                     }}>
+                         <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
+                             Suggestions
+                         </div>
+                         <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
+                             {loading ? '...' : suggestionClicked}
+                         </div>
+                         <div style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4' }}>
+                             User clicked on a suggested article
+                         </div>
+                     </div>
                  </div>
                  <p style={{ fontSize: '13px', color: '#64748b', marginTop: '20px', marginBottom: 0, lineHeight: '1.5' }}>
-                    Breakdown of user interactions: suggestions requested, questions asked, and number of articles with the widget successfully installed.
+                    Breakdown of user interactions: suggestions requested, questions asked, articles embedded, and suggested article clicks.
                  </p>
              </Card>
         </div>
@@ -1191,6 +1267,23 @@ export default function Dashboard() {
                       </p>
                     </>
                  )}
+             </Card>
+        </div>
+
+        <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
+             <Card title="Questions Breakdown" style={{ height: '100%' }}>
+                {loading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <div style={{ display: 'inline-block', width: '30px', height: '30px', border: '3px solid #f3f4f6', borderTop: '3px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <>
+                    <QuestionsBreakdownChart suggested={suggestedQuestions} custom={customQuestions} />
+                    <p style={{ fontSize: '13px', color: '#64748b', marginTop: '12px', marginBottom: 0, lineHeight: '1.5' }}>
+                        <b>Suggested:</b> user clicked a suggested question.<br /><b>Freeform:</b> user typed a question.
+                    </p>
+                  </>
+                )}
              </Card>
         </div>
 
