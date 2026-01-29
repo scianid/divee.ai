@@ -1,5 +1,5 @@
 import { getProjectIdsForUser } from "../../_shared/projectDao.ts";
-import { StatsParams, QUERY_LIMIT } from "./params.ts";
+import { StatsParams } from "./params.ts";
 
 // Handler: Total interactions
 export async function handleTotalInteractions(supabase: any, userId: string, params: StatsParams) {
@@ -9,31 +9,25 @@ export async function handleTotalInteractions(supabase: any, userId: string, par
   if (projectIds.length === 0)
     return { total: 0, breakdown: [] };
 
-  // Get total events
-  const { data: events, error: eventsError } = await supabase
-    .from("analytics_events")
-    .select("event_type")
-    .in("project_id", projectIds)
-    .gte("created_at", params.startDate)
-    .lte("created_at", params.endDate)
-    .limit(QUERY_LIMIT);
+  // Use SQL aggregation to avoid hitting query limits
+  const { data: aggregatedData, error } = await supabase.rpc('get_total_interactions_aggregated', {
+    p_project_ids: projectIds,
+    p_start_date: params.startDate,
+    p_end_date: params.endDate
+  });
 
-  if (eventsError) {
-    throw new Error(`Failed to fetch events: ${eventsError.message}`);
+  if (error) {
+    throw new Error(`Failed to fetch events: ${error.message}`);
   }
 
-  // Count by event type
-  const breakdown = events?.reduce((acc: any, event: any) => {
-    const type = event.event_type || "unknown";
-    acc[type] = (acc[type] || 0) + 1;
-    return acc;
-  }, {});
+  // Calculate total from aggregated counts
+  const total = aggregatedData?.reduce((sum: number, item: any) => sum + Number(item.count), 0) || 0;
 
   return {
-    total: events?.length || 0,
-    breakdown: Object.entries(breakdown || {}).map(([type, count]) => ({
-      type,
-      count,
-    })),
+    total,
+    breakdown: aggregatedData?.map((item: any) => ({
+      type: item.event_type || "unknown",
+      count: Number(item.count),
+    })) || [],
   };
 }
