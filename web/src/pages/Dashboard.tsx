@@ -672,8 +672,10 @@ export default function Dashboard() {
   }
   
   // Derived stats
+  // Note: Support both old ('ask_question') and new ('question_asked') event type names
   const totalSuggestions = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'get_suggestions')?.count || 0;
-  const totalQuestions = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'ask_question')?.count || 0;
+  const totalQuestions = (stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'question_asked')?.count || 0) + 
+                         (stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'ask_question')?.count || 0);
   const totalImpressions = stats.impressionsByWidget?.total ?? 0;
 
   return (
