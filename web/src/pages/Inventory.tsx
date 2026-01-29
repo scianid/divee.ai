@@ -324,7 +324,7 @@ function Inventory() {
     }
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setDeleteId(id);
     setDeleteError(null);
   };
@@ -629,8 +629,8 @@ function Inventory() {
                 <th style={{ padding: '14px 16px', fontWeight: 600, fontSize: 15, borderBottom: '1px solid #ececec', background: 'none', cursor: 'pointer' }} onClick={() => handleSort('client_description')}>
                   Description {getSortIcon('client_description')}
                 </th>
-                <th style={{ padding: '14px 16px', fontWeight: 600, fontSize: 15, borderBottom: '1px solid #ececec', background: 'none', cursor: 'pointer' }} onClick={() => handleSort('id')}>
-                  ID {getSortIcon('id')}
+                <th style={{ padding: '14px 16px', fontWeight: 600, fontSize: 15, borderBottom: '1px solid #ececec', background: 'none', cursor: 'pointer' }} onClick={() => handleSort('project_id')}>
+                  ID {getSortIcon('project_id')}
                 </th>
                 <th style={{ padding: '14px 16px', fontWeight: 600, fontSize: 15, borderBottom: '1px solid #ececec', background: 'none', cursor: 'pointer' }} onClick={() => handleSort('language')}>
                   Language {getSortIcon('language')}

@@ -1,5 +1,5 @@
 import { getProjectIdsForUser } from "../../_shared/projectDao.ts";
-import { StatsParams, QUERY_LIMIT } from "./params.ts";
+import { StatsParams } from "./params.ts";
 
 // Handler: Impressions over time
 export async function handleImpressionsOverTime(supabase: any, userId: string, params: StatsParams) {
@@ -9,48 +9,25 @@ export async function handleImpressionsOverTime(supabase: any, userId: string, p
         return { timeline: [] };
     }
 
-    // Get impressions grouped by date
-    const { data: impressions, error } = await supabase
-        .from("analytics_impressions")
-        .select("created_at")
-        .in("project_id", projectIds)
-        .gte("created_at", params.startDate)
-        .lte("created_at", params.endDate)
-        .order("created_at")
-        .limit(QUERY_LIMIT);
-
-    if (error) {
-        throw new Error(`Failed to fetch impressions: ${error.message}`);
-    }
-
-    // Group by date/hour based on time range
+    // Determine grouping granularity based on time range
     const startDate = new Date(params.startDate);
     const endDate = new Date(params.endDate);
     const hoursDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
     const isHourly = hoursDiff <= 48; // Use hourly grouping for <= 48 hours
 
-    const groupedCounts = impressions?.reduce((acc: any, imp: any) => {
-        const date = new Date(imp.created_at);
-        let key: string;
-        
-        if (isHourly) {
-            // Group by hour
-            key = date.toISOString().slice(0, 13) + ":00:00.000Z";
-        } else {
-            // Group by day
-            key = date.toISOString().slice(0, 10);
-        }
+    // Use SQL aggregation to avoid hitting query limits
+    const { data: aggregatedData, error } = await supabase.rpc('get_impressions_over_time_aggregated', {
+        p_project_ids: projectIds,
+        p_start_date: params.startDate,
+        p_end_date: params.endDate,
+        p_group_by: isHourly ? 'hour' : 'day'
+    });
 
-        if (!acc[key]) {
-            acc[key] = { date: key, count: 0 };
-        }
-        acc[key].count++;
-        return acc;
-    }, {});
+    if (error) {
+        throw new Error(`Failed to fetch impressions: ${error.message}`);
+    }
 
     return {
-        timeline: Object.values(groupedCounts || {}).sort(
-            (a: any, b: any) => a.date.localeCompare(b.date)
-        ),
+        timeline: aggregatedData || [],
     };
 }
