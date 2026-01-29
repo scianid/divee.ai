@@ -63,8 +63,6 @@ export function DashboardLayout() {
 
   const handleLogout = async () => {
     try {
-      console.log('[Logout] Starting sign out...')
-      
       // Add timeout
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Logout timeout after 5s')), 5000)
@@ -75,18 +73,14 @@ export function DashboardLayout() {
       const result = await Promise.race([signOutPromise, timeoutPromise]) as any
       
       if (result?.error) {
-        console.error('[Logout] Error:', result.error)
         alert('Failed to sign out: ' + result.error.message)
         return
       }
       
-      console.log('[Logout] Success! Redirecting to login...')
       sessionStorage.clear() // Clear admin status
       navigate('/login')
-    } catch (err: any) {
-      console.error('[Logout] Exception:', err.message)
+    } catch {
       // Even if signOut fails, still redirect to login
-      console.log('[Logout] Forcing redirect anyway...')
       sessionStorage.clear()
       navigate('/login')
     }
@@ -209,11 +203,7 @@ export function DashboardLayout() {
         {/* Bottom Actions */}
         <div style={{ borderTop: '1px solid rgba(0,0,0,0.04)', padding: '10px 0', minWidth: '240px' }}>
             <button
-                onClick={(e) => {
-                  console.log('[Logout] Button clicked!', e)
-                  handleLogout()
-                }}
-                onMouseDown={() => console.log('[Logout] Mouse down')}
+                onClick={() => handleLogout()}
                 style={{
                     width: '100%',
                     height: '48px',

@@ -71,11 +71,6 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
   // Reset form when modal opens with new initialData
   React.useEffect(() => {
     if (open && initialData) {
-      console.log('[Modal] Loading project data:', {
-        show_ad: initialData.show_ad,
-        ad_tag_id: initialData.ad_tag_id,
-        project_id: initialData.project_id
-      });
       setForm({
         account_id: initialData.account_id || accounts[0]?.id || '',
         client_name: initialData.client_name || '',
@@ -597,7 +592,6 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
 
   // Admin Section - Only visible to admins
   const AdminSection = React.useMemo(() => {
-    console.log('[AdminSection] Current form.show_ad:', form.show_ad, 'Type:', typeof form.show_ad);
     return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Enable Ads Toggle */}

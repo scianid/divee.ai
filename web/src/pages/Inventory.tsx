@@ -176,8 +176,6 @@ function Inventory() {
       
       if (projectsError) throw projectsError;
       
-      console.log('[Load Projects] Raw project data:', projectsData?.[0]);
-      
       let finalProjects = projectsData || [];
       
       // If admin, fetch project_config separately to avoid RLS join issues
@@ -187,8 +185,6 @@ function Inventory() {
           .from('project_config')
           .select('project_id, ad_tag_id')
           .in('project_id', projectUuids);
-        
-        console.log('[Load Projects] Config data:', configData);
         
         // Merge config data into projects
         if (configData) {
@@ -200,7 +196,6 @@ function Inventory() {
         }
       }
       
-      console.log('[Load Projects] Final project with ad fields:', finalProjects?.[0]);
       setProjects(finalProjects as Project[]);
     } catch (err) {
       console.error('Error loading projects:', err);
@@ -267,11 +262,9 @@ function Inventory() {
       if (error) throw error;
       if (data) {
         const savedProject = data[0] as Project;
-        console.log('[Project Save] Saved project UUID:', savedProject.project_id);
         
         // Save admin-only ad_tag_id to project_config if user is admin and ad_tag_id is provided
         if (form.ad_tag_id !== undefined && form.ad_tag_id !== '') {
-          console.log('[Project Config] Saving ad_tag_id:', form.ad_tag_id, 'for project UUID:', savedProject.project_id);
           
           const configPayload = {
             project_id: savedProject.project_id, // Use UUID, not integer ID
@@ -285,26 +278,18 @@ function Inventory() {
             .eq('project_id', savedProject.project_id)
             .maybeSingle();
           
-          console.log('[Project Config] Existing config:', existingConfig);
-          
           if (existingConfig) {
             // Update existing config
-            console.log('[Project Config] Updating existing config');
             const { error: configError } = await supabase
               .from('project_config')
               .update(configPayload)
               .eq('project_id', savedProject.project_id);
-            if (configError) console.error('Failed to update project_config:', configError);
           } else {
             // Insert new config
-            console.log('[Project Config] Inserting new config');
             const { error: configError } = await supabase
               .from('project_config')
               .insert([configPayload]);
-            if (configError) {
-              console.error('Failed to insert project_config:', configError);
-              // Non-blocking - don't throw, just log
-            }
+            // Non-blocking errors are ignored
           }
         }
         
@@ -726,11 +711,6 @@ function Inventory() {
                       <button 
                         title="Settings"
                         onClick={() => {
-                          console.log('[Edit Click] Project data being passed to modal:', {
-                            project_id: project.project_id,
-                            show_ad: project.show_ad,
-                            ad_tag_id: project.ad_tag_id
-                          });
                           setEditingProject(project);
                           setShowCreateForm(true);
                         }}
