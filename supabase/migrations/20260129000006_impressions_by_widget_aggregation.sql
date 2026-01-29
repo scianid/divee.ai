@@ -7,13 +7,13 @@ CREATE OR REPLACE FUNCTION get_impressions_by_widget_aggregated(
   p_end_date TIMESTAMPTZ
 )
 RETURNS TABLE (
-  project_id UUID,
+  project_id TEXT,
   count BIGINT
 ) AS $$
 BEGIN
   RETURN QUERY
   SELECT 
-    ai.project_id,
+    ai.project_id::TEXT AS project_id,
     COUNT(*)::BIGINT AS count
   FROM analytics_impressions ai
   WHERE 
