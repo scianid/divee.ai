@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAdmin } from '../hooks/useAdmin';
 import { ProjectFunnelModal } from '../components/ProjectFunnelModal';
 import { ScanSiteModal } from '../components/ScanSiteModal';
 
@@ -41,6 +42,7 @@ interface Project {
   client_description: string | null;
   highlight_color: string[] | null;
   show_ad: boolean;
+  ad_tag_id?: string; // Admin-only field from project_config
   input_text_placeholders: string[];
   allowed_urls: string[] | null;
   project_id: string;
@@ -61,6 +63,7 @@ interface Account {
 
 function Inventory() {
   const location = useLocation();
+  const isAdmin = useAdmin();
   
   // State
   const [projects, setProjects] = useState<Project[]>([]);
@@ -173,7 +176,28 @@ function Inventory() {
         .order('created_at', { ascending: false });
       
       if (projectsError) throw projectsError;
-      setProjects(projectsData as Project[]);
+      
+      let finalProjects = projectsData || [];
+      
+      // If admin, fetch project_config separately to avoid RLS join issues
+      if (isAdmin && finalProjects.length > 0) {
+        const projectIds = finalProjects.map(p => p.id);
+        const { data: configData } = await supabase
+          .from('project_config')
+          .select('project_id, ad_tag_id')
+          .in('project_id', projectIds);
+        
+        // Merge config data into projects
+        if (configData) {
+          const configMap = new Map(configData.map(c => [c.project_id, c]));
+          finalProjects = finalProjects.map(p => ({
+            ...p,
+            ad_tag_id: configMap.get(p.id)?.ad_tag_id || ''
+          }));
+        }
+      }
+      
+      setProjects(finalProjects as Project[]);
     } catch (err) {
       console.error('Error loading projects:', err);
     } finally {
@@ -218,6 +242,7 @@ function Inventory() {
         display_position: form.display_position || 'bottom-right',
         article_class: form.article_class || '.article',
         widget_container_class: form.widget_container_class || null,
+        show_ad: form.show_ad !== undefined ? form.show_ad : true,
       };
 
       let result;
@@ -230,20 +255,49 @@ function Inventory() {
       } else {
         result = await supabase
           .from('project')
-          .insert([{
-            ...payload,
-            show_ad: true
-          }])
+          .insert([payload])
           .select();
       }
         
       const { data, error } = result;
       if (error) throw error;
       if (data) {
+        const savedProject = data[0] as Project;
+        
+        // Save admin-only ad_tag_id to project_config if user is admin
+        if (form.ad_tag_id !== undefined) {
+          const configPayload = {
+            project_id: savedProject.id,
+            ad_tag_id: form.ad_tag_id || null,
+          };
+          
+          // Check if config exists
+          const { data: existingConfig } = await supabase
+            .from('project_config')
+            .select('id')
+            .eq('project_id', savedProject.id)
+            .maybeSingle();
+          
+          if (existingConfig) {
+            // Update existing config
+            const { error: configError } = await supabase
+              .from('project_config')
+              .update(configPayload)
+              .eq('project_id', savedProject.id);
+            if (configError) console.error('Failed to update project_config:', configError);
+          } else {
+            // Insert new config
+            const { error: configError } = await supabase
+              .from('project_config')
+              .insert([configPayload]);
+            if (configError) console.error('Failed to insert project_config:', configError);
+          }
+        }
+        
         if (editingProject) {
-          setProjects(projects.map(p => p.id === editingProject.id ? (data[0] as Project) : p));
+          setProjects(projects.map(p => p.id === editingProject.id ? savedProject : p));
         } else {
-          setProjects([data[0] as Project, ...projects]);
+          setProjects([savedProject, ...projects]);
         }
         setShowCreateForm(false);
         setEditingProject(null);

@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useAdmin } from '../hooks/useAdmin';
 
 // EditSectionCard component moved outside to prevent recreation on each render
 const EditSectionCard = ({ title, children, icon }: { title: string, children: React.ReactNode, icon?: React.ReactNode }) => (
@@ -26,6 +27,9 @@ export interface ProjectFunnelFormData {
   display_position: string;
   article_class: string;
   widget_container_class: string;
+  // Admin-only fields
+  ad_tag_id?: string;
+  show_ad?: boolean;
 }
 
 export interface ProjectFunnelProps {
@@ -37,6 +41,7 @@ export interface ProjectFunnelProps {
 }
 
 export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialData }: ProjectFunnelProps) {
+  const isAdmin = useAdmin();
   const [step, setStep] = useState(1);
   const isEditMode = !!initialData;
   const [form, setForm] = useState<ProjectFunnelFormData>({
@@ -54,6 +59,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
     display_position: initialData?.display_position || 'bottom-right',
     article_class: initialData?.article_class || '.article',
     widget_container_class: initialData?.widget_container_class || '',
+    ad_tag_id: initialData?.ad_tag_id || '',
+    show_ad: initialData?.show_ad ?? true,
   });
   const [tempUrl, setTempUrl] = useState('');
   const [tempPlaceholder, setTempPlaceholder] = useState('');
@@ -577,6 +584,62 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
   );
   }, [form.input_text_placeholders, tempPlaceholder, draggedIndex, handleChange, setDraggedIndex]);
 
+  // Admin Section - Only visible to admins
+  const AdminSection = React.useMemo(() => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Enable Ads Toggle */}
+      <div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '12px 0' }}>
+          <div style={{ position: 'relative', width: 44, height: 24, background: form.show_ad ? '#10b981' : '#e5e7eb', borderRadius: 12, transition: 'background 0.2s' }}>
+            <div style={{ position: 'absolute', width: 20, height: 20, background: 'white', borderRadius: '50%', top: 2, left: form.show_ad ? 22 : 2, transition: 'left 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
+          </div>
+          <input 
+            type="checkbox"
+            checked={form.show_ad ?? true}
+            onChange={(e) => handleChange('show_ad', e.target.checked)}
+            style={{ display: 'none' }}
+          />
+          <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>Enable Ads</span>
+        </label>
+        <p style={{ margin: '4px 0 0 0', fontSize: 13, color: '#6b7280' }}>
+          Show advertisements in the widget to monetize
+        </p>
+      </div>
+
+      {/* Ad Tag ID Input */}
+      <div>
+        <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 8, color: '#374151' }}>
+          Ad Tag ID
+        </label>
+        <input
+          type="text"
+          value={form.ad_tag_id || ''}
+          onChange={(e) => handleChange('ad_tag_id', e.target.value)}
+          placeholder="Enter ad network tag ID"
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            fontSize: 14,
+            border: '1px solid #e5e7eb',
+            borderRadius: 8,
+            outline: 'none',
+            transition: 'all 0.2s'
+          }}
+          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+        />
+        <p style={{ margin: '6px 0 0 0', fontSize: 12, color: '#f59e0b', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="current Color" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          Admin only - Controls revenue flow
+        </p>
+      </div>
+    </div>
+  ), [form.show_ad, form.ad_tag_id, handleChange]);
+
   return (
     <div style={{ position: 'fixed', zIndex: 1000, left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(23, 23, 28, 0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ 
@@ -652,6 +715,16 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
                   >
                     {PromptsSection}
                   </EditSectionCard>
+                  
+                  {/* Admin Section - Only visible to admins */}
+                  {isAdmin && (
+                    <EditSectionCard 
+                      title="Monetization" 
+                      icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>}
+                    >
+                      {AdminSection}
+                    </EditSectionCard>
+                  )}
                 </div>
               </div>
             ) : (
