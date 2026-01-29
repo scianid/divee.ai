@@ -30,6 +30,8 @@ export interface ProjectFunnelFormData {
   // Admin-only fields
   ad_tag_id?: string;
   show_ad?: boolean;
+  // Optional ID for editing existing projects
+  project_id?: string;
 }
 
 export interface ProjectFunnelProps {
