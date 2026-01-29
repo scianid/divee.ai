@@ -1,5 +1,5 @@
 import { getProjectIdsForUser } from "../../_shared/projectDao.ts";
-import { StatsParams, QUERY_LIMIT } from "./params.ts";
+import { StatsParams } from "./params.ts";
 
 // Handler: Impressions by location
 export async function handleImpressionsByLocation(supabase: any, userId: string, params: StatsParams) {
@@ -9,39 +9,25 @@ export async function handleImpressionsByLocation(supabase: any, userId: string,
     return { locations: [] };
   }
 
-  // Get impressions with geo data
-  const { data: impressions, error } = await supabase
-    .from("analytics_impressions")
-    .select("geo_country, geo_city, geo_lat, geo_lng")
-    .in("project_id", projectIds)
-    .gte("created_at", params.startDate)
-    .lte("created_at", params.endDate)
-    .not("geo_country", "is", null)
-    .limit(QUERY_LIMIT);
+  // Use SQL aggregation to avoid hitting query limits
+  const { data: aggregatedData, error } = await supabase.rpc('get_impressions_by_location_aggregated', {
+    p_project_ids: projectIds,
+    p_start_date: params.startDate,
+    p_end_date: params.endDate
+  });
 
   if (error) {
     throw new Error(`Failed to fetch impressions: ${error.message}`);
   }
 
-  // Count by country and city
-  const locationCounts = impressions?.reduce((acc: any, imp: any) => {
-    const key = `${imp.geo_country}|${imp.geo_city || "Unknown"}`;
-    if (!acc[key]) {
-      acc[key] = {
-        country: imp.geo_country,
-        city: imp.geo_city || "Unknown",
-        latitude: imp.geo_lat,
-        longitude: imp.geo_lng,
-        count: 0,
-      };
-    }
-    acc[key].count++;
-    return acc;
-  }, {});
-
-  const locations = Object.values(locationCounts || {}).sort(
-    (a: any, b: any) => b.count - a.count
-  );
+  // Map to expected format
+  const locations = aggregatedData?.map((item: any) => ({
+    country: item.geo_country,
+    city: item.geo_city,
+    latitude: item.geo_lat,
+    longitude: item.geo_lng,
+    count: Number(item.count),
+  })) || [];
 
   return { locations };
 }

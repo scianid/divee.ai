@@ -8,6 +8,12 @@ import 'leaflet/dist/leaflet.css'
 import { CreateWidgetModal } from '../components/CreateWidgetModal'
 import { AdminIndicator } from '../components/AdminBadge'
 
+// --- Helper Functions ---
+
+const formatNumber = (num: number): string => {
+  return num.toLocaleString();
+};
+
 // --- Icons ---
 
 
@@ -668,7 +674,7 @@ export default function Dashboard() {
   // Derived stats
   const totalSuggestions = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'get_suggestions')?.count || 0;
   const totalQuestions = stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'ask_question')?.count || 0;
-  const totalImpressions = stats.impressionsByWidget?.widgets?.reduce((sum: number, w: any) => sum + w.impressions, 0) ?? 0;
+  const totalImpressions = stats.impressionsByWidget?.total ?? 0;
 
   return (
     <div style={{ 
@@ -994,7 +1000,7 @@ export default function Dashboard() {
                 <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                         <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                        {totalImpressions}
+                        {formatNumber(totalImpressions)}
                         </span>
                     </div>
                     {/* Hide static labels, TrendChart handles axis now implicitly by shape, or we can improve it later */}
@@ -1031,7 +1037,7 @@ export default function Dashboard() {
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                         <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                        {stats.totalInteractions?.total ?? 0}
+                        {formatNumber(stats.totalInteractions?.total ?? 0)}
                         </span>
                     </div>
                     <TrendChart data={stats.interactionsOverTime?.timeline || []} />
@@ -1066,7 +1072,7 @@ export default function Dashboard() {
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                         <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                        {stats.adImpressions?.total ?? 0}
+                        {formatNumber(stats.adImpressions?.total ?? 0)}
                         </span>
                     </div>
                     <TrendChart data={stats.adImpressions?.timeline || []} />
