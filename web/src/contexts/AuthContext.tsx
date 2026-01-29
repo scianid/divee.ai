@@ -25,7 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshAdminStatus = async () => {
     if (!user) return
-    const adminStatus = await checkIsAdmin(user.id)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const adminStatus = await checkIsAdmin(user.id, session.access_token)
     setIsAdmin(adminStatus)
   }
 
@@ -60,8 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_IN' && session?.user) {
         setUser(session.user)
         
-        // Check admin status when signing in
-        const adminStatus = await checkIsAdmin(session.user.id)
+        // Check admin status when signing in (pass access token to avoid getSession hang)
+        const adminStatus = await checkIsAdmin(session.user.id, session.access_token)
         setIsAdmin(adminStatus)
         
         // Store in session storage

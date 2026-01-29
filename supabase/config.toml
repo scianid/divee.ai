@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.analyze-site]
 verify_jwt = false
+
+[functions.me]
+verify_jwt = false

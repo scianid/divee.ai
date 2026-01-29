@@ -33,7 +33,7 @@ const AccountIcon = ({ url, name, size = 20 }: { url?: string | null, name: stri
 };
 
 interface Project {
-  id: number;
+  project_id: string; // Primary key (UUID)
   created_at: string;
   direction: 'ltr' | 'rtl';
   language: string;
@@ -45,7 +45,6 @@ interface Project {
   ad_tag_id?: string; // Admin-only field from project_config
   input_text_placeholders: string[];
   allowed_urls: string[] | null;
-  project_id: string;
   account_id: string;
   display_mode: string;
   display_position: string;
@@ -75,19 +74,19 @@ function Inventory() {
   const [userId, setUserId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [_submitting, setSubmitting] = useState(false);
   const [_error, setError] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<string>('all');
-  const [sortField, setSortField] = useState<'client_name' | 'client_description' | 'id' | 'language'>('id');
+  const [sortField, setSortField] = useState<'client_name' | 'client_description' | 'project_id' | 'language'>('project_id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [embedModalProject, setEmbedModalProject] = useState<Project | null>(null);
   const [embedCopied, setEmbedCopied] = useState(false);
 
   // Helpers
-  function handleSort(field: 'client_name' | 'client_description' | 'id' | 'language') {
+  function handleSort(field: 'client_name' | 'client_description' | 'project_id' | 'language') {
     if (sortField === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -177,26 +176,31 @@ function Inventory() {
       
       if (projectsError) throw projectsError;
       
+      console.log('[Load Projects] Raw project data:', projectsData?.[0]);
+      
       let finalProjects = projectsData || [];
       
       // If admin, fetch project_config separately to avoid RLS join issues
       if (isAdmin && finalProjects.length > 0) {
-        const projectIds = finalProjects.map(p => p.id);
+        const projectUuids = finalProjects.map(p => p.project_id); // Use UUID, not integer ID
         const { data: configData } = await supabase
           .from('project_config')
           .select('project_id, ad_tag_id')
-          .in('project_id', projectIds);
+          .in('project_id', projectUuids);
+        
+        console.log('[Load Projects] Config data:', configData);
         
         // Merge config data into projects
         if (configData) {
           const configMap = new Map(configData.map(c => [c.project_id, c]));
           finalProjects = finalProjects.map(p => ({
             ...p,
-            ad_tag_id: configMap.get(p.id)?.ad_tag_id || ''
+            ad_tag_id: configMap.get(p.project_id)?.ad_tag_id || '' // Match by UUID
           }));
         }
       }
       
+      console.log('[Load Projects] Final project with ad fields:', finalProjects?.[0]);
       setProjects(finalProjects as Project[]);
     } catch (err) {
       console.error('Error loading projects:', err);
@@ -250,7 +254,7 @@ function Inventory() {
         result = await supabase
           .from('project')
           .update(payload)
-          .eq('id', editingProject.id)
+          .eq('project_id', editingProject.project_id)
           .select();
       } else {
         result = await supabase
@@ -263,11 +267,14 @@ function Inventory() {
       if (error) throw error;
       if (data) {
         const savedProject = data[0] as Project;
+        console.log('[Project Save] Saved project UUID:', savedProject.project_id);
         
-        // Save admin-only ad_tag_id to project_config if user is admin
-        if (form.ad_tag_id !== undefined) {
+        // Save admin-only ad_tag_id to project_config if user is admin and ad_tag_id is provided
+        if (form.ad_tag_id !== undefined && form.ad_tag_id !== '') {
+          console.log('[Project Config] Saving ad_tag_id:', form.ad_tag_id, 'for project UUID:', savedProject.project_id);
+          
           const configPayload = {
-            project_id: savedProject.id,
+            project_id: savedProject.project_id, // Use UUID, not integer ID
             ad_tag_id: form.ad_tag_id || null,
           };
           
@@ -275,27 +282,34 @@ function Inventory() {
           const { data: existingConfig } = await supabase
             .from('project_config')
             .select('id')
-            .eq('project_id', savedProject.id)
+            .eq('project_id', savedProject.project_id)
             .maybeSingle();
+          
+          console.log('[Project Config] Existing config:', existingConfig);
           
           if (existingConfig) {
             // Update existing config
+            console.log('[Project Config] Updating existing config');
             const { error: configError } = await supabase
               .from('project_config')
               .update(configPayload)
-              .eq('project_id', savedProject.id);
+              .eq('project_id', savedProject.project_id);
             if (configError) console.error('Failed to update project_config:', configError);
           } else {
             // Insert new config
+            console.log('[Project Config] Inserting new config');
             const { error: configError } = await supabase
               .from('project_config')
               .insert([configPayload]);
-            if (configError) console.error('Failed to insert project_config:', configError);
+            if (configError) {
+              console.error('Failed to insert project_config:', configError);
+              // Non-blocking - don't throw, just log
+            }
           }
         }
         
         if (editingProject) {
-          setProjects(projects.map(p => p.id === editingProject.id ? savedProject : p));
+          setProjects(projects.map(p => p.project_id === editingProject.project_id ? savedProject : p));
         } else {
           setProjects([savedProject, ...projects]);
         }
@@ -319,12 +333,12 @@ function Inventory() {
     if (deleteId == null) return;
     setDeleteLoading(true);
     setDeleteError(null);
-    const { error } = await supabase.from('project').delete().eq('id', deleteId);
+    const { error } = await supabase.from('project').delete().eq('project_id', deleteId);
     if (error) {
       setDeleteError('Error deleting project');
       console.error(error);
     } else {
-      setProjects(projects.filter(p => p.id !== deleteId));
+      setProjects(projects.filter(p => p.project_id !== deleteId));
       setDeleteId(null);
     }
     setDeleteLoading(false);
@@ -545,8 +559,7 @@ function Inventory() {
           return (
             (p.client_name && p.client_name.toLowerCase().includes(q)) ||
             (p.client_description && p.client_description.toLowerCase().includes(q)) ||
-            (p.project_id && p.project_id.toLowerCase().includes(q)) ||
-            (typeof p.id === 'number' && p.id.toString().includes(q))
+            (p.project_id && p.project_id.toLowerCase().includes(q))
           );
         }).length === 0 && !showCreateForm ? (
           <div className="card" style={{ padding: '64px 48px', textAlign: 'center', borderStyle: 'dashed', borderColor: '#e5e7eb' }}>
@@ -635,16 +648,15 @@ function Inventory() {
                   return (
                     (p.client_name && p.client_name.toLowerCase().includes(q)) ||
                     (p.client_description && p.client_description.toLowerCase().includes(q)) ||
-                    (p.project_id && p.project_id.toLowerCase().includes(q)) ||
-                    (typeof p.id === 'number' && p.id.toString().includes(q))
+                    (p.project_id && p.project_id.toLowerCase().includes(q))
                   );
                 })
                 .sort((a, b) => {
                   let aVal: string | number = a[sortField] ?? '';
                   let bVal: string | number = b[sortField] ?? '';
-                  if (sortField === 'id') {
-                    aVal = Number(aVal);
-                    bVal = Number(bVal);
+                  if (sortField === 'project_id') {
+                    aVal = aVal.toString().toLowerCase();
+                    bVal = bVal.toString().toLowerCase();
                   } else {
                     aVal = aVal.toString().toLowerCase();
                     bVal = bVal.toString().toLowerCase();
@@ -654,7 +666,7 @@ function Inventory() {
                   return 0;
                 })
                 .map((project, idx) => (
-                  <tr key={project.id} style={{ borderBottom: '1px solid #f0f0f0', transition: 'background 0.2s', background: idx % 2 === 0 ? '#fff' : '#fafbfc' }}>
+                  <tr key={project.project_id} style={{ borderBottom: '1px solid #f0f0f0', transition: 'background 0.2s', background: idx % 2 === 0 ? '#fff' : '#fafbfc' }}>
                     <td style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
                       {/* Project icon */}
                       {project.icon_url && (
@@ -700,7 +712,7 @@ function Inventory() {
                     </td>
                     <td style={{ padding: '12px 16px', display: 'flex', gap: 8, position: 'relative' }}>
                       <button 
-                        onClick={() => handleDelete(project.id)}
+                        onClick={() => handleDelete(project.project_id)}
                         title="Delete"
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 4, display: 'flex', alignItems: 'center' }}
                       >
@@ -714,6 +726,11 @@ function Inventory() {
                       <button 
                         title="Settings"
                         onClick={() => {
+                          console.log('[Edit Click] Project data being passed to modal:', {
+                            project_id: project.project_id,
+                            show_ad: project.show_ad,
+                            ad_tag_id: project.ad_tag_id
+                          });
                           setEditingProject(project);
                           setShowCreateForm(true);
                         }}
