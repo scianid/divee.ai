@@ -68,48 +68,57 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
   const [tempPlaceholder, setTempPlaceholder] = useState('');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  // Reset form when modal opens with new initialData
+  // Track previous open state to detect actual openings vs closings
+  const prevOpenRef = React.useRef(open);
+  
+  // Reset form only when modal actually OPENS (transition from closed to open)
   React.useEffect(() => {
-    if (open && initialData) {
-      setForm({
-        account_id: initialData.account_id || accounts[0]?.id || '',
-        client_name: initialData.client_name || '',
-        icon_url: initialData.icon_url || '',
-        client_description: initialData.client_description || '',
-        allowed_urls: initialData.allowed_urls || [],
-        highlight_color_1: initialData.highlight_color_1 || '#68E5FD',
-        highlight_color_2: initialData.highlight_color_2 || '#A389E0',
-        input_text_placeholders: initialData.input_text_placeholders || ['Ask anything about this article', 'I can help you understand this article'],
-        language: initialData.language || 'English',
-        direction: initialData.direction || 'ltr',
-        display_mode: initialData.display_mode || 'anchored',
-        display_position: initialData.display_position || 'bottom-right',
-        article_class: initialData.article_class || '.article',
-        widget_container_class: initialData.widget_container_class || '',
-        ad_tag_id: initialData.ad_tag_id || '',
-        show_ad: initialData.show_ad ?? true,
-      });
-    } else if (open && !initialData) {
-      // Reset to defaults for new project
-      setForm({
-        account_id: accounts[0]?.id || '',
-        client_name: '',
-        icon_url: '',
-        client_description: '',
-        allowed_urls: [],
-        highlight_color_1: '#68E5FD',
-        highlight_color_2: '#A389E0',
-        input_text_placeholders: ['Ask anything about this article', 'I can help you understand this article'],
-        language: 'English',
-        direction: 'ltr',
-        display_mode: 'anchored',
-        display_position: 'bottom-right',
-        article_class: '.article',
-        widget_container_class: '',
-        ad_tag_id: '',
-        show_ad: true,
-      });
-      setStep(1);
+    const wasOpen = prevOpenRef.current;
+    prevOpenRef.current = open;
+    
+    // Only act when modal is opening (was closed, now open)
+    if (!wasOpen && open) {
+      if (initialData) {
+        setForm({
+          account_id: initialData.account_id || accounts[0]?.id || '',
+          client_name: initialData.client_name || '',
+          icon_url: initialData.icon_url || '',
+          client_description: initialData.client_description || '',
+          allowed_urls: initialData.allowed_urls || [],
+          highlight_color_1: initialData.highlight_color_1 || '#68E5FD',
+          highlight_color_2: initialData.highlight_color_2 || '#A389E0',
+          input_text_placeholders: initialData.input_text_placeholders || ['Ask anything about this article', 'I can help you understand this article'],
+          language: initialData.language || 'English',
+          direction: initialData.direction || 'ltr',
+          display_mode: initialData.display_mode || 'anchored',
+          display_position: initialData.display_position || 'bottom-right',
+          article_class: initialData.article_class || '.article',
+          widget_container_class: initialData.widget_container_class || '',
+          ad_tag_id: initialData.ad_tag_id || '',
+          show_ad: initialData.show_ad ?? true,
+        });
+      } else {
+        // Reset to defaults for new project
+        setForm({
+          account_id: accounts[0]?.id || '',
+          client_name: '',
+          icon_url: '',
+          client_description: '',
+          allowed_urls: [],
+          highlight_color_1: '#68E5FD',
+          highlight_color_2: '#A389E0',
+          input_text_placeholders: ['Ask anything about this article', 'I can help you understand this article'],
+          language: 'English',
+          direction: 'ltr',
+          display_mode: 'anchored',
+          display_position: 'bottom-right',
+          article_class: '.article',
+          widget_container_class: '',
+          ad_tag_id: '',
+          show_ad: true,
+        });
+        setStep(1);
+      }
     }
   }, [open, initialData, accounts]);
 

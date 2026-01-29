@@ -293,13 +293,24 @@ function Inventory() {
           }
         }
         
-        if (editingProject) {
-          setProjects(projects.map(p => p.project_id === editingProject.project_id ? savedProject : p));
-        } else {
-          setProjects([savedProject, ...projects]);
-        }
+        // Preserve admin-only fields that aren't in the project table response
+        const updatedProject = {
+          ...savedProject,
+          ad_tag_id: form.ad_tag_id || editingProject?.ad_tag_id || ''
+        };
+        
+        const isEditing = !!editingProject;
+        const editingProjectId = editingProject?.project_id;
+        
+        // Close modal first to prevent form reset visual glitch
         setShowCreateForm(false);
         setEditingProject(null);
+        
+        if (isEditing && editingProjectId) {
+          setProjects(projects.map(p => p.project_id === editingProjectId ? updatedProject : p));
+        } else {
+          setProjects([updatedProject, ...projects]);
+        }
       }
     } catch (err: any) {
       console.error('Error creating project:', err);
@@ -424,7 +435,9 @@ function Inventory() {
             display_mode: editingProject.display_mode,
             display_position: editingProject.display_position,
             article_class: editingProject.article_class || '',
-            widget_container_class: editingProject.widget_container_class || ''
+            widget_container_class: editingProject.widget_container_class || '',
+            show_ad: editingProject.show_ad,
+            ad_tag_id: editingProject.ad_tag_id || ''
           } : undefined}
         />
       )}
