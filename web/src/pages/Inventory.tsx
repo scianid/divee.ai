@@ -113,10 +113,10 @@ function Inventory() {
     </>;
   }
 
-  // Data fetching
+  // Data fetching - re-fetch when isAdmin changes to get admin-only data
   useEffect(() => {
     fetchUserAndProjects();
-  }, []);
+  }, [isAdmin]);
 
   // Open new widget modal if navigated from CreateWidgetModal
   useEffect(() => {

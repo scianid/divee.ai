@@ -605,7 +605,7 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Enable Ads Toggle */}
       <div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '12px 0' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '2px 0' }}>
           <div style={{ position: 'relative', width: 44, height: 24, background: form.show_ad ? '#10b981' : '#e5e7eb', borderRadius: 12, transition: 'background 0.2s' }}>
             <div style={{ position: 'absolute', width: 20, height: 20, background: 'white', borderRadius: '50%', top: 2, left: form.show_ad ? 22 : 2, transition: 'left 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
           </div>
@@ -617,9 +617,6 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
           />
           <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>Enable Ads</span>
         </label>
-        <p style={{ margin: '4px 0 0 0', fontSize: 13, color: '#6b7280' }}>
-          Show advertisements in the widget to monetize
-        </p>
       </div>
 
       {/* Ad Tag ID Input */}
