@@ -280,13 +280,13 @@ function Inventory() {
           
           if (existingConfig) {
             // Update existing config
-            const { error: configError } = await supabase
+            await supabase
               .from('project_config')
               .update(configPayload)
               .eq('project_id', savedProject.project_id);
           } else {
             // Insert new config
-            const { error: configError } = await supabase
+            await supabase
               .from('project_config')
               .insert([configPayload]);
             // Non-blocking errors are ignored
