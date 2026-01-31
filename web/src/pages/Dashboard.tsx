@@ -314,7 +314,7 @@ function TopPerformingArticles({
         <div style={{ 
             background: '#fff', 
             borderRadius: '20px', 
-            padding: '24px', 
+            padding: '20px', 
             boxShadow: '0 2px 8px rgba(0,0,0,0.04)', 
             border: '1px solid rgba(0,0,0,0.05)',
             height: '100%',
@@ -322,7 +322,7 @@ function TopPerformingArticles({
             flexDirection: 'column'
         }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#1e293b' }}>
                     Top Performing Articles
                 </h3>
@@ -391,8 +391,8 @@ function TopPerformingArticles({
             ) : (
                 <div style={{ 
                     display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                    gap: '24px',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+                    gap: '16px',
                     flex: 1
                 }}>
                     {articles.map((article, idx) => (
@@ -402,21 +402,25 @@ function TopPerformingArticles({
                             style={{
                                 cursor: 'pointer',
                                 transition: 'transform 0.2s, box-shadow 0.2s',
+                                background: '#f8fafc',
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                border: '1px solid #e2e8f0'
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-4px)';
+                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'none';
                             }}
                         >
                             {/* Large Image */}
                             <div style={{
-                                aspectRatio: '16/9',
-                                borderRadius: '12px',
+                                aspectRatio: '4/3',
                                 overflow: 'hidden',
-                                background: 'linear-gradient(135deg, #f1f5f9, #e2e8f0)',
-                                marginBottom: '12px'
+                                background: 'linear-gradient(135deg, #e2e8f0, #cbd5e1)'
                             }}>
                                 {article.imageUrl ? (
                                     <img 
@@ -446,48 +450,51 @@ function TopPerformingArticles({
                                 )}
                             </div>
 
-                            {/* Title */}
-                            <h4 style={{
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: '#1e293b',
-                                margin: '0 0 12px 0',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                            }}>
-                                {article.title || 'Untitled Article'}
-                            </h4>
+                            {/* Content */}
+                            <div style={{ padding: '12px' }}>
+                                {/* Title */}
+                                <h4 style={{
+                                    fontSize: '13px',
+                                    fontWeight: 600,
+                                    color: '#1e293b',
+                                    margin: '0 0 10px 0',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    {article.title || 'Untitled Article'}
+                                </h4>
 
-                            {/* Metrics */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <div style={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between', 
-                                    alignItems: 'center',
-                                    fontSize: '13px',
-                                    color: '#64748b'
-                                }}>
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <PlayIcon /> Views
-                                    </span>
-                                    <span style={{ fontWeight: 600, color: '#1e293b' }}>
-                                        {article.impressions.toLocaleString()}
-                                    </span>
-                                </div>
-                                <div style={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between', 
-                                    alignItems: 'center',
-                                    fontSize: '13px',
-                                    color: '#64748b'
-                                }}>
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <LinkIcon /> Engagement
-                                    </span>
-                                    <span style={{ fontWeight: 600, color: '#1e293b' }}>
-                                        {article.totalQuestions.toLocaleString()}
-                                    </span>
+                                {/* Metrics */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between', 
+                                        alignItems: 'center',
+                                        fontSize: '12px',
+                                        color: '#64748b'
+                                    }}>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <PlayIcon /> Views
+                                        </span>
+                                        <span style={{ fontWeight: 600, color: '#1e293b' }}>
+                                            {article.impressions.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between', 
+                                        alignItems: 'center',
+                                        fontSize: '12px',
+                                        color: '#64748b'
+                                    }}>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <LinkIcon /> Engagement
+                                        </span>
+                                        <span style={{ fontWeight: 600, color: '#1e293b' }}>
+                                            {article.totalQuestions.toLocaleString()}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
