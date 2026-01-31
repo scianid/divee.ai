@@ -10,6 +10,7 @@ import { handleImpressionsOverTime } from "./visualizations/impressionsOverTime.
 import { handleImpressionsByPlatform } from "./visualizations/impressionsByPlatform.ts";
 import { handleAdImpressions } from "./visualizations/adImpressions.ts";
 import { handleAdClicks } from "./visualizations/adClicks.ts";
+import { handleTopArticles } from "./visualizations/topArticles.ts";
 
 // Main handler with routing
 // @ts-ignore
@@ -49,6 +50,11 @@ Deno.serve(async (req: Request) => {
       data = await handleAdImpressions(supabase, userId, params);
     } else if (path.endsWith("/ad-clicks")) {
       data = await handleAdClicks(supabase, userId, params);
+    } else if (path.endsWith("/top-articles")) {
+      // Parse additional params for top-articles
+      const limit = parseInt(url.searchParams.get("limit") || "3");
+      const sortBy = (url.searchParams.get("sort_by") || "impressions") as 'impressions' | 'engagement';
+      data = await handleTopArticles(supabase, userId, { ...params, limit, sortBy });
     } else {
       return new Response(
         JSON.stringify({
@@ -62,6 +68,7 @@ Deno.serve(async (req: Request) => {
             "/impressions-by-platform",
             "/ad-impressions",
             "/ad-clicks",
+            "/top-articles",
           ],
         }),
         {
