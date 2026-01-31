@@ -14,6 +14,19 @@ const formatNumber = (num: number): string => {
   return num.toLocaleString();
 };
 
+// --- Interfaces ---
+
+interface TopArticle {
+  url: string;
+  title: string;
+  imageUrl: string | null;
+  impressions: number;
+  customQuestions: number;
+  suggestedQuestions: number;
+  totalQuestions: number;
+  engagementRate: number;
+}
+
 // --- Icons ---
 
 
@@ -267,6 +280,224 @@ function PlatformsChart({ data }: { data: any[] }) {
     );
 }
 
+function TopPerformingArticles({ 
+    articles, 
+    loading, 
+    sortBy, 
+    onSortChange 
+}: { 
+    articles: TopArticle[] | null; 
+    loading: boolean;
+    sortBy: 'impressions' | 'engagement';
+    onSortChange: (sort: 'impressions' | 'engagement') => void;
+}) {
+    const DocumentIcon = () => (
+        <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+        </svg>
+    );
+
+    const PlayIcon = () => (
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+    );
+
+    const LinkIcon = () => (
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+    );
+
+    return (
+        <div style={{ 
+            background: '#fff', 
+            borderRadius: '20px', 
+            padding: '24px', 
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)', 
+            border: '1px solid rgba(0,0,0,0.05)',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#1e293b' }}>
+                    Top Performing Articles
+                </h3>
+                <div style={{ 
+                    display: 'flex', 
+                    borderRadius: '8px', 
+                    border: '1px solid #e2e8f0', 
+                    overflow: 'hidden',
+                    background: '#f8fafc'
+                }}>
+                    <button
+                        onClick={() => onSortChange('impressions')}
+                        style={{
+                            padding: '8px 16px',
+                            fontSize: '13px',
+                            fontWeight: sortBy === 'impressions' ? 600 : 400,
+                            color: sortBy === 'impressions' ? '#1e293b' : '#64748b',
+                            background: sortBy === 'impressions' ? '#fff' : 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        Views
+                    </button>
+                    <button
+                        onClick={() => onSortChange('engagement')}
+                        style={{
+                            padding: '8px 16px',
+                            fontSize: '13px',
+                            fontWeight: sortBy === 'engagement' ? 600 : 400,
+                            color: sortBy === 'engagement' ? '#1e293b' : '#64748b',
+                            background: sortBy === 'engagement' ? '#fff' : 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        Engagement
+                    </button>
+                </div>
+            </div>
+
+            {/* Content */}
+            {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                </div>
+            ) : !articles || !Array.isArray(articles) || articles.length === 0 ? (
+                <div style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    flex: 1,
+                    color: '#94a3b8',
+                    textAlign: 'center',
+                    padding: '20px'
+                }}>
+                    <DocumentIcon />
+                    <p style={{ marginTop: '16px', fontSize: '14px', lineHeight: '1.6' }}>
+                        No article data yet.<br />
+                        Articles will appear here once your widgets start receiving traffic.
+                    </p>
+                </div>
+            ) : (
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                    gap: '24px',
+                    flex: 1
+                }}>
+                    {articles.map((article, idx) => (
+                        <div 
+                            key={article.url || idx}
+                            onClick={() => window.open(article.url, '_blank')}
+                            style={{
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s, box-shadow 0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-4px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            {/* Large Image */}
+                            <div style={{
+                                aspectRatio: '16/9',
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                background: 'linear-gradient(135deg, #f1f5f9, #e2e8f0)',
+                                marginBottom: '12px'
+                            }}>
+                                {article.imageUrl ? (
+                                    <img 
+                                        src={article.imageUrl} 
+                                        alt={article.title}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            transition: 'transform 0.3s'
+                                        }}
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                    />
+                                ) : (
+                                    <div style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: '#94a3b8'
+                                    }}>
+                                        <DocumentIcon />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Title */}
+                            <h4 style={{
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: '#1e293b',
+                                margin: '0 0 12px 0',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                {article.title || 'Untitled Article'}
+                            </h4>
+
+                            {/* Metrics */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <div style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    alignItems: 'center',
+                                    fontSize: '13px',
+                                    color: '#64748b'
+                                }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <PlayIcon /> Views
+                                    </span>
+                                    <span style={{ fontWeight: 600, color: '#1e293b' }}>
+                                        {article.impressions.toLocaleString()}
+                                    </span>
+                                </div>
+                                <div style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    alignItems: 'center',
+                                    fontSize: '13px',
+                                    color: '#64748b'
+                                }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <LinkIcon /> Engagement
+                                    </span>
+                                    <span style={{ fontWeight: 600, color: '#1e293b' }}>
+                                        {article.totalQuestions.toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 function FunnelView({ impressions, suggestions, questions }: { impressions: number, suggestions: number, questions: number }) {
     const total = impressions || 1;
     
@@ -376,13 +607,15 @@ export default function Dashboard() {
     interactionsOverTime: null,
     impressionsOverTime: null,
     impressionsByPlatform: null,
-    adImpressions: null
+    adImpressions: null,
+    topArticles: null
   });
   const [articlesCount, setArticlesCount] = useState<number>(0);
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [projectSearch, setProjectSearch] = useState<string>('');
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+  const [topArticlesSortBy, setTopArticlesSortBy] = useState<'impressions' | 'engagement'>('impressions');
 
   // Fetch stats from edge function
   const fetchStats = async () => {
@@ -425,9 +658,13 @@ export default function Dashboard() {
       };
 
       // Fetch all endpoints independently
-      const fetchEndpoint = async (endpoint: string, key: string) => {
+      const fetchEndpoint = async (endpoint: string, key: string, extraParams?: Record<string, string>) => {
         try {
-          const res = await fetch(`${baseUrl}/${endpoint}?${params}`, { 
+          const allParams = new URLSearchParams(params);
+          if (extraParams) {
+            Object.entries(extraParams).forEach(([k, v]) => allParams.append(k, v));
+          }
+          const res = await fetch(`${baseUrl}/${endpoint}?${allParams}`, { 
             method: 'GET',
             headers 
           });
@@ -445,7 +682,8 @@ export default function Dashboard() {
         fetchEndpoint('interactions-over-time', 'interactionsOverTime'),
         fetchEndpoint('impressions-over-time', 'impressionsOverTime'),
         fetchEndpoint('impressions-by-platform', 'impressionsByPlatform'),
-        fetchEndpoint('ad-impressions', 'adImpressions')
+        fetchEndpoint('ad-impressions', 'adImpressions'),
+        fetchEndpoint('top-articles', 'topArticles', { limit: '3', sort_by: topArticlesSortBy })
       ]);
       
       // Fetch articles count
@@ -653,7 +891,7 @@ export default function Dashboard() {
     if (user && hasAccounts) {
       fetchStats();
     }
-  }, [selectedProject, dateRange, isLast24Hours]);
+  }, [selectedProject, dateRange, isLast24Hours, topArticlesSortBy]);
 
   if (!user || hasAccounts === null) return null
 
@@ -1303,25 +1541,7 @@ export default function Dashboard() {
                 )}
              </Card>
         </div>
-        
-        {/* Row 3: Map & Lists */}
-        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
-            <Card title="Impressions by Location" style={{ height: '100%' }}>
-                {!stats.impressionsByLocation ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
-                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                  </div>
-                ) : (
-                  <>
-                    <ImpressionsMap locations={stats.impressionsByLocation?.locations || []} />
-                    <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
-                        Geographic distribution of widget impressions based on user locations
-                    </p>
-                  </>
-                )}
-            </Card>
-        </div>
-        
+
         <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
         <Card title="Top Widgets" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>} style={{ height: '100%' }}>
              {!stats.impressionsByWidget ? (
@@ -1360,6 +1580,33 @@ export default function Dashboard() {
                </p>
              )}
         </Card>
+        </div>
+        
+        {/* Row 3: Map & Top Articles */}
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
+            <Card title="Impressions by Location" style={{ height: '100%' }}>
+                {!stats.impressionsByLocation ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <>
+                    <ImpressionsMap locations={stats.impressionsByLocation?.locations || []} />
+                    <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
+                        Geographic distribution of widget impressions based on user locations
+                    </p>
+                  </>
+                )}
+            </Card>
+        </div>
+
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
+            <TopPerformingArticles 
+                articles={stats.topArticles as TopArticle[] | null}
+                loading={loading}
+                sortBy={topArticlesSortBy}
+                onSortChange={setTopArticlesSortBy}
+            />
         </div>
 
       </div>
