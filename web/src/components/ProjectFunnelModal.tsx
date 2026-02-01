@@ -424,7 +424,12 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
             <select 
               className="inputField" 
               value={form.display_mode} 
-              onChange={e => handleChange('display_mode', e.target.value)}
+              onChange={e => {
+                const newMode = e.target.value;
+                handleChange('display_mode', newMode);
+                // Reset position to default for the new mode
+                handleChange('display_position', newMode === 'anchored' ? 'bottom' : 'bottom-right');
+              }}
               style={{ width: '100%', padding: '10px 12px', appearance: 'none', background: '#fff', fontSize: 14, borderRadius: 10, border: '1px solid #e5e7eb' }}
             >
               <option value="anchored">Anchored</option>
@@ -445,8 +450,17 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
               onChange={e => handleChange('display_position', e.target.value)}
               style={{ width: '100%', padding: '10px 12px', appearance: 'none', background: '#fff', fontSize: 14, borderRadius: 10, border: '1px solid #e5e7eb' }}
             >
-              <option value="bottom-right">Bottom Right</option>
-              <option value="bottom-left">Bottom Left</option>
+              {form.display_mode === 'anchored' ? (
+                <>
+                  <option value="bottom">Bottom</option>
+                  <option value="top">Top</option>
+                </>
+              ) : (
+                <>
+                  <option value="bottom-right">Bottom Right</option>
+                  <option value="bottom-left">Bottom Left</option>
+                </>
+              )}
             </select>
             <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
