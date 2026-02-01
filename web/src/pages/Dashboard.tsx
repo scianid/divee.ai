@@ -1507,8 +1507,10 @@ export default function Dashboard() {
                           suggestions={totalSuggestions}
                           questions={totalQuestions}
                       />
-                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '8px', marginBottom: 0, lineHeight: '1.5' }}>
-                          User journey from initial widget view to deeper engagement with questions
+                      <p style={{ fontSize: '12px', color: '#64748b', marginTop: '8px', marginBottom: 0, lineHeight: '1.6' }}>
+                          <b>Impressions:</b> Widget loaded on page<br />
+                          <b>Suggestions:</b> User clicked to get suggestions<br />
+                          <b>Questions:</b> User asked a question
                       </p>
                     </>
                  )}
