@@ -84,6 +84,8 @@ function Inventory() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [embedModalProject, setEmbedModalProject] = useState<Project | null>(null);
   const [embedCopied, setEmbedCopied] = useState(false);
+  const [purgingId, setPurgingId] = useState<string | null>(null);
+  const [purgeSuccess, setPurgeSuccess] = useState<string | null>(null);
 
   // Helpers
   function handleSort(field: 'client_name' | 'client_description' | 'project_id' | 'language') {
@@ -359,6 +361,37 @@ function Inventory() {
   const handleOpenEmbedModal = (project: Project) => {
     setEmbedModalProject(project);
     setEmbedCopied(false);
+  };
+
+  const handlePurgeCache = async (projectId: string) => {
+    setPurgingId(projectId);
+    setPurgeSuccess(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/purge-cache`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ projectId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to purge cache');
+      }
+
+      setPurgeSuccess(projectId);
+      setTimeout(() => setPurgeSuccess(null), 2000);
+    } catch (err: any) {
+      console.error('Error purging cache:', err);
+      alert(`Failed to purge cache: ${err.message}`);
+    } finally {
+      setPurgingId(null);
+    }
   };
 
   // Render
@@ -740,6 +773,35 @@ function Inventory() {
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 4, display: 'flex', alignItems: 'center', fontSize: '16px', fontWeight: 700, fontFamily: 'monospace' }}
                       >
                         &lt;/&gt;
+                      </button>
+                      <button 
+                        title="Purge Cache"
+                        onClick={() => handlePurgeCache(project.project_id)}
+                        disabled={purgingId === project.project_id}
+                        style={{ 
+                          background: 'none', 
+                          border: 'none', 
+                          cursor: purgingId === project.project_id ? 'wait' : 'pointer', 
+                          color: purgeSuccess === project.project_id ? '#10b981' : '#6b7280', 
+                          padding: 4, 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          opacity: purgingId === project.project_id ? 0.5 : 1
+                        }}
+                      >
+                        {purgingId === project.project_id ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                          </svg>
+                        ) : purgeSuccess === project.project_id ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        ) : (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+                          </svg>
+                        )}
                       </button>
                     </td>
                   </tr>
