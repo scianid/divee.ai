@@ -506,8 +506,6 @@ function TopPerformingArticles({
 }
 
 function FunnelView({ widgetVisible, suggestions, questions }: { widgetVisible: number, suggestions: number, questions: number }) {
-    const total = widgetVisible || 1;
-    
     const option = {
         tooltip: {
             trigger: 'item',
@@ -536,8 +534,7 @@ function FunnelView({ widgetVisible, suggestions, questions }: { widgetVisible: 
                 show: true,
                 position: 'inside',
                 formatter: (params: any) => {
-                    const percent = Math.round((params.value / total) * 100);
-                    return `{name|${params.name}}\n{value|${params.value.toLocaleString()}} {percent|(${percent}%)}`;
+                    return `{name|${params.name}}\n{value|${params.value.toLocaleString()}}`;
                 },
                 rich: {
                     name: {
@@ -550,12 +547,6 @@ function FunnelView({ widgetVisible, suggestions, questions }: { widgetVisible: 
                         fontSize: 24,
                         fontWeight: 'normal',
                         color: '#fff',
-                        lineHeight: 32
-                    },
-                    percent: {
-                        fontSize: 12,
-                        fontWeight: 'normal',
-                        color: 'rgba(255,255,255,0.85)',
                         lineHeight: 32
                     }
                 }
