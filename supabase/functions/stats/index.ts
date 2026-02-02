@@ -7,6 +7,7 @@ import { handleImpressionsByWidget } from "./visualizations/impressionsByWidget.
 import { handleImpressionsByLocation } from "./visualizations/impressionsByLocation.ts";
 import { handleInteractionsOverTime } from "./visualizations/interactionsOverTime.ts";
 import { handleImpressionsOverTime } from "./visualizations/impressionsOverTime.ts";
+import { handleWidgetVisibleOverTime } from "./visualizations/widgetVisibleOverTime.ts";
 import { handleImpressionsByPlatform } from "./visualizations/impressionsByPlatform.ts";
 import { handleAdImpressions } from "./visualizations/adImpressions.ts";
 import { handleAdClicks } from "./visualizations/adClicks.ts";
@@ -44,6 +45,8 @@ Deno.serve(async (req: Request) => {
       data = await handleInteractionsOverTime(supabase, userId, params);
     } else if (path.endsWith("/impressions-over-time")) {
       data = await handleImpressionsOverTime(supabase, userId, params);
+    } else if (path.endsWith("/widget-visible-over-time")) {
+      data = await handleWidgetVisibleOverTime(supabase, userId, params);
     } else if (path.endsWith("/impressions-by-platform")) {
       data = await handleImpressionsByPlatform(supabase, userId, params);
     } else if (path.endsWith("/ad-impressions")) {
@@ -65,6 +68,7 @@ Deno.serve(async (req: Request) => {
             "/impressions-by-location",
             "/interactions-over-time",
             "/impressions-over-time",
+            "/widget-visible-over-time",
             "/impressions-by-platform",
             "/ad-impressions",
             "/ad-clicks",

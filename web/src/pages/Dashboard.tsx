@@ -505,8 +505,8 @@ function TopPerformingArticles({
     );
 }
 
-function FunnelView({ impressions, suggestions, questions }: { impressions: number, suggestions: number, questions: number }) {
-    const total = impressions || 1;
+function FunnelView({ widgetVisible, suggestions, questions }: { widgetVisible: number, suggestions: number, questions: number }) {
+    const total = widgetVisible || 1;
     
     const option = {
         tooltip: {
@@ -515,7 +515,7 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
             borderWidth: 0,
             textStyle: { color: '#fff' },
             formatter: (params: any) => {
-                const prevValue = params.dataIndex === 1 ? impressions : params.dataIndex === 2 ? suggestions : null;
+                const prevValue = params.dataIndex === 1 ? widgetVisible : params.dataIndex === 2 ? suggestions : null;
                 const conversionRate = prevValue 
                     ? `<br/>Conversion: ${Math.round(params.value / prevValue * 100)}%`
                     : '';
@@ -570,7 +570,7 @@ function FunnelView({ impressions, suggestions, questions }: { impressions: numb
                 }
             },
             data: [
-                { value: impressions, name: 'Impressions', itemStyle: { color: '#3b82f6' } },
+                { value: widgetVisible, name: 'Widget Visible', itemStyle: { color: '#3b82f6' } },
                 { value: suggestions, name: 'Suggestions', itemStyle: { color: '#8b5cf6' } },
                 { value: questions, name: 'Questions', itemStyle: { color: '#ec4899' } }
             ]
@@ -613,6 +613,7 @@ export default function Dashboard() {
     impressionsByLocation: null,
     interactionsOverTime: null,
     impressionsOverTime: null,
+    widgetVisibleOverTime: null,
     impressionsByPlatform: null,
     adImpressions: null,
     topArticles: null
@@ -688,6 +689,7 @@ export default function Dashboard() {
         fetchEndpoint('impressions-by-location', 'impressionsByLocation'),
         fetchEndpoint('interactions-over-time', 'interactionsOverTime'),
         fetchEndpoint('impressions-over-time', 'impressionsOverTime'),
+        fetchEndpoint('widget-visible-over-time', 'widgetVisibleOverTime'),
         fetchEndpoint('impressions-by-platform', 'impressionsByPlatform'),
         fetchEndpoint('ad-impressions', 'adImpressions'),
         fetchEndpoint('top-articles', 'topArticles', { limit: '3', sort_by: topArticlesSortBy })
@@ -987,6 +989,7 @@ export default function Dashboard() {
                           (stats.totalInteractions?.breakdown?.find((b: any) => b.type === 'ask_question')?.count || 0);
   const totalQuestions = suggestedQuestions + customQuestions + legacyQuestions;
   const totalImpressions = stats.impressionsByWidget?.total ?? 0;
+  const totalWidgetVisible = stats.widgetVisibleOverTime?.total ?? 0;
 
   return (
     <div style={{ 
@@ -1303,7 +1306,7 @@ export default function Dashboard() {
         
         {/* Row 1: Key Metrics */}
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
-            <Card title="Total Impressions" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
+            <Card title="Total Widget Loaded" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
                 {(!stats.impressionsByWidget || !stats.impressionsOverTime) ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
@@ -1403,6 +1406,41 @@ export default function Dashboard() {
                      </div>
                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
                         Number of times ads were displayed within the widget interface
+                     </p>
+                  </>
+                )}
+            </Card>
+        </div>
+
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
+            <Card title="Widget Visible" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
+                {!stats.widgetVisibleOverTime ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                        {formatNumber(stats.widgetVisibleOverTime?.total ?? 0)}
+                        </span>
+                    </div>
+                    <TrendChart data={stats.widgetVisibleOverTime?.timeline || []} />
+                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
+                        {stats.widgetVisibleOverTime?.timeline?.length > 0 && stats.widgetVisibleOverTime?.timeline[0].date.length > 10 ? (
+                           <>
+                             <span>{new Date(stats.widgetVisibleOverTime.timeline[0].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                             <span>{new Date(stats.widgetVisibleOverTime.timeline[stats.widgetVisibleOverTime.timeline.length - 1].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                           </>
+                        ) : (
+                          <>
+                             <span>{stats.widgetVisibleOverTime?.timeline?.[0] ? new Date(stats.widgetVisibleOverTime.timeline[0].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                             <span>{stats.widgetVisibleOverTime?.timeline?.length > 1 ? new Date(stats.widgetVisibleOverTime.timeline[stats.widgetVisibleOverTime.timeline.length - 1].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                          </>
+                        )}
+                     </div>
+                     <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
+                        Number of times the widget became visible in the user's viewport
                      </p>
                   </>
                 )}
@@ -1513,12 +1551,12 @@ export default function Dashboard() {
                  ) : (
                     <>
                       <FunnelView 
-                          impressions={totalImpressions}
+                          widgetVisible={totalWidgetVisible}
                           suggestions={totalSuggestions}
                           questions={totalQuestions}
                       />
                       <p style={{ fontSize: '12px', color: '#64748b', marginTop: '8px', marginBottom: 0, lineHeight: '1.6' }}>
-                          <b>Impressions:</b> Widget loaded on page<br />
+                          <b>Widget Visible:</b> Widget scrolled into view<br />
                           <b>Suggestions:</b> User clicked to get suggestions<br />
                           <b>Questions:</b> User asked a question
                       </p>
