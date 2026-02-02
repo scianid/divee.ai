@@ -639,7 +639,10 @@ export default function Dashboard() {
       let startDate, endDate;
       
       if (isLast24Hours) {
-         const end = new Date();
+         // End at the last complete hour (data still accumulating for current hour)
+         const now = new Date();
+         const end = new Date(now);
+         end.setMinutes(0, 0, 0);
          const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
          startDate = start.toISOString();
          endDate = end.toISOString();
