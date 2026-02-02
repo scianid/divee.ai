@@ -1343,6 +1343,41 @@ export default function Dashboard() {
         </div>
 
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
+            <Card title="Widget Visible" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
+                {!stats.widgetVisibleOverTime ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                        {formatNumber(stats.widgetVisibleOverTime?.total ?? 0)}
+                        </span>
+                    </div>
+                    <TrendChart data={stats.widgetVisibleOverTime?.timeline || []} />
+                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
+                        {stats.widgetVisibleOverTime?.timeline?.length > 0 && stats.widgetVisibleOverTime?.timeline[0].date.length > 10 ? (
+                           <>
+                             <span>{new Date(stats.widgetVisibleOverTime.timeline[0].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                             <span>{new Date(stats.widgetVisibleOverTime.timeline[stats.widgetVisibleOverTime.timeline.length - 1].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                           </>
+                        ) : (
+                          <>
+                             <span>{stats.widgetVisibleOverTime?.timeline?.[0] ? new Date(stats.widgetVisibleOverTime.timeline[0].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                             <span>{stats.widgetVisibleOverTime?.timeline?.length > 1 ? new Date(stats.widgetVisibleOverTime.timeline[stats.widgetVisibleOverTime.timeline.length - 1].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
+                          </>
+                        )}
+                     </div>
+                     <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
+                        Number of times the widget became visible in the user's viewport
+                     </p>
+                  </>
+                )}
+            </Card>
+        </div>
+
+        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
             <Card title="Total Interactions" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
                 {(!stats.totalInteractions || !stats.interactionsOverTime) ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
@@ -1406,41 +1441,6 @@ export default function Dashboard() {
                      </div>
                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
                         Number of times ads were displayed within the widget interface
-                     </p>
-                  </>
-                )}
-            </Card>
-        </div>
-
-        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
-            <Card title="Widget Visible" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-                {!stats.widgetVisibleOverTime ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
-                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                        {formatNumber(stats.widgetVisibleOverTime?.total ?? 0)}
-                        </span>
-                    </div>
-                    <TrendChart data={stats.widgetVisibleOverTime?.timeline || []} />
-                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
-                        {stats.widgetVisibleOverTime?.timeline?.length > 0 && stats.widgetVisibleOverTime?.timeline[0].date.length > 10 ? (
-                           <>
-                             <span>{new Date(stats.widgetVisibleOverTime.timeline[0].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                             <span>{new Date(stats.widgetVisibleOverTime.timeline[stats.widgetVisibleOverTime.timeline.length - 1].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                           </>
-                        ) : (
-                          <>
-                             <span>{stats.widgetVisibleOverTime?.timeline?.[0] ? new Date(stats.widgetVisibleOverTime.timeline[0].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
-                             <span>{stats.widgetVisibleOverTime?.timeline?.length > 1 ? new Date(stats.widgetVisibleOverTime.timeline[stats.widgetVisibleOverTime.timeline.length - 1].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
-                          </>
-                        )}
-                     </div>
-                     <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
-                        Number of times the widget became visible in the user's viewport
                      </p>
                   </>
                 )}
