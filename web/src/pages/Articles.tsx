@@ -65,23 +65,31 @@ export default function Articles() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Fetch user's accounts
-      const { data: accountsData } = await supabase
+      // Fetch user's owned accounts
+      const { data: ownedAccounts } = await supabase
         .from('account')
         .select('id')
         .eq('user_id', user.id)
 
-      if (!accountsData || accountsData.length === 0) {
+      // Fetch user's collaborated accounts
+      const { data: collaboratedAccounts } = await supabase
+        .from('account_collaborator')
+        .select('account_id')
+        .eq('user_id', user.id)
+
+      const ownedIds = ownedAccounts?.map(a => a.id) || []
+      const collaboratedIds = collaboratedAccounts?.map(a => a.account_id) || []
+      const allAccountIds = [...new Set([...ownedIds, ...collaboratedIds])]
+
+      if (allAccountIds.length === 0) {
         return
       }
-
-      const accountIds = accountsData.map(a => a.id)
 
       // Fetch projects
       const { data: projectsData } = await supabase
         .from('project')
         .select('project_id, client_name, icon_url')
-        .in('account_id', accountIds)
+        .in('account_id', allAccountIds)
 
       if (projectsData) {
         setProjects(projectsData)
