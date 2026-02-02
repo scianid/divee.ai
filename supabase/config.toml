@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.me]
 verify_jwt = false
+
+[functions.purge-cache]
+verify_jwt = false
