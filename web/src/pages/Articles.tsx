@@ -150,7 +150,7 @@ export default function Articles() {
       // Build the query with filters
       let query = supabase
         .from('article')
-        .select('url, title, content, cache, project_id, unique_id', { count: 'exact' })
+        .select('url, title, content, cache, project_id, unique_id, created_at', { count: 'exact' })
         .in('project_id', projectIds)
 
       // Apply project filter
@@ -168,8 +168,8 @@ export default function Articles() {
       const to = from + itemsPerPage - 1
       query = query.range(from, to)
 
-      // Order results
-      query = query.order('url', { ascending: true })
+      // Order results by creation date (newest first)
+      query = query.order('created_at', { ascending: false })
 
       const { data: articlesData, count } = await query
 
