@@ -702,20 +702,30 @@ export default function Dashboard() {
         // Filter by selected project
         articlesQuery = articlesQuery.eq('project_id', selectedProject);
       } else {
-        // Filter by all user's projects
-        articlesQuery = articlesQuery.in('project_id', [
-          ...(await supabase
+        // Filter by all user's projects (owned + collaborated)
+        const ownedAccounts = await supabase
+          .from('account')
+          .select('id')
+          .eq('user_id', session.user.id);
+        
+        const collaboratedAccounts = await supabase
+          .from('account_collaborator')
+          .select('account_id')
+          .eq('user_id', session.user.id);
+        
+        const ownedIds = ownedAccounts.data?.map(a => a.id) || [];
+        const collaboratedIds = collaboratedAccounts.data?.map(a => a.account_id) || [];
+        const allAccountIds = [...new Set([...ownedIds, ...collaboratedIds])];
+        
+        if (allAccountIds.length > 0) {
+          const projectsResult = await supabase
             .from('project')
             .select('project_id')
-            .in('account_id', [
-              ...(await supabase
-                .from('account')
-                .select('id')
-                .eq('user_id', session.user.id)
-              ).data?.map(a => a.id) || []
-            ])
-          ).data?.map(p => p.project_id) || []
-        ]);
+            .in('account_id', allAccountIds);
+          
+          const projectIds = projectsResult.data?.map(p => p.project_id) || [];
+          articlesQuery = articlesQuery.in('project_id', projectIds);
+        }
       }
       
       const { count } = await articlesQuery;
