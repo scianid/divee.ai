@@ -9,6 +9,8 @@ import { RequireAuth } from './components/RequireAuth'
 import Reports from './pages/Reports'
 import Inventory from './pages/Inventory'
 import Articles from './pages/Articles'
+import Questions from './pages/Questions'
+import Conversations from './pages/Conversations'
 import TermsPage from './pages/Terms'
 import PrivacyPage from './pages/Privacy'
 import { DashboardLayout } from './layouts/DashboardLayout'
@@ -758,6 +760,8 @@ function App() {
         <Route path="/projects" element={<Projects />} />
         <Route path="/inventory" element={<RequireAuth><Inventory /></RequireAuth>} />
         <Route path="/articles" element={<RequireAuth><Articles /></RequireAuth>} />
+        <Route path="/questions" element={<RequireAuth><Questions /></RequireAuth>} />
+        <Route path="/conversations" element={<RequireAuth><Conversations /></RequireAuth>} />
         <Route path="/analytics" element={<RequireAuth><Reports /></RequireAuth>} />
       </Route>
     </Routes>
