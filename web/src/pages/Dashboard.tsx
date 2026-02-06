@@ -744,17 +744,16 @@ export default function Dashboard() {
       }
     })
     
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        if (!session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        // Only handle sign-in/sign-out events, ignore token refresh
+        if (event === 'SIGNED_OUT' || !session) {
           navigate('/login')
-        } else {
-          setUser(session?.user ?? null)
-          if (session?.user) {
-            checkAccounts(session.user.id)
-          }
+        } else if (event === 'SIGNED_IN') {
+          setUser(session.user)
+          checkAccounts(session.user.id)
           fetchStats()
         }
+        // Ignore TOKEN_REFRESHED and other events to prevent unnecessary reloads
     })
     return () => subscription.unsubscribe()
   }, [navigate])
