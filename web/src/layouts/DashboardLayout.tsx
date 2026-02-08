@@ -109,12 +109,12 @@ export function DashboardLayout() {
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: DashboardIcon },
+    { label: 'Ad Reports', path: '/ad-reports', icon: AdReportsIcon },
     { label: 'Accounts', path: '/accounts', icon: AccountsIcon },
     { label: 'Inventory', path: '/inventory', icon: InventoryIcon },
     { label: 'Articles', path: '/articles', icon: ArticlesIcon },
     { label: 'Questions', path: '/questions', icon: QuestionsIcon },
     { label: 'Conversations', path: '/conversations', icon: ConversationsIcon },
-    { label: 'Ad Reports', path: '/ad-reports', icon: AdReportsIcon },
     // { label: 'Reports', path: '/analytics', icon: ReportsIcon },
   ]
 
