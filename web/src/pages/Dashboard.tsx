@@ -847,23 +847,35 @@ export default function Dashboard() {
     }
   }
   
-  // Fetch projects for filter
+  // Fetch projects for filter (owned + collaborated accounts)
   const fetchProjects = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       
-      const { data: accounts } = await supabase
+      // Get owned accounts
+      const { data: ownedAccounts } = await supabase
         .from('account')
         .select('id')
         .eq('user_id', session.user.id);
       
-      if (!accounts || accounts.length === 0) return;
+      // Get collaborated accounts
+      const { data: collaboratorAccounts } = await supabase
+        .from('account_collaborator')
+        .select('account_id')
+        .eq('user_id', session.user.id);
+      
+      const accountIds = [
+        ...(ownedAccounts || []).map(a => a.id),
+        ...(collaboratorAccounts || []).map(c => c.account_id)
+      ];
+      
+      if (accountIds.length === 0) return;
       
       const { data: projectData } = await supabase
         .from('project')
         .select('project_id, client_name, icon_url')
-        .in('account_id', accounts.map(a => a.id))
+        .in('account_id', accountIds)
         .order('client_name');
       
       setProjects(projectData || []);
