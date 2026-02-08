@@ -9,3 +9,6 @@ verify_jwt = false
 
 [functions.purge-cache]
 verify_jwt = false
+
+[functions.gam]
+verify_jwt = false
