@@ -182,7 +182,7 @@ function ImpressionsMap({ locations }: { locations: any[] }) {
                     <CircleMarker 
                         key={i} 
                         center={[loc.latitude || 0, loc.longitude || 0]} 
-                        pathOptions={{ color: '#2563eb', fillColor: '#2563eb', fillOpacity: 0.6, weight: 0 }}
+                        pathOptions={{ color: '#2563eb', fillColor: '#2563eb', fillOpacity: 0.2, weight: 0 }}
                         radius={Math.max(4, Math.min(20, Math.sqrt(loc.count || 0) * 4))}
                     >
                         <Popup>
@@ -612,11 +612,11 @@ export default function Dashboard() {
   const [hasCheckedWidgets, setHasCheckedWidgets] = useState(false)
   const navigate = useNavigate()
   
-  // Calculate default date range (last 7 days)
+  // Calculate default date range (last 24 hours)
   const getDefaultDateRange = () => {
     const end = new Date();
     const start = new Date();
-    start.setDate(start.getDate() - 7);
+    start.setDate(start.getDate() - 1);
     return {
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0]
@@ -624,7 +624,7 @@ export default function Dashboard() {
   };
 
   const [dateRange, setDateRange] = useState(getDefaultDateRange());
-  const [isLast24Hours, setIsLast24Hours] = useState(false);
+  const [isLast24Hours, setIsLast24Hours] = useState(true);
   const [loading, setLoading] = useState(false);
   const [statsErrors, setStatsErrors] = useState<Record<string, string>>({});
   const [stats, setStats] = useState<any>({
