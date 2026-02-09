@@ -302,9 +302,13 @@ export default function AdReports() {
         end_date: dateRange.end,
       });
 
-      // Add project filter if a specific site is selected
+      // Add site filter if a specific site is selected
       if (selectedSite !== 'all') {
-        params.append('project_id', selectedSite);
+        const selectedProject = projects.find(p => p.project_id === selectedSite);
+        if (selectedProject && selectedProject.allowed_urls && selectedProject.allowed_urls.length > 0) {
+          // Use the first allowed domain as the site filter
+          params.append('site_name', selectedProject.allowed_urls[0]);
+        }
       }
 
       const response = await fetch(

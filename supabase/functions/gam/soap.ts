@@ -21,7 +21,7 @@ function parseDate(dateStr: string): { year: number; month: number; day: number 
 // Build statement filter for Line Item ID
 function buildStatementFilter(): string {
   if (!GAM_LINE_ITEM_ID) return '';
-
+  
   return `
           <gam:statement>
             <gam:query>WHERE LINE_ITEM_ID = :lineItemId</gam:query>
@@ -39,7 +39,7 @@ export function buildRunReportJobSoap(networkCode: string, params: ReportParams)
   const startDate = parseDate(params.startDate);
   const endDate = parseDate(params.endDate);
   const statementFilter = buildStatementFilter();
-
+  
   return `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:gam="https://www.google.com/apis/ads/publisher/${GAM_API_VERSION}">
   <soapenv:Header>
@@ -53,7 +53,6 @@ export function buildRunReportJobSoap(networkCode: string, params: ReportParams)
       <gam:reportJob>
         <gam:reportQuery>
           <gam:dimensions>DATE</gam:dimensions>
-          <gam:dimensions>AD_UNIT_NAME</gam:dimensions>
           <gam:adUnitView>FLAT</gam:adUnitView>
           <gam:columns>TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS</gam:columns>
           <gam:columns>TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE</gam:columns>
@@ -121,7 +120,7 @@ export function buildGetReportDownloadUrlSoap(networkCode: string, reportJobId: 
 export async function soapRequest(accessToken: string, soapAction: string, soapBody: string): Promise<string> {
   console.log(`SOAP Request to: ${GAM_SOAP_ENDPOINT}`);
   console.log(`SOAPAction: ${soapAction}`);
-
+  
   const response = await fetch(GAM_SOAP_ENDPOINT, {
     method: "POST",
     headers: {
@@ -131,14 +130,14 @@ export async function soapRequest(accessToken: string, soapAction: string, soapB
     },
     body: soapBody,
   });
-
+  
   const responseText = await response.text();
-
+  
   if (!response.ok) {
     console.error("SOAP Error Response:", responseText);
     throw new Error(`SOAP request failed: ${response.status} - ${responseText.substring(0, 500)}`);
   }
-
+  
   return responseText;
 }
 
@@ -149,7 +148,7 @@ export function extractXmlValue(xml: string, tagName: string): string | null {
     new RegExp(`<[^>]*:${tagName}[^>]*>([^<]*)<`, 'i'),
     new RegExp(`<${tagName}[^>]*>([^<]*)<`, 'i'),
   ];
-
+  
   for (const pattern of patterns) {
     const match = xml.match(pattern);
     if (match) return match[1];
