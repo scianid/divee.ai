@@ -65,6 +65,30 @@ function Card({ children, style = {}, title, action, className = '' }: { childre
   )
 }
 
+// Error display for cards
+function CardError({ message }: { message: string }) {
+  return (
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '150px',
+      color: '#dc2626',
+      gap: '12px'
+    }}>
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span style={{ fontSize: '14px', textAlign: 'center', maxWidth: '200px' }}>
+        {message.includes('timeout') ? 'Request timed out. Try a shorter date range.' : 'Failed to load data'}
+      </span>
+    </div>
+  );
+}
+
 function TrendChart({ data: timelineData }: { data: any[] }) {
     const chartData = timelineData.length > 0 ? timelineData.map((d: any) => d.count) : [0];
     const labels = timelineData.length > 0 ? timelineData.map((d: any) => {
@@ -282,12 +306,14 @@ function PlatformsChart({ data }: { data: any[] }) {
 
 function TopPerformingArticles({ 
     articles, 
-    loading, 
+    loading,
+    error,
     sortBy, 
     onSortChange 
 }: { 
     articles: TopArticle[] | null; 
     loading: boolean;
+    error?: string;
     sortBy: 'impressions' | 'engagement';
     onSortChange: (sort: 'impressions' | 'engagement') => void;
 }) {
@@ -367,7 +393,9 @@ function TopPerformingArticles({
             </div>
 
             {/* Content */}
-            {loading ? (
+            {error ? (
+                <CardError message={error} />
+            ) : loading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                 </div>
@@ -598,6 +626,7 @@ export default function Dashboard() {
   const [dateRange, setDateRange] = useState(getDefaultDateRange());
   const [isLast24Hours, setIsLast24Hours] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [statsErrors, setStatsErrors] = useState<Record<string, string>>({});
   const [stats, setStats] = useState<any>({
     totalInteractions: null,
     impressionsByWidget: null,
@@ -619,6 +648,7 @@ export default function Dashboard() {
   // Fetch stats from edge function
   const fetchStats = async () => {
     setLoading(true);
+    setStatsErrors({}); // Clear previous errors
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -671,9 +701,24 @@ export default function Dashboard() {
             headers 
           });
           const data = await res.json();
+          
+          // Check for error response (401, 500, etc.)
+          if (!res.ok || data.error) {
+            const errorMsg = data.error || `Request failed (${res.status})`;
+            setStatsErrors((prev) => ({ ...prev, [key]: errorMsg }));
+            console.error(`Error fetching ${key}:`, errorMsg);
+            return;
+          }
+          
+          // Clear any previous error for this key
+          setStatsErrors((prev) => {
+            const { [key]: _, ...rest } = prev;
+            return rest;
+          });
           setStats((prev: any) => ({ ...prev, [key]: data }));
         } catch (error) {
           console.error(`Failed to fetch ${key}:`, error);
+          setStatsErrors((prev) => ({ ...prev, [key]: 'Network error' }));
         }
       };
 
@@ -1312,7 +1357,9 @@ export default function Dashboard() {
         {/* Row 1: Key Metrics */}
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
             <Card title="Total Widget Loaded" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-                {(!stats.impressionsByWidget || !stats.impressionsOverTime) ? (
+                {(statsErrors.impressionsByWidget || statsErrors.impressionsOverTime) ? (
+                  <CardError message={statsErrors.impressionsByWidget || statsErrors.impressionsOverTime} />
+                ) : (!stats.impressionsByWidget || !stats.impressionsOverTime) ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                 </div>
@@ -1349,7 +1396,9 @@ export default function Dashboard() {
 
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
             <Card title="Widget Visible" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-                {!stats.widgetVisibleOverTime ? (
+                {statsErrors.widgetVisibleOverTime ? (
+                  <CardError message={statsErrors.widgetVisibleOverTime} />
+                ) : !stats.widgetVisibleOverTime ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                   </div>
@@ -1386,6 +1435,7 @@ export default function Dashboard() {
             <TopPerformingArticles 
                 articles={stats.topArticles as TopArticle[] | null}
                 loading={loading}
+                error={statsErrors.topArticles}
                 sortBy={topArticlesSortBy}
                 onSortChange={setTopArticlesSortBy}
             />
@@ -1393,7 +1443,9 @@ export default function Dashboard() {
 
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
             <Card title="Ad Impressions" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-                {!stats.adImpressions ? (
+                {statsErrors.adImpressions ? (
+                  <CardError message={statsErrors.adImpressions} />
+                ) : !stats.adImpressions ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                   </div>
@@ -1580,7 +1632,9 @@ export default function Dashboard() {
 
         <div style={{ gridColumn: 'span 1', minWidth: 0 }}>
         <Card title="Top Widgets" action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>} style={{ height: '100%' }}>
-             {!stats.impressionsByWidget ? (
+             {statsErrors.impressionsByWidget ? (
+               <CardError message={statsErrors.impressionsByWidget} />
+             ) : !stats.impressionsByWidget ? (
                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
                  <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                </div>
@@ -1621,7 +1675,9 @@ export default function Dashboard() {
         {/* Row 3: Map & Top Articles */}
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
             <Card title="Impressions by Location" style={{ height: '100%' }}>
-                {!stats.impressionsByLocation ? (
+                {statsErrors.impressionsByLocation ? (
+                  <CardError message={statsErrors.impressionsByLocation} />
+                ) : !stats.impressionsByLocation ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
                     <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                   </div>

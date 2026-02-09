@@ -19,6 +19,10 @@ ON analytics_impressions (project_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_analytics_impressions_project_url_created 
 ON analytics_impressions (project_id, url, created_at);
 
+-- Add index for impressions by location aggregation
+CREATE INDEX IF NOT EXISTS idx_analytics_impressions_project_geo 
+ON analytics_impressions (project_id, created_at, geo_country, geo_city);
+
 -- Add index on article.url for JOIN optimization
 CREATE INDEX IF NOT EXISTS idx_article_url 
 ON article (url);
