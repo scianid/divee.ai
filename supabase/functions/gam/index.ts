@@ -78,7 +78,7 @@ Deno.serve(async (req: Request) => {
       siteName,
     };
     
-    console.log(`Running GAM report for ${params.startDate} to ${params.endDate}`);
+    console.log(`Running GAM report for ${params.startDate} to ${params.endDate}. on site url: ${params.siteName || "all sites"}  `);
     
     // Run the report via SOAP API
     const reportJobId = await runGamReport(params);
