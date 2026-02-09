@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { AdminBadge } from '../components/AdminBadge'
+import { useAdmin } from '../hooks/useAdmin'
 
 // Icons
 const DashboardIcon = () => (
@@ -107,16 +108,18 @@ export function DashboardLayout() {
     }
   }
 
+  const isAdmin = useAdmin()
+
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: DashboardIcon },
-    { label: 'Ad Reports', path: '/ad-reports', icon: AdReportsIcon },
+    { label: 'Ad Reports', path: '/ad-reports', icon: AdReportsIcon, adminOnly: true },
     { label: 'Accounts', path: '/accounts', icon: AccountsIcon },
     { label: 'Inventory', path: '/inventory', icon: InventoryIcon },
     { label: 'Articles', path: '/articles', icon: ArticlesIcon },
     { label: 'Questions', path: '/questions', icon: QuestionsIcon },
     { label: 'Conversations', path: '/conversations', icon: ConversationsIcon },
     // { label: 'Reports', path: '/analytics', icon: ReportsIcon },
-  ]
+  ].filter(item => !item.adminOnly || isAdmin)
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fa' }}>

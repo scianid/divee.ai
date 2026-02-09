@@ -235,6 +235,7 @@ export default function AdReports() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<GamReportData | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const navigate = useNavigate();
 
   // Calculate default date range (last 24 hours)
@@ -250,26 +251,54 @@ export default function AdReports() {
 
   const [dateRange, setDateRange] = useState(getDefaultDateRange());
 
-  // Auth check
+  // Auth and admin check
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkAdminStatus = async (userId: string) => {
+      const { data } = await supabase
+        .from('system_admins')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+      return !!data;
+    };
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         navigate('/login');
       } else {
         setUser(session.user);
+        const adminStatus = await checkAdminStatus(session.user.id);
+        setIsAdmin(adminStatus);
+        if (!adminStatus) {
+          navigate('/dashboard');
+        }
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
         navigate('/login');
       } else if (event === 'SIGNED_IN') {
         setUser(session.user);
+        const adminStatus = await checkAdminStatus(session.user.id);
+        setIsAdmin(adminStatus);
+        if (!adminStatus) {
+          navigate('/dashboard');
+        }
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Don't render until admin check is complete
+  if (isAdmin === null) {
+    return <div style={{ padding: '48px', textAlign: 'center' }}>Loading...</div>;
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
 
   // Fetch GAM report data
   const fetchReport = async () => {
