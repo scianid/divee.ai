@@ -5,6 +5,9 @@ import type { ReportParams } from "./types.ts";
 export const GAM_API_VERSION = "v202502";
 export const GAM_SOAP_ENDPOINT = `https://ads.google.com/apis/ads/publisher/${GAM_API_VERSION}/ReportService`;
 
+// Global Line Item ID filter - set to null to disable filtering
+export const GAM_LINE_ITEM_ID: string | null = "7202316716";
+
 // Parse date from ISO or YYYY-MM-DD format
 function parseDate(dateStr: string): { year: number; month: number; day: number } {
   const date = new Date(dateStr);
@@ -15,10 +18,27 @@ function parseDate(dateStr: string): { year: number; month: number; day: number 
   };
 }
 
+// Build statement filter for Line Item ID
+function buildStatementFilter(): string {
+  if (!GAM_LINE_ITEM_ID) return '';
+  
+  return `
+          <gam:statement>
+            <gam:query>WHERE LINE_ITEM_ID = :lineItemId</gam:query>
+            <gam:values>
+              <gam:key>lineItemId</gam:key>
+              <gam:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="gam:NumberValue">
+                <gam:value>${GAM_LINE_ITEM_ID}</gam:value>
+              </gam:value>
+            </gam:values>
+          </gam:statement>`;
+}
+
 // Build SOAP envelope for runReportJob
 export function buildRunReportJobSoap(networkCode: string, params: ReportParams): string {
   const startDate = parseDate(params.startDate);
   const endDate = parseDate(params.endDate);
+  const statementFilter = buildStatementFilter();
   
   return `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:gam="https://www.google.com/apis/ads/publisher/${GAM_API_VERSION}">
@@ -46,7 +66,7 @@ export function buildRunReportJobSoap(networkCode: string, params: ReportParams)
             <gam:month>${endDate.month}</gam:month>
             <gam:day>${endDate.day}</gam:day>
           </gam:endDate>
-          <gam:dateRangeType>CUSTOM_DATE</gam:dateRangeType>
+          <gam:dateRangeType>CUSTOM_DATE</gam:dateRangeType>${statementFilter}
         </gam:reportQuery>
       </gam:reportJob>
     </gam:runReportJob>
