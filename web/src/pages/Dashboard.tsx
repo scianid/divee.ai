@@ -1383,38 +1383,12 @@ export default function Dashboard() {
         </div>
 
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
-            <Card title="Total Interactions" style={{ height: '100%' }} action={<button style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px' }}>−</button>}>
-                {(!stats.totalInteractions || !stats.interactionsOverTime) ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px' }}>
-                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #f3f4f6', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                        {formatNumber(stats.totalInteractions?.total ?? 0)}
-                        </span>
-                    </div>
-                    <TrendChart data={stats.interactionsOverTime?.timeline || []} />
-                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
-                        {stats.interactionsOverTime?.timeline?.length > 0 && stats.interactionsOverTime?.timeline[0].date.length > 10 ? (
-                           <>
-                             <span>{new Date(stats.interactionsOverTime.timeline[0].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                             <span>{new Date(stats.interactionsOverTime.timeline[stats.interactionsOverTime.timeline.length - 1].date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                           </>
-                        ) : (
-                          <>
-                             <span>{stats.interactionsOverTime?.timeline?.[0] ? new Date(stats.interactionsOverTime.timeline[0].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
-                             <span>{stats.interactionsOverTime?.timeline?.length > 1 ? new Date(stats.interactionsOverTime.timeline[stats.interactionsOverTime.timeline.length - 1].date).toLocaleDateString('en-US', { weekday: 'short' }) : ''}</span>
-                          </>
-                        )}
-                     </div>
-                     <p style={{ fontSize: '13px', color: '#64748b', marginTop: '16px', marginBottom: 0, lineHeight: '1.5' }}>
-                        User that actually requested suggestions from the widget.
-                     </p>
-                  </>
-                )}
-            </Card>
+            <TopPerformingArticles 
+                articles={stats.topArticles as TopArticle[] | null}
+                loading={loading}
+                sortBy={topArticlesSortBy}
+                onSortChange={setTopArticlesSortBy}
+            />
         </div>
 
         <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
@@ -1660,15 +1634,6 @@ export default function Dashboard() {
                   </>
                 )}
             </Card>
-        </div>
-
-        <div style={{ gridColumn: window.innerWidth >= 900 ? 'span 2' : 'span 1', minWidth: 0 }}>
-            <TopPerformingArticles 
-                articles={stats.topArticles as TopArticle[] | null}
-                loading={loading}
-                sortBy={topArticlesSortBy}
-                onSortChange={setTopArticlesSortBy}
-            />
         </div>
 
       </div>
