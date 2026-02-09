@@ -18,47 +18,19 @@ function parseDate(dateStr: string): { year: number; month: number; day: number 
   };
 }
 
-// Build statement filter for Line Item ID and/or Site Name
-function buildStatementFilter(siteName?: string): string {
-  const filters: string[] = [];
+// Build statement filter for Line Item ID
+function buildStatementFilter(): string {
+  if (!GAM_LINE_ITEM_ID) return '';
 
-  if (GAM_LINE_ITEM_ID) {
-    filters.push('LINE_ITEM_ID = :lineItemId');
-  }
-
-  if (siteName) {
-    // Filter by ad unit name containing the site name
-    filters.push('AD_UNIT_NAME LIKE :siteName');
-  }
-
-  if (filters.length === 0) return '';
-
-  const whereClause = `WHERE ${filters.join(' AND ')}`;
-  const values: string[] = [];
-
-  if (GAM_LINE_ITEM_ID) {
-    values.push(`
+  return `
+          <gam:statement>
+            <gam:query>WHERE LINE_ITEM_ID = :lineItemId</gam:query>
             <gam:values>
               <gam:key>lineItemId</gam:key>
               <gam:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="gam:NumberValue">
                 <gam:value>${GAM_LINE_ITEM_ID}</gam:value>
               </gam:value>
-            </gam:values>`);
-  }
-
-  if (siteName) {
-    values.push(`
-            <gam:values>
-              <gam:key>siteName</gam:key>
-              <gam:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="gam:TextValue">
-                <gam:value>%${siteName}%</gam:value>
-              </gam:value>
-            </gam:values>`);
-  }
-
-  return `
-          <gam:statement>
-            <gam:query>${whereClause}</gam:query>${values.join('')}
+            </gam:values>
           </gam:statement>`;
 }
 
@@ -66,7 +38,7 @@ function buildStatementFilter(siteName?: string): string {
 export function buildRunReportJobSoap(networkCode: string, params: ReportParams): string {
   const startDate = parseDate(params.startDate);
   const endDate = parseDate(params.endDate);
-  const statementFilter = buildStatementFilter(params.siteName);
+  const statementFilter = buildStatementFilter();
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:gam="https://www.google.com/apis/ads/publisher/${GAM_API_VERSION}">

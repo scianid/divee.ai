@@ -36,8 +36,7 @@ Deno.serve(async (req: Request) => {
       );
     }
     
-    // If a project is specified, validate access and resolve site URL
-    let siteName: string | undefined;
+    // If a project is specified, validate user has access
     if (projectId) {
       const userProjectIds = await getProjectIdsForUser(supabase, userId, undefined, projectId);
       if (!userProjectIds.includes(projectId)) {
@@ -49,36 +48,14 @@ Deno.serve(async (req: Request) => {
           }
         );
       }
-
-      // Look up allowed_urls from the project
-      const { data: project, error: projectError } = await supabase
-        .from("project")
-        .select("allowed_urls")
-        .eq("project_id", projectId)
-        .single();
-
-      if (projectError || !project) {
-        return new Response(
-          JSON.stringify({ error: "Project not found." }),
-          {
-            status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
-      if (project.allowed_urls && project.allowed_urls.length > 0) {
-        siteName = project.allowed_urls[0];
-      }
     }
 
     const params: ReportParams = {
       startDate: startDate.split("T")[0], // Normalize to YYYY-MM-DD
       endDate: endDate.split("T")[0],
-      siteName,
     };
     
-    console.log(`Running GAM report for ${params.startDate} to ${params.endDate}. on site url: ${params.siteName || "all sites"}  `);
+    console.log(`Running GAM report for ${params.startDate} to ${params.endDate}`);
     
     // Run the report via SOAP API
     const reportJobId = await runGamReport(params);
