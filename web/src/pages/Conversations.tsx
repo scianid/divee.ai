@@ -164,6 +164,20 @@ export default function Conversations() {
     return userMsg?.content || '-'
   }
 
+  const formatDuration = (startedAt: string, lastMessageAt: string) => {
+    const start = new Date(startedAt).getTime()
+    const end = new Date(lastMessageAt).getTime()
+    const diffMs = end - start
+    if (diffMs < 0) return '-'
+    const totalSeconds = Math.floor(diffMs / 1000)
+    if (totalSeconds < 60) return '<1m'
+    const totalMinutes = Math.floor(totalSeconds / 60)
+    if (totalMinutes < 60) return `${totalMinutes}m`
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+  }
+
   const totalPages = Math.ceil(totalCount / itemsPerPage)
 
   return (
@@ -330,6 +344,7 @@ export default function Conversations() {
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>First Message</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Widget</th>
                 <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Messages</th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Duration</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Started</th>
                 <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>View</th>
               </tr>
@@ -377,6 +392,9 @@ export default function Conversations() {
                     }}>
                       {conversation.message_count}
                     </span>
+                  </td>
+                  <td style={{ padding: '16px', fontSize: '14px', color: '#64748b', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    {formatDuration(conversation.started_at, conversation.last_message_at)}
                   </td>
                   <td style={{ padding: '16px', fontSize: '14px', color: '#64748b', whiteSpace: 'nowrap' }}>
                     {formatDate(conversation.started_at)}
