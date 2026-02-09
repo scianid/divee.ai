@@ -183,7 +183,7 @@ function ImpressionsMap({ locations }: { locations: any[] }) {
                         key={i} 
                         center={[loc.latitude || 0, loc.longitude || 0]} 
                         pathOptions={{ color: '#2563eb', fillColor: '#2563eb', fillOpacity: 0.2, weight: 0 }}
-                        radius={Math.max(4, Math.min(20, Math.sqrt(loc.count || 0) * 4))}
+                        radius={Math.max(3, Math.min(15, Math.sqrt(loc.count || 0) * 3))}
                     >
                         <Popup>
                             <div style={{ fontFamily: 'var(--font-display)', color: '#1e293b' }}>
