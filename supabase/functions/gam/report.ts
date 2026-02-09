@@ -140,12 +140,13 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
       
       if (!line.trim()) continue;
       
-      // CSV columns: DATE, IMPRESSIONS, REVENUE
+      // CSV columns: DATE, AD_UNIT_NAME, IMPRESSIONS, REVENUE
       const values = line.split(",");
-      if (values.length >= 3) {
+      if (values.length >= 4) {
         const date = values[0]?.trim() || "";
-        const impressions = parseInt(values[1]?.trim() || "0", 10);
-        const revenue = parseFloat(values[2]?.trim() || "0") / 1000000;
+        // Skip AD_UNIT_NAME (values[1]) as we're just aggregating by date
+        const impressions = parseInt(values[2]?.trim() || "0", 10);
+        const revenue = parseFloat(values[3]?.trim() || "0") / 1000000;
         
         // Aggregate by date
         const dateEntry = data.byDate.get(date) || { impressions: 0, revenue: 0 };
@@ -164,10 +165,10 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
   // Process any remaining buffer
   if (buffer.trim() && headerSkipped) {
     const values = buffer.split(",");
-    if (values.length >= 3) {
+    if (values.length >= 4) {
       const date = values[0]?.trim() || "";
-      const impressions = parseInt(values[1]?.trim() || "0", 10);
-      const revenue = parseFloat(values[2]?.trim() || "0") / 1000000;
+      const impressions = parseInt(values[2]?.trim() || "0", 10);
+      const revenue = parseFloat(values[3]?.trim() || "0") / 1000000;
       
       const dateEntry = data.byDate.get(date) || { impressions: 0, revenue: 0 };
       dateEntry.impressions += impressions;

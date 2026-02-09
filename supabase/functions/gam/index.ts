@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedClient } from "../_shared/supabase.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { getProjectIdsForUser } from "../_shared/projectDao.ts";
 import type { ReportParams } from "./types.ts";
 import { runGamReport, waitForReport, fetchAndAggregateReport } from "./report.ts";
 
@@ -16,11 +17,12 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization");
     
     // Verify user authentication
-    await getAuthenticatedClient(authHeader);
+    const { supabase, userId } = await getAuthenticatedClient(authHeader);
     
     // Parse query parameters
     const startDate = url.searchParams.get("start_date");
     const endDate = url.searchParams.get("end_date");
+    const projectId = url.searchParams.get("project_id"); // Optional project filter
     
     if (!startDate || !endDate) {
       return new Response(
@@ -34,9 +36,46 @@ Deno.serve(async (req: Request) => {
       );
     }
     
+    // If a project is specified, validate access and resolve site URL
+    let siteName: string | undefined;
+    if (projectId) {
+      const userProjectIds = await getProjectIdsForUser(supabase, userId, undefined, projectId);
+      if (!userProjectIds.includes(projectId)) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized: You do not have access to this project." }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Look up allowed_urls from the project
+      const { data: project, error: projectError } = await supabase
+        .from("project")
+        .select("allowed_urls")
+        .eq("project_id", projectId)
+        .single();
+
+      if (projectError || !project) {
+        return new Response(
+          JSON.stringify({ error: "Project not found." }),
+          {
+            status: 404,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      if (project.allowed_urls && project.allowed_urls.length > 0) {
+        siteName = project.allowed_urls[0];
+      }
+    }
+
     const params: ReportParams = {
       startDate: startDate.split("T")[0], // Normalize to YYYY-MM-DD
       endDate: endDate.split("T")[0],
+      siteName,
     };
     
     console.log(`Running GAM report for ${params.startDate} to ${params.endDate}`);

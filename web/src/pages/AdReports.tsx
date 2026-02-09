@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactECharts from 'echarts-for-react';
 import { supabase } from '../lib/supabase';
-import type { User } from '@supabase/supabase-js';
+import { useAuth } from '../contexts/AuthContext';
 
 // --- Helper Functions ---
 
@@ -230,12 +230,19 @@ function TrendChart({
 
 // --- Main Component ---
 
+interface Project {
+  project_id: string;
+  client_name: string;
+  allowed_urls: string[] | null;
+}
+
 export default function AdReports() {
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<GamReportData | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedSite, setSelectedSite] = useState<string>('all');
+  const [showSiteDropdown, setShowSiteDropdown] = useState(false);
   const navigate = useNavigate();
 
   // Calculate default date range (last 24 hours)
@@ -250,49 +257,27 @@ export default function AdReports() {
   };
 
   const [dateRange, setDateRange] = useState(getDefaultDateRange());
+  
+  // Get auth state from context
+  const { user, isAdmin, isLoading } = useAuth();
 
   // Auth and admin check
   useEffect(() => {
-    const checkAdminStatus = async (userId: string) => {
-      const { data } = await supabase
-        .from('system_admins')
-        .select('id')
-        .eq('user_id', userId)
-        .single();
-      return !!data;
-    };
-
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
-        navigate('/login');
-      } else {
-        setUser(session.user);
-        const adminStatus = await checkAdminStatus(session.user.id);
-        setIsAdmin(adminStatus);
-        if (!adminStatus) {
-          navigate('/dashboard');
-        }
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate('/login');
-      } else if (event === 'SIGNED_IN') {
-        setUser(session.user);
-        const adminStatus = await checkAdminStatus(session.user.id);
-        setIsAdmin(adminStatus);
-        if (!adminStatus) {
-          navigate('/dashboard');
-        }
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    if (isLoading) return; // Wait for auth to load
+    
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    if (!isAdmin) {
+      navigate('/dashboard');
+      return;
+    }
+  }, [user, isAdmin, isLoading, navigate]);
 
   // Don't render until admin check is complete
-  if (isAdmin === null) {
+  if (isLoading || !user) {
     return <div style={{ padding: '48px', textAlign: 'center' }}>Loading...</div>;
   }
 
@@ -316,6 +301,11 @@ export default function AdReports() {
         start_date: dateRange.start,
         end_date: dateRange.end,
       });
+
+      // Add project filter if a specific site is selected
+      if (selectedSite !== 'all') {
+        params.append('project_id', selectedSite);
+      }
 
       const response = await fetch(
         `https://srv.divee.ai/functions/v1/gam?${params}`,
@@ -344,9 +334,25 @@ export default function AdReports() {
     }
   };
 
-  // Fetch on mount and when date changes
+  // Fetch user projects
+  const fetchProjects = async () => {
+    try {
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('project')
+        .select('project_id, client_name, allowed_urls')
+        .order('client_name');
+
+      if (projectsError) throw projectsError;
+      setProjects(projectsData || []);
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+    }
+  };
+
+  // Fetch projects on mount
   useEffect(() => {
     if (user) {
+      fetchProjects();
       fetchReport();
     }
   }, [user]);
@@ -420,6 +426,105 @@ export default function AdReports() {
         flexWrap: 'wrap',
         alignItems: 'center'
       }}>
+        {/* Site Filter */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowSiteDropdown(!showSiteDropdown)}
+            style={{
+              ...btnStyle,
+              minWidth: '180px',
+              justifyContent: 'space-between'
+            }}
+          >
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {selectedSite === 'all' 
+                ? 'All Sites' 
+                : projects.find(p => p.project_id === selectedSite)?.client_name || 'Select Site'}
+            </span>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showSiteDropdown && (
+            <>
+              <div 
+                style={{ position: 'fixed', inset: 0, zIndex: 10 }} 
+                onClick={() => setShowSiteDropdown(false)}
+              />
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                marginTop: '8px',
+                background: '#fff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                minWidth: '200px',
+                maxHeight: '300px',
+                overflowY: 'auto',
+                zIndex: 20
+              }}>
+                <div
+                  onClick={() => {
+                    setSelectedSite('all');
+                    setShowSiteDropdown(false);
+                  }}
+                  style={{
+                    padding: '12px 16px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: selectedSite === 'all' ? '#2563eb' : '#334155',
+                    fontWeight: selectedSite === 'all' ? 600 : 400,
+                    background: selectedSite === 'all' ? '#f0f7ff' : 'transparent',
+                    borderBottom: '1px solid #f1f5f9'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedSite !== 'all') e.currentTarget.style.background = '#f8fafc';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedSite !== 'all') e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  All Sites
+                </div>
+                {projects.map(project => (
+                  <div
+                    key={project.project_id}
+                    onClick={() => {
+                      setSelectedSite(project.project_id);
+                      setShowSiteDropdown(false);
+                    }}
+                    style={{
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      color: selectedSite === project.project_id ? '#2563eb' : '#334155',
+                      fontWeight: selectedSite === project.project_id ? 600 : 400,
+                      background: selectedSite === project.project_id ? '#f0f7ff' : 'transparent',
+                      borderBottom: '1px solid #f1f5f9'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedSite !== project.project_id) e.currentTarget.style.background = '#f8fafc';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedSite !== project.project_id) e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    <div style={{ fontWeight: 500 }}>{project.client_name}</div>
+                    {project.allowed_urls && project.allowed_urls.length > 0 && (
+                      <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                        {project.allowed_urls[0]}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
         {/* Date Range Picker */}
         <div style={{ 
           display: 'flex', 
