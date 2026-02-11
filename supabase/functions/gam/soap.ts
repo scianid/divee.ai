@@ -5,8 +5,19 @@ import type { ReportParams } from "./types.ts";
 export const GAM_API_VERSION = "v202502";
 export const GAM_SOAP_ENDPOINT = `https://ads.google.com/apis/ads/publisher/${GAM_API_VERSION}/ReportService`;
 
-// Global Line Item ID filter - set to null to disable filtering
-export const GAM_LINE_ITEM_ID: string | null = "7202316716";
+// Global Ad Unit IDs filter - set to null or empty array to disable filtering
+// Divee.AI » mobileweb » Divee.AI_cube (23335681243)
+// Divee.AI » desktop » Divee.AI_banner (23335681369)
+// Divee.AI (23336129396)
+// Divee.AI » desktop (23336129444)
+// Divee.AI » mobileweb (23336129816)
+export const GAM_AD_UNIT_IDS: string[] = [
+  "23335681243",
+  "23335681369",
+  "23336129396",
+  "23336129444",
+  "23336129816",
+];
 
 // Parse date from ISO or YYYY-MM-DD format
 function parseDate(dateStr: string): { year: number; month: number; day: number } {
@@ -18,19 +29,25 @@ function parseDate(dateStr: string): { year: number; month: number; day: number 
   };
 }
 
-// Build statement filter for Line Item ID
+// Build statement filter for Ad Unit IDs
 function buildStatementFilter(): string {
-  if (!GAM_LINE_ITEM_ID) return '';
+  if (!GAM_AD_UNIT_IDS || GAM_AD_UNIT_IDS.length === 0) return '';
+  
+  // Build parameter placeholders for WHERE IN clause
+  const placeholders = GAM_AD_UNIT_IDS.map((_, i) => `:adUnitId${i}`).join(', ');
+  
+  // Build value bindings for each ad unit ID
+  const valueBindings = GAM_AD_UNIT_IDS.map((id, i) => `
+            <gam:values>
+              <gam:key>adUnitId${i}</gam:key>
+              <gam:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="gam:NumberValue">
+                <gam:value>${id}</gam:value>
+              </gam:value>
+            </gam:values>`).join('');
   
   return `
           <gam:statement>
-            <gam:query>WHERE LINE_ITEM_ID = :lineItemId</gam:query>
-            <gam:values>
-              <gam:key>lineItemId</gam:key>
-              <gam:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="gam:NumberValue">
-                <gam:value>${GAM_LINE_ITEM_ID}</gam:value>
-              </gam:value>
-            </gam:values>
+            <gam:query>WHERE AD_UNIT_ID IN (${placeholders})</gam:query>${valueBindings}
           </gam:statement>`;
 }
 
@@ -53,6 +70,7 @@ export function buildRunReportJobSoap(networkCode: string, params: ReportParams)
       <gam:reportJob>
         <gam:reportQuery>
           <gam:dimensions>DATE</gam:dimensions>
+          <gam:dimensions>AD_UNIT_NAME</gam:dimensions>
           <gam:adUnitView>FLAT</gam:adUnitView>
           <gam:columns>TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS</gam:columns>
           <gam:columns>TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE</gam:columns>

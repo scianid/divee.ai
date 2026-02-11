@@ -73,11 +73,20 @@ Deno.serve(async (req: Request) => {
       .map(([date, d]) => ({ date, impressions: d.impressions, revenue: d.revenue }))
       .sort((a, b) => a.date.localeCompare(b.date));
     
+    const byAdUnit = Array.from(data.byAdUnit.entries())
+      .map(([adUnitName, d]) => ({ 
+        adUnitName, 
+        impressions: d.impressions, 
+        revenue: Math.round(d.revenue * 100) / 100 
+      }))
+      .sort((a, b) => b.impressions - a.impressions); // Sort by impressions descending
+    
     return new Response(
       JSON.stringify({
         totalImpressions: data.totalImpressions,
         totalRevenue: Math.round(data.totalRevenue * 100) / 100,
         timeline,
+        byAdUnit,
         rowCount: data.rowCount,
       }),
       {
