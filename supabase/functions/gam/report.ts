@@ -122,7 +122,6 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
   
   let buffer = "";
   let headerSkipped = false;
-  let lineCount = 0;
   
   // Process stream in chunks
   while (true) {
@@ -137,7 +136,6 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
     
     for (const line of lines) {
       if (!headerSkipped) {
-        console.log("CSV Header:", line);
         headerSkipped = true;
         continue;
       }
@@ -146,13 +144,6 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
       
       // CSV columns: DATE, AD_UNIT_NAME, SITE_NAME, AD_UNIT_ID, IMPRESSIONS, REVENUE
       const values = line.split(",");
-      
-      // Log first few lines to debug parsing
-      if (lineCount < 5) {
-        console.log(`CSV Line ${lineCount}:`, line);
-        console.log(`  Split into ${values.length} values:`, values);
-      }
-      lineCount++;
       
       if (values.length >= 6) {
         const date = values[0]?.trim() || "";

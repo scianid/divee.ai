@@ -98,7 +98,8 @@ Deno.serve(async (req: Request) => {
     
     // Fetch and aggregate results (streaming to save memory)
     const data = await fetchAndAggregateReport(reportJobId);
-    console.log(`Processed ${data.rowCount} rows`);\n    
+    console.log(`Processed ${data.rowCount} rows`);
+    
     // Filter sites to only include allowed URLs
     // Note: This only filters the bySite aggregation, not totals/timeline
     // (totals/timeline include all ad unit data regardless of site filtering)
@@ -108,7 +109,9 @@ Deno.serve(async (req: Request) => {
           data.bySite.delete(siteName);
         }
       }
-      console.log(`Filtered to ${data.bySite.size} allowed sites`);\n    }\n    
+      console.log(`Filtered to ${data.bySite.size} allowed sites`);
+    }
+    
     // Convert Maps to sorted arrays
     const timeline = Array.from(data.byDate.entries())
       .map(([date, d]) => ({ date, impressions: d.impressions, revenue: d.revenue }))
