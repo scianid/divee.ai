@@ -77,6 +77,24 @@ const ChartIcon = () => (
   </svg>
 );
 
+const TrophyIcon = () => (
+  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+    <path d="M4 22h16"></path>
+    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+  </svg>
+);
+
+const TrendUpIcon = () => (
+  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+    <polyline points="17 6 23 6 23 12"></polyline>
+  </svg>
+);
+
 // --- Helper Components ---
 
 function Card({ 
@@ -681,90 +699,79 @@ export default function AdReports() {
       {/* Data Display */}
       {data && (
         <>
+          {/* Hero Revenue Card */}
+          <Card style={{ 
+            background: 'linear-gradient(135deg, rgb(59, 130, 246) 0%, rgb(37, 99, 235) 100%)',
+            border: 'none',
+            marginBottom: '24px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)', marginBottom: '8px', fontWeight: 500 }}>
+                  Your Revenue ({data.revenueSharePercentage.toFixed(0)}% share)
+                </div>
+                <div style={{ fontSize: '48px', fontWeight: 700, color: '#fff', marginBottom: '8px', lineHeight: 1 }}>
+                  {formatCurrency(data.userRevenue)}
+                </div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
+                  Total Revenue: {formatCurrency(data.totalRevenue)} • {formatNumber(data.totalImpressions)} impressions
+                </div>
+              </div>
+              <div style={{ 
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>
+                  Daily Avg
+                </div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>
+                  {formatCurrency(data.userRevenue / (data.timeline?.length || 1))}
+                </div>
+              </div>
+            </div>
+          </Card>
+
           {/* Summary Cards */}
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-            gap: '24px',
+            gap: '20px',
             marginBottom: '32px'
           }}>
             <Card>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ 
-                  width: '48px', 
-                  height: '48px', 
-                  borderRadius: '12px', 
-                  background: '#f1f5f9', 
-                  color: '#64748b',
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
-                }}>
-                  <ChartIcon />
+              <div>
+                <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>
+                  Total Impressions
                 </div>
-                <div>
-                  <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>
-                    Total Impressions
-                  </div>
-                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b' }}>
-                    {formatNumber(data.totalImpressions)}
-                  </div>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                  {formatNumber(data.totalImpressions)}
                 </div>
               </div>
             </Card>
 
             <Card>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ 
-                  width: '48px', 
-                  height: '48px', 
-                  borderRadius: '12px', 
-                  background: '#f1f5f9', 
-                  color: '#64748b',
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
-                }}>
-                  <DollarIcon />
+              <div>
+                <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>
+                  eCPM
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>
-                    Your Revenue ({data.revenueSharePercentage.toFixed(0)}% share)
-                  </div>
-                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#10b981' }}>
-                    {formatCurrency(data.userRevenue)}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                    Total: {formatCurrency(data.totalRevenue)}
-                  </div>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                  {data.totalImpressions > 0 
+                    ? formatSmallCurrency((data.totalRevenue / data.totalImpressions) * 1000)
+                    : '$0.00'
+                  }
                 </div>
               </div>
             </Card>
 
             <Card>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ 
-                  width: '48px', 
-                  height: '48px', 
-                  borderRadius: '12px', 
-                  background: '#f1f5f9', 
-                  color: '#64748b',
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
-                }}>
-                  <DollarIcon />
+              <div>
+                <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>
+                  Projected Monthly
                 </div>
-                <div>
-                  <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>
-                    eCPM
-                  </div>
-                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b' }}>
-                    {data.totalImpressions > 0 
-                      ? formatSmallCurrency((data.totalRevenue / data.totalImpressions) * 1000)
-                      : '$0.00'
-                    }
-                  </div>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: 'rgb(59, 130, 246)' }}>
+                  {formatCurrency((data.userRevenue / (data.timeline?.length || 1)) * 30)}
                 </div>
               </div>
             </Card>
@@ -776,16 +783,104 @@ export default function AdReports() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 450px), 1fr))', 
             gap: '24px',
             marginBottom: '32px'
-          }}>            {/* Impressions Over Time */}
+          }}>
+            {/* Impressions Over Time */}
             <Card title="Impressions Over Time">
-              <TrendChart data={data.timeline} dataKey="impressions" color="#2563eb" />
+              <TrendChart data={data.timeline} dataKey="impressions" color="#3b82f6" />
             </Card>
 
             {/* Revenue Over Time */}
             <Card title="Revenue Over Time">
-              <TrendChart data={data.timeline} dataKey="revenue" color="#2563eb" />
+              <TrendChart data={data.timeline} dataKey="revenue" color="#3b82f6" />
             </Card>
           </div>
+
+          {/* Performance Tables */}
+          {data.bySite && data.bySite.length > 0 && (
+            <Card title="Top Performing Sites" style={{ marginBottom: '24px' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Site</th>
+                      <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Impressions</th>
+                      <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Revenue</th>
+                      <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>eCPM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.bySite.slice(0, 10).map((site, idx) => {
+                      return (
+                      <tr key={site.siteName} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {idx < 3 && <span style={{ 
+                              width: '24px', 
+                              height: '24px', 
+                              borderRadius: '50%', 
+                              background: 'rgba(59, 130, 246, 0.15)',
+                              color: 'rgb(59, 130, 246)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '11px',
+                              fontWeight: 700
+                            }}>{idx + 1}</span>}
+                            <span style={{ fontWeight: 500, color: '#1e293b' }}>{site.siteName}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'right', color: '#475569', fontWeight: 500 }}>
+                          {formatNumber(site.impressions)}
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'right', color: '#3b82f6', fontWeight: 600 }}>
+                          {formatCurrency(site.revenue)}
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'right', color: '#64748b' }}>
+                          {site.impressions > 0 ? formatSmallCurrency((site.revenue / site.impressions) * 1000) : '$0.00'}
+                        </td>
+                      </tr>
+                    );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+
+          {data.byAdUnit && data.byAdUnit.length > 0 && (
+            <Card title="Ad Unit Performance" style={{ marginBottom: '24px' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+                      <th style={{ padding: '12px', textAlign: 'left', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Ad Unit</th>
+                      <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Impressions</th>
+                      <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>Revenue</th>
+                      <th style={{ padding: '12px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>eCPM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.byAdUnit.map((unit) => (
+                      <tr key={unit.adUnitName} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '12px', fontSize: '13px', color: '#475569' }}>
+                          {unit.adUnitName}
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'right', color: '#475569', fontWeight: 500 }}>
+                          {formatNumber(unit.impressions)}
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'right', color: '#3b82f6', fontWeight: 600 }}>
+                          {formatCurrency(unit.revenue)}
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'right', color: '#64748b' }}>
+                          {unit.impressions > 0 ? formatSmallCurrency((unit.revenue / unit.impressions) * 1000) : '$0.00'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
 
           {/* Row count info */}
           {data.rowCount && (
