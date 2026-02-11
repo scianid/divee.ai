@@ -1,6 +1,7 @@
 export interface ReportParams {
   startDate: string; // YYYY-MM-DD
   endDate: string;   // YYYY-MM-DD
+  siteName?: string; // Optional site filter
 }
 
 export interface AdUnitData {

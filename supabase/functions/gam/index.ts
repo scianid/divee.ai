@@ -23,6 +23,7 @@ Deno.serve(async (req: Request) => {
     const startDate = url.searchParams.get("start_date");
     const endDate = url.searchParams.get("end_date");
     const projectId = url.searchParams.get("project_id"); // Optional project filter
+    const siteName = url.searchParams.get("site_name"); // Optional site filter
     
     if (!startDate || !endDate) {
       return new Response(
@@ -81,6 +82,17 @@ Deno.serve(async (req: Request) => {
     });
 
     console.log(`User has access to ${allowedUrls.size} allowed URLs`);
+    
+    // If a specific site is requested, validate it's in allowed URLs
+    if (siteName && allowedUrls.size > 0 && !allowedUrls.has(siteName)) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: You do not have access to this site." }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     const params: ReportParams = {
       startDate: startDate.split("T")[0], // Normalize to YYYY-MM-DD
@@ -97,16 +109,15 @@ Deno.serve(async (req: Request) => {
     console.log("Report job completed");
     
     // Fetch and aggregate results (streaming to save memory)
-    const data = await fetchAndAggregateReport(reportJobId);
+    // Pass siteName to filter during aggregation
+    const data = await fetchAndAggregateReport(reportJobId, siteName || undefined);
     console.log(`Processed ${data.rowCount} rows`);
     
-    // Filter sites to only include allowed URLs
-    // Note: This only filters the bySite aggregation, not totals/timeline
-    // (totals/timeline include all ad unit data regardless of site filtering)
-    if (allowedUrls.size > 0) {
-      for (const [siteName] of data.bySite.entries()) {
-        if (!allowedUrls.has(siteName)) {
-          data.bySite.delete(siteName);
+    // Filter sites to only include allowed URLs (if no specific site was requested)
+    if (!siteName && allowedUrls.size > 0) {
+      for (const [site] of data.bySite.entries()) {
+        if (!allowedUrls.has(site)) {
+          data.bySite.delete(site);
         }
       }
       console.log(`Filtered to ${data.bySite.size} allowed sites`);

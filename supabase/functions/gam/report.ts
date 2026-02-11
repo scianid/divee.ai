@@ -59,7 +59,7 @@ export async function waitForReport(reportJobId: string, maxAttempts = 45): Prom
 }
 
 // Stream and aggregate CSV data without loading all into memory
-export async function fetchAndAggregateReport(reportJobId: string): Promise<AggregatedData> {
+export async function fetchAndAggregateReport(reportJobId: string, siteName?: string): Promise<AggregatedData> {
   const accessToken = await getGamAccessToken();
   const networkCode = getNetworkCode();
   
@@ -148,10 +148,15 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
       if (values.length >= 6) {
         const date = values[0]?.trim() || "";
         const adUnitName = values[1]?.trim() || "Unknown";
-        const siteName = values[2]?.trim() || "Unknown";
+        const site = values[2]?.trim() || "Unknown";
         // values[3] is AD_UNIT_ID - skip it
         const impressions = parseInt(values[4]?.trim() || "0", 10);
         const revenue = parseFloat(values[5]?.trim() || "0") / 1000000;
+        
+        // Skip this row if site filter is active and doesn't match
+        if (siteName && site !== siteName) {
+          continue;
+        }
         
         // Aggregate by date
         const dateEntry = data.byDate.get(date) || { impressions: 0, revenue: 0 };
@@ -166,10 +171,10 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
         data.byAdUnit.set(adUnitName, adUnitEntry);
         
         // Aggregate by site
-        const siteEntry = data.bySite.get(siteName) || { impressions: 0, revenue: 0 };
+        const siteEntry = data.bySite.get(site) || { impressions: 0, revenue: 0 };
         siteEntry.impressions += impressions;
         siteEntry.revenue += revenue;
-        data.bySite.set(siteName, siteEntry);
+        data.bySite.set(site, siteEntry);
         
         // Totals
         data.totalImpressions += impressions;
@@ -185,10 +190,15 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
     if (values.length >= 6) {
       const date = values[0]?.trim() || "";
       const adUnitName = values[1]?.trim() || "Unknown";
-      const siteName = values[2]?.trim() || "Unknown";
+      const site = values[2]?.trim() || "Unknown";
       // values[3] is AD_UNIT_ID - skip it
       const impressions = parseInt(values[4]?.trim() || "0", 10);
       const revenue = parseFloat(values[5]?.trim() || "0") / 1000000;
+      
+      // Skip this row if site filter is active and doesn't match
+      if (siteName && site !== siteName) {
+        return data;
+      }
       
       const dateEntry = data.byDate.get(date) || { impressions: 0, revenue: 0 };
       dateEntry.impressions += impressions;
@@ -200,10 +210,10 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
       adUnitEntry.revenue += revenue;
       data.byAdUnit.set(adUnitName, adUnitEntry);
       
-      const siteEntry = data.bySite.get(siteName) || { impressions: 0, revenue: 0 };
+      const siteEntry = data.bySite.get(site) || { impressions: 0, revenue: 0 };
       siteEntry.impressions += impressions;
       siteEntry.revenue += revenue;
-      data.bySite.set(siteName, siteEntry);
+      data.bySite.set(site, siteEntry);
       
       data.totalImpressions += impressions;
       data.totalRevenue += revenue;

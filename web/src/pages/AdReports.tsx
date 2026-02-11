@@ -241,6 +241,7 @@ export default function AdReports() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<GamReportData | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [availableSites, setAvailableSites] = useState<Array<{ url: string; projectName: string }>>([]); 
   const [selectedSite, setSelectedSite] = useState<string>('all');
   const [showSiteDropdown, setShowSiteDropdown] = useState(false);
   const navigate = useNavigate();
@@ -304,11 +305,7 @@ export default function AdReports() {
 
       // Add site filter if a specific site is selected
       if (selectedSite !== 'all') {
-        const selectedProject = projects.find(p => p.project_id === selectedSite);
-        if (selectedProject && selectedProject.allowed_urls && selectedProject.allowed_urls.length > 0) {
-          // Use the first allowed domain as the site filter
-          params.append('site_name', selectedProject.allowed_urls[0]);
-        }
+        params.append('site_name', selectedSite);
       }
 
       const response = await fetch(
@@ -348,6 +345,22 @@ export default function AdReports() {
 
       if (projectsError) throw projectsError;
       setProjects(projectsData || []);
+      
+      // Extract all unique allowed URLs from projects with their project names
+      const siteMap = new Map<string, string>();
+      projectsData?.forEach(project => {
+        if (project.allowed_urls && Array.isArray(project.allowed_urls)) {
+          project.allowed_urls.forEach(url => {
+            if (!siteMap.has(url)) {
+              siteMap.set(url, project.client_name);
+            }
+          });
+        }
+      });
+      const sites = Array.from(siteMap.entries())
+        .map(([url, projectName]) => ({ url, projectName }))
+        .sort((a, b) => a.projectName.localeCompare(b.projectName));
+      setAvailableSites(sites);
     } catch (err) {
       console.error('Failed to fetch projects:', err);
     }
@@ -360,6 +373,13 @@ export default function AdReports() {
       fetchReport();
     }
   }, [user]);
+  
+  // Refetch when site selection changes
+  useEffect(() => {
+    if (user && selectedSite !== 'all') {
+      fetchReport();
+    }
+  }, [selectedSite]);
 
   // Handle date change
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -443,7 +463,7 @@ export default function AdReports() {
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {selectedSite === 'all' 
                 ? 'All Sites' 
-                : projects.find(p => p.project_id === selectedSite)?.client_name || 'Select Site'}
+                : availableSites.find(s => s.url === selectedSite)?.projectName || selectedSite}
             </span>
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -493,35 +513,33 @@ export default function AdReports() {
                 >
                   All Sites
                 </div>
-                {projects.map(project => (
+                {availableSites.map(site => (
                   <div
-                    key={project.project_id}
+                    key={site.url}
                     onClick={() => {
-                      setSelectedSite(project.project_id);
+                      setSelectedSite(site.url);
                       setShowSiteDropdown(false);
                     }}
                     style={{
                       padding: '12px 16px',
                       cursor: 'pointer',
                       fontSize: '14px',
-                      color: selectedSite === project.project_id ? '#2563eb' : '#334155',
-                      fontWeight: selectedSite === project.project_id ? 600 : 400,
-                      background: selectedSite === project.project_id ? '#f0f7ff' : 'transparent',
+                      color: selectedSite === site.url ? '#2563eb' : '#334155',
+                      fontWeight: selectedSite === site.url ? 600 : 400,
+                      background: selectedSite === site.url ? '#f0f7ff' : 'transparent',
                       borderBottom: '1px solid #f1f5f9'
                     }}
                     onMouseEnter={(e) => {
-                      if (selectedSite !== project.project_id) e.currentTarget.style.background = '#f8fafc';
+                      if (selectedSite !== site.url) e.currentTarget.style.background = '#f8fafc';
                     }}
                     onMouseLeave={(e) => {
-                      if (selectedSite !== project.project_id) e.currentTarget.style.background = 'transparent';
+                      if (selectedSite !== site.url) e.currentTarget.style.background = 'transparent';
                     }}
                   >
-                    <div style={{ fontWeight: 500 }}>{project.client_name}</div>
-                    {project.allowed_urls && project.allowed_urls.length > 0 && (
-                      <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
-                        {project.allowed_urls[0]}
-                      </div>
-                    )}
+                    <div style={{ fontWeight: 500 }}>{site.projectName}</div>
+                    <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                      {site.url}
+                    </div>
                   </div>
                 ))}
               </div>
