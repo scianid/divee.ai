@@ -66,19 +66,47 @@ Deno.serve(async (req: Request) => {
     // Fetch allowed URLs for these projects
     const { data: projectsData, error: projectsError } = await supabase
       .from("project")
-      .select("allowed_urls")
+      .select("project_id, allowed_urls")
       .in("project_id", userProjectIds);
 
     if (projectsError) {
       throw new Error(`Failed to fetch projects: ${projectsError.message}`);
     }
 
-    // Extract all allowed URLs
-    const allowedUrls = new Set<string>();
+    // Fetch revenue share config for these projects
+    const { data: configData, error: configError } = await supabase
+      .from("project_config")
+      .select("project_id, revenue_share_percentage")
+      .in("project_id", userProjectIds);
+
+    if (configError) {
+      throw new Error(`Failed to fetch project config: ${configError.message}`);
+    }
+
+    // Build revenue share map (default to 50% if not configured)
+    const revenueShareMap = new Map<string, number>();
+    configData?.forEach((config: any) => {
+      revenueShareMap.set(config.project_id, config.revenue_share_percentage || 50);
+    });
+
+    // Build project ID to allowed URLs map
+    const projectUrlsMap = new Map<string, string[]>();
     projectsData?.forEach((p: any) => {
       if (p.allowed_urls && Array.isArray(p.allowed_urls)) {
-        p.allowed_urls.forEach((url: string) => allowedUrls.add(url));
+        projectUrlsMap.set(p.project_id, p.allowed_urls);
       }
+    });
+
+    // Extract all allowed URLs and determine revenue share
+    // If a specific site is filtered, we need to know which project it belongs to
+    const allowedUrls = new Map<string, number>(); // URL -> revenue share %
+    projectUrlsMap.forEach((urls, projectId) => {
+      const revenueShare = revenueShareMap.get(projectId) || 50;
+      urls.forEach(url => {
+        // If URL exists in multiple projects, use the highest revenue share
+        const existingShare = allowedUrls.get(url) || 0;
+        allowedUrls.set(url, Math.max(existingShare, revenueShare));
+      });
     });
 
     console.log(`User has access to ${allowedUrls.size} allowed URLs`);
@@ -123,6 +151,29 @@ Deno.serve(async (req: Request) => {
       console.log(`Filtered to ${data.bySite.size} allowed sites`);
     }
     
+    // Calculate revenue share
+    // If filtering by site, use that site's revenue share
+    // Otherwise, use weighted average based on each site's revenue
+    let userRevenueShare = 50; // default
+    if (siteName && allowedUrls.has(siteName)) {
+      userRevenueShare = allowedUrls.get(siteName) || 50;
+    } else {
+      // Calculate weighted average revenue share
+      let totalRevenue = 0;
+      let weightedSum = 0;
+      for (const [site, siteData] of data.bySite.entries()) {
+        const share = allowedUrls.get(site) || 50;
+        totalRevenue += siteData.revenue;
+        weightedSum += siteData.revenue * share;
+      }
+      if (totalRevenue > 0) {
+        userRevenueShare = weightedSum / totalRevenue;
+      }
+    }
+    
+    const userRevenue = (data.totalRevenue * userRevenueShare) / 100;
+    console.log(`Revenue share: ${userRevenueShare}% (User: $${userRevenue.toFixed(2)}, Total: $${data.totalRevenue.toFixed(2)})`);
+    
     // Convert Maps to sorted arrays
     const timeline = Array.from(data.byDate.entries())
       .map(([date, d]) => ({ date, impressions: d.impressions, revenue: d.revenue }))
@@ -148,6 +199,8 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({
         totalImpressions: data.totalImpressions,
         totalRevenue: Math.round(data.totalRevenue * 100) / 100,
+        userRevenue: Math.round(userRevenue * 100) / 100,
+        revenueSharePercentage: Math.round(userRevenueShare * 100) / 100,
         timeline,
         byAdUnit,
         bySite,

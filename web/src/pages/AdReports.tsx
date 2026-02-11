@@ -43,7 +43,11 @@ const formatSmallCurrency = (num: number | null | undefined): string => {
 interface GamReportData {
   totalImpressions: number;
   totalRevenue: number;
+  userRevenue: number;
+  revenueSharePercentage: number;
   timeline: { date: string; impressions: number; revenue: number }[];
+  byAdUnit?: { adUnitName: string; impressions: number; revenue: number }[];
+  bySite?: { siteName: string; impressions: number; revenue: number }[];
   rowCount?: number;
 }
 
@@ -723,12 +727,15 @@ export default function AdReports() {
                 }}>
                   <DollarIcon />
                 </div>
-                <div>
+                <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px' }}>
-                    Total Revenue
+                    Your Revenue ({data.revenueSharePercentage.toFixed(0)}% share)
                   </div>
-                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b' }}>
-                    {formatCurrency(data.totalRevenue)}
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#10b981' }}>
+                    {formatCurrency(data.userRevenue)}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                    Total: {formatCurrency(data.totalRevenue)}
                   </div>
                 </div>
               </div>
