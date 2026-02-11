@@ -888,7 +888,7 @@ export default function UsageCost() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.projectData.map((project, idx) => (
+                    {data.projectData.map((project) => (
                       <tr key={project.project_id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '12px' }}>
                           <div style={{ fontWeight: 600, color: '#1e293b', marginBottom: '2px' }}>

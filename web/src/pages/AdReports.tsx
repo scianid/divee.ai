@@ -230,17 +230,10 @@ function TrendChart({
 
 // --- Main Component ---
 
-interface Project {
-  project_id: string;
-  client_name: string;
-  allowed_urls: string[] | null;
-}
-
 export default function AdReports() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<GamReportData | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [availableSites, setAvailableSites] = useState<Array<{ url: string; projectName: string }>>([]); 
   const [selectedSite, setSelectedSite] = useState<string>('all');
   const [showSiteDropdown, setShowSiteDropdown] = useState(false);
@@ -344,7 +337,6 @@ export default function AdReports() {
         .order('client_name');
 
       if (projectsError) throw projectsError;
-      setProjects(projectsData || []);
       
       // Extract all unique allowed URLs from projects with their project names
       const siteMap = new Map<string, string>();
