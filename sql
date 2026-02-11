@@ -68,6 +68,7 @@ CREATE TABLE public.article (
   project_id text NOT NULL,
   unique_id text NOT NULL UNIQUE,
   image_url text,
+  created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT article_pkey PRIMARY KEY (unique_id)
 );
 CREATE TABLE public.conversations (
@@ -135,4 +136,19 @@ CREATE TABLE public.project_config (
   CONSTRAINT project_config_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.project(project_id),
   CONSTRAINT project_config_ad_tag_id_updated_by_fkey FOREIGN KEY (ad_tag_id_updated_by) REFERENCES auth.users(id),
   CONSTRAINT project_config_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES auth.users(id)
+);
+CREATE TABLE public.token_usage (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  project_id text NOT NULL,
+  conversation_id uuid,
+  visitor_id uuid,
+  session_id uuid,
+  input_tokens integer NOT NULL DEFAULT 0,
+  output_tokens integer NOT NULL DEFAULT 0,
+  total_tokens integer DEFAULT (input_tokens + output_tokens),
+  model text,
+  endpoint text,
+  metadata jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT token_usage_pkey PRIMARY KEY (id)
 );
