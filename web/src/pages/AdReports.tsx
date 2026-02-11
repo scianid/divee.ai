@@ -680,8 +680,8 @@ export default function AdReports() {
                   width: '48px', 
                   height: '48px', 
                   borderRadius: '12px', 
-                  background: '#dbeafe', 
-                  color: '#3b82f6',
+                  background: '#f1f5f9', 
+                  color: '#64748b',
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center' 
@@ -705,8 +705,8 @@ export default function AdReports() {
                   width: '48px', 
                   height: '48px', 
                   borderRadius: '12px', 
-                  background: '#d1fae5', 
-                  color: '#10b981',
+                  background: '#f1f5f9', 
+                  color: '#64748b',
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center' 
@@ -730,8 +730,8 @@ export default function AdReports() {
                   width: '48px', 
                   height: '48px', 
                   borderRadius: '12px', 
-                  background: '#fef3c7', 
-                  color: '#f59e0b',
+                  background: '#f1f5f9', 
+                  color: '#64748b',
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center' 
@@ -759,15 +759,14 @@ export default function AdReports() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 450px), 1fr))', 
             gap: '24px',
             marginBottom: '32px'
-          }}>
-            {/* Impressions Over Time */}
+          }}>            {/* Impressions Over Time */}
             <Card title="Impressions Over Time">
-              <TrendChart data={data.timeline} dataKey="impressions" color="#3b82f6" />
+              <TrendChart data={data.timeline} dataKey="impressions" color="#2563eb" />
             </Card>
 
             {/* Revenue Over Time */}
             <Card title="Revenue Over Time">
-              <TrendChart data={data.timeline} dataKey="revenue" color="#10b981" />
+              <TrendChart data={data.timeline} dataKey="revenue" color="#2563eb" />
             </Card>
           </div>
 
