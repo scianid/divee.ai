@@ -71,6 +71,7 @@ export function buildRunReportJobSoap(networkCode: string, params: ReportParams)
         <gam:reportQuery>
           <gam:dimensions>DATE</gam:dimensions>
           <gam:dimensions>AD_UNIT_NAME</gam:dimensions>
+          <gam:dimensions>SITE_NAME</gam:dimensions>
           <gam:adUnitView>FLAT</gam:adUnitView>
           <gam:columns>TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS</gam:columns>
           <gam:columns>TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE</gam:columns>

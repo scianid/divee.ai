@@ -8,9 +8,15 @@ export interface AdUnitData {
   revenue: number;
 }
 
+export interface SiteData {
+  impressions: number;
+  revenue: number;
+}
+
 export interface AggregatedData {
   byDate: Map<string, { impressions: number; revenue: number }>;
   byAdUnit: Map<string, AdUnitData>;
+  bySite: Map<string, SiteData>;
   totalImpressions: number;
   totalRevenue: number;
   rowCount: number;
@@ -24,6 +30,12 @@ export interface TimelineEntry {
 
 export interface AdUnitEntry {
   adUnitName: string;
+  impressions: number;
+  revenue: number;
+}
+
+export interface SiteEntry {
+  siteName: string;
   impressions: number;
   revenue: number;
 }

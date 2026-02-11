@@ -50,6 +50,38 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Get all projects the user has access to and their allowed URLs
+    const userProjectIds = await getProjectIdsForUser(supabase, userId);
+    if (userProjectIds.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No accessible projects found" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Fetch allowed URLs for these projects
+    const { data: projectsData, error: projectsError } = await supabase
+      .from("project")
+      .select("allowed_urls")
+      .in("project_id", userProjectIds);
+
+    if (projectsError) {
+      throw new Error(`Failed to fetch projects: ${projectsError.message}`);
+    }
+
+    // Extract all allowed URLs
+    const allowedUrls = new Set<string>();
+    projectsData?.forEach((p: any) => {
+      if (p.allowed_urls && Array.isArray(p.allowed_urls)) {
+        p.allowed_urls.forEach((url: string) => allowedUrls.add(url));
+      }
+    });
+
+    console.log(`User has access to ${allowedUrls.size} allowed URLs`);
+
     const params: ReportParams = {
       startDate: startDate.split("T")[0], // Normalize to YYYY-MM-DD
       endDate: endDate.split("T")[0],
@@ -66,8 +98,17 @@ Deno.serve(async (req: Request) => {
     
     // Fetch and aggregate results (streaming to save memory)
     const data = await fetchAndAggregateReport(reportJobId);
-    console.log(`Processed ${data.rowCount} rows`);
-    
+    console.log(`Processed ${data.rowCount} rows`);\n    
+    // Filter sites to only include allowed URLs
+    // Note: This only filters the bySite aggregation, not totals/timeline
+    // (totals/timeline include all ad unit data regardless of site filtering)
+    if (allowedUrls.size > 0) {
+      for (const [siteName] of data.bySite.entries()) {
+        if (!allowedUrls.has(siteName)) {
+          data.bySite.delete(siteName);
+        }
+      }
+      console.log(`Filtered to ${data.bySite.size} allowed sites`);\n    }\n    
     // Convert Maps to sorted arrays
     const timeline = Array.from(data.byDate.entries())
       .map(([date, d]) => ({ date, impressions: d.impressions, revenue: d.revenue }))
@@ -81,12 +122,21 @@ Deno.serve(async (req: Request) => {
       }))
       .sort((a, b) => b.impressions - a.impressions); // Sort by impressions descending
     
+    const bySite = Array.from(data.bySite.entries())
+      .map(([siteName, d]) => ({ 
+        siteName, 
+        impressions: d.impressions, 
+        revenue: Math.round(d.revenue * 100) / 100 
+      }))
+      .sort((a, b) => b.impressions - a.impressions); // Sort by impressions descending
+    
     return new Response(
       JSON.stringify({
         totalImpressions: data.totalImpressions,
         totalRevenue: Math.round(data.totalRevenue * 100) / 100,
         timeline,
         byAdUnit,
+        bySite,
         rowCount: data.rowCount,
       }),
       {

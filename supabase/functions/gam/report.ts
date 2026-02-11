@@ -114,6 +114,7 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
   const data: AggregatedData = {
     byDate: new Map(),
     byAdUnit: new Map(),
+    bySite: new Map(),
     totalImpressions: 0,
     totalRevenue: 0,
     rowCount: 0,
@@ -143,20 +144,23 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
       
       if (!line.trim()) continue;
       
+      // CSV columns: DATE, AD_UNIT_NAME, SITE_NAME, AD_UNIT_ID, IMPRESSIONS, REVENUE
+      const values = line.split(",");
+      
       // Log first few lines to debug parsing
       if (lineCount < 5) {
         console.log(`CSV Line ${lineCount}:`, line);
+        console.log(`  Split into ${values.length} values:`, values);
       }
       lineCount++;
       
-      // CSV columns: DATE, AD_UNIT_NAME, AD_UNIT_ID, IMPRESSIONS, REVENUE
-      const values = line.split(",");
-      if (values.length >= 5) {
+      if (values.length >= 6) {
         const date = values[0]?.trim() || "";
         const adUnitName = values[1]?.trim() || "Unknown";
-        // values[2] is AD_UNIT_ID - skip it
-        const impressions = parseInt(values[3]?.trim() || "0", 10);
-        const revenue = parseFloat(values[4]?.trim() || "0") / 1000000;
+        const siteName = values[2]?.trim() || "Unknown";
+        // values[3] is AD_UNIT_ID - skip it
+        const impressions = parseInt(values[4]?.trim() || "0", 10);
+        const revenue = parseFloat(values[5]?.trim() || "0") / 1000000;
         
         // Aggregate by date
         const dateEntry = data.byDate.get(date) || { impressions: 0, revenue: 0 };
@@ -170,6 +174,12 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
         adUnitEntry.revenue += revenue;
         data.byAdUnit.set(adUnitName, adUnitEntry);
         
+        // Aggregate by site
+        const siteEntry = data.bySite.get(siteName) || { impressions: 0, revenue: 0 };
+        siteEntry.impressions += impressions;
+        siteEntry.revenue += revenue;
+        data.bySite.set(siteName, siteEntry);
+        
         // Totals
         data.totalImpressions += impressions;
         data.totalRevenue += revenue;
@@ -181,12 +191,13 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
   // Process any remaining buffer
   if (buffer.trim() && headerSkipped) {
     const values = buffer.split(",");
-    if (values.length >= 5) {
+    if (values.length >= 6) {
       const date = values[0]?.trim() || "";
       const adUnitName = values[1]?.trim() || "Unknown";
-      // values[2] is AD_UNIT_ID - skip it
-      const impressions = parseInt(values[3]?.trim() || "0", 10);
-      const revenue = parseFloat(values[4]?.trim() || "0") / 1000000;
+      const siteName = values[2]?.trim() || "Unknown";
+      // values[3] is AD_UNIT_ID - skip it
+      const impressions = parseInt(values[4]?.trim() || "0", 10);
+      const revenue = parseFloat(values[5]?.trim() || "0") / 1000000;
       
       const dateEntry = data.byDate.get(date) || { impressions: 0, revenue: 0 };
       dateEntry.impressions += impressions;
@@ -197,6 +208,11 @@ export async function fetchAndAggregateReport(reportJobId: string): Promise<Aggr
       adUnitEntry.impressions += impressions;
       adUnitEntry.revenue += revenue;
       data.byAdUnit.set(adUnitName, adUnitEntry);
+      
+      const siteEntry = data.bySite.get(siteName) || { impressions: 0, revenue: 0 };
+      siteEntry.impressions += impressions;
+      siteEntry.revenue += revenue;
+      data.bySite.set(siteName, siteEntry);
       
       data.totalImpressions += impressions;
       data.totalRevenue += revenue;
