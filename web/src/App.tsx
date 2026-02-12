@@ -392,7 +392,7 @@ function LandingPage() {
                   See Demo
                 </button>
                 <a href="/#contact" className="btn btnSecondary">
-                  Get Divee Now
+                  Get Divee Now!
                 </a>
               </Reveal>
 
