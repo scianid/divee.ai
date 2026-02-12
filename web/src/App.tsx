@@ -391,6 +391,9 @@ function LandingPage() {
                 <button className="btn btnPrimary" onClick={() => setDemoModalOpen(true)}>
                   See Demo
                 </button>
+                <a href="/#contact" className="btn btnSecondary">
+                  Get Divee Now
+                </a>
               </Reveal>
 
              
