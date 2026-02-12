@@ -324,7 +324,7 @@ function LandingPage() {
         (window as any).grecaptcha.enterprise.ready(async () => {
           try {
             const token = await (window as any).grecaptcha.enterprise.execute(
-              '6LdwHGksAAAAACdLIN5EjT5aI1CHEH1kiC6G_DUX',
+              '6LfxcWgsAAAAAPfJRxGjWfrDJ22v-5EVltuWmKoY',
               { action: 'CONTACT_FORM' }
             );
             resolve(token);

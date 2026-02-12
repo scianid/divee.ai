@@ -12,3 +12,6 @@ verify_jwt = false
 
 [functions.gam]
 verify_jwt = false
+
+[functions.contact]
+verify_jwt = false

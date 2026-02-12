@@ -42,13 +42,33 @@ async function verifyCaptcha(token: string, expectedAction: string = "CONTACT_FO
 
     const data = await response.json();
     
+    // Log the full response for debugging
+    console.log("reCAPTCHA verification response:", JSON.stringify(data, null, 2));
+    
+    // Check if there's an error from the API
+    if (data.error) {
+      console.error("reCAPTCHA API error:", data.error);
+      return false;
+    }
+    
     // Check if the token is valid and score is acceptable (0.0 - 1.0, higher is better)
     // Typically, 0.5 or higher is considered legitimate
-    const isValid = data.tokenProperties?.valid === true &&
-                    data.tokenProperties?.action === expectedAction &&
-                    data.riskAnalysis?.score >= 0.5;
+    const tokenValid = data.tokenProperties?.valid === true;
+    const actionMatches = data.tokenProperties?.action === expectedAction;
+    const score = data.riskAnalysis?.score ?? 0;
+    const scoreAcceptable = score >= 0.5;
     
-    console.log("reCAPTCHA score:", data.riskAnalysis?.score);
+    console.log("Validation details:", {
+      tokenValid,
+      actionMatches,
+      expectedAction,
+      actualAction: data.tokenProperties?.action,
+      score,
+      scoreAcceptable
+    });
+    
+    const isValid = tokenValid && actionMatches && scoreAcceptable;
+    
     return isValid;
   } catch (error) {
     console.error("Error verifying captcha:", error);
