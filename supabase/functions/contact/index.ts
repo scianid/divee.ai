@@ -10,30 +10,46 @@ interface ContactFormData {
   captchaToken: string;
 }
 
-// Verify reCAPTCHA token with Google
-async function verifyCaptcha(token: string): Promise<boolean> {
+// Verify reCAPTCHA Enterprise token with Google
+async function verifyCaptcha(token: string, expectedAction: string = "CONTACT_FORM"): Promise<boolean> {
   // @ts-ignore
-  const secretKey = Deno.env.get("RECAPTCHA_SECRET_KEY");
+  const apiKey = Deno.env.get("RECAPTCHA_API_KEY");
   
-  if (!secretKey) {
-    console.error("RECAPTCHA_SECRET_KEY not configured");
+  if (!apiKey) {
+    console.error("RECAPTCHA_API_KEY not configured");
     return false;
   }
 
+  const projectId = "playlist-481721";
+
   try {
     const response = await fetch(
-      "https://www.google.com/recaptcha/api/siteverify",
+      `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/assessments?key=${apiKey}`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
-        body: `secret=${secretKey}&response=${token}`,
+        body: JSON.stringify({
+          event: {
+            token: token,
+            expectedAction: expectedAction,
+            siteKey: "6LdwHGksAAAAACdLIN5EjT5aI1CHEH1kiC6G_DUX",
+          },
+        }),
       }
     );
 
     const data = await response.json();
-    return data.success === true;
+    
+    // Check if the token is valid and score is acceptable (0.0 - 1.0, higher is better)
+    // Typically, 0.5 or higher is considered legitimate
+    const isValid = data.tokenProperties?.valid === true &&
+                    data.tokenProperties?.action === expectedAction &&
+                    data.riskAnalysis?.score >= 0.5;
+    
+    console.log("reCAPTCHA score:", data.riskAnalysis?.score);
+    return isValid;
   } catch (error) {
     console.error("Error verifying captcha:", error);
     return false;

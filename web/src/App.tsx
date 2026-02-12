@@ -117,6 +117,7 @@ function MarketingLayout() {
             <Link to="/#how">How it works</Link>
             <Link to="/#demo">Demo</Link>
             <Link to="/#faq">FAQ</Link>
+            <Link to="/#contact">Contact</Link>
             <Link to="/terms">Terms</Link>
             <Link to="/privacy">Privacy</Link>
           </nav>
@@ -147,6 +148,7 @@ function MarketingLayout() {
           <Link to="/#how" onClick={closeMenu}>How it works</Link>
           <Link to="/#demo" onClick={closeMenu}>Demo</Link>
           <Link to="/#faq" onClick={closeMenu}>FAQ</Link>
+          <Link to="/#contact" onClick={closeMenu}>Contact</Link>
           <Link to="/terms" onClick={closeMenu}>Terms</Link>
           <Link to="/privacy" onClick={closeMenu}>Privacy</Link>
           <Link to="/login" onClick={closeMenu} className="btn btnSecondary">Login</Link>
@@ -176,9 +178,9 @@ function MarketingLayout() {
             <Link to="/#features">Features</Link>
             <Link to="/#demo">Demo</Link>
             <Link to="/#faq">FAQ</Link>
+            <Link to="/#contact">Contact</Link>
             <Link to="/terms">Terms</Link>
             <Link to="/privacy">Privacy</Link>
-            <a href="mailto:hello@divee.ai">Contact</a>
           </div>
 
           <div className="footerMeta">
@@ -302,6 +304,64 @@ function MarketingLayout() {
 
 function LandingPage() {
   const { setDemoModalOpen } = useOutletContext<{ setDemoModalOpen: (open: boolean) => void }>();
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company_name: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitMessage(null);
+
+    try {
+      // Get reCAPTCHA Enterprise token
+      const captchaToken = await new Promise<string>((resolve, reject) => {
+        (window as any).grecaptcha.enterprise.ready(async () => {
+          try {
+            const token = await (window as any).grecaptcha.enterprise.execute(
+              '6LdwHGksAAAAACdLIN5EjT5aI1CHEH1kiC6G_DUX',
+              { action: 'CONTACT_FORM' }
+            );
+            resolve(token);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      });
+
+      // Submit to edge function
+      const response = await fetch('https://srv.divee.ai/functions/v1/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...contactForm,
+          captchaToken,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubmitMessage({ type: 'success', text: data.message || 'Thank you for contacting us!' });
+        setContactForm({ name: '', email: '', phone: '', company_name: '' });
+      } else {
+        setSubmitMessage({ type: 'error', text: data.error || 'Something went wrong. Please try again.' });
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
+      setSubmitMessage({ type: 'error', text: 'Failed to submit form. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main id="main">
       <section id="top" className="hero">
@@ -716,6 +776,174 @@ function LandingPage() {
           </div>
         </section>
 
+        <section id="contact" className="section">
+          <div className="container">
+            <Reveal as="h2" className="sectionTitle" delay={0}>
+              Get in <span className="heroHighlight">touch</span>
+            </Reveal>
+            <Reveal as="p" className="sectionLead" delay={80}>
+              Ready to transform your content? Fill out the form below and we'll get back to you shortly.
+            </Reveal>
+
+            <Reveal delay={120} style={{ maxWidth: '600px', margin: '48px auto 0' }}>
+              <form onSubmit={handleContactSubmit} style={{
+                background: '#ffffff',
+                border: '1px solid rgba(0, 0, 0, 0.08)',
+                borderRadius: '16px',
+                padding: '40px',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
+              }}>
+                <div style={{ marginBottom: '24px' }}>
+                  <label htmlFor="name" style={{
+                    display: 'block',
+                    fontWeight: 600,
+                    marginBottom: '8px',
+                    color: '#1f2937',
+                    fontSize: '14px'
+                  }}>
+                    Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    required
+                    value={contactForm.name}
+                    onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '1px solid rgba(0, 0, 0, 0.15)',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = 'rgb(37, 99, 235)'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)'}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label htmlFor="email" style={{
+                    display: 'block',
+                    fontWeight: 600,
+                    marginBottom: '8px',
+                    color: '#1f2937',
+                    fontSize: '14px'
+                  }}>
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    required
+                    value={contactForm.email}
+                    onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '1px solid rgba(0, 0, 0, 0.15)',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = 'rgb(37, 99, 235)'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)'}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label htmlFor="phone" style={{
+                    display: 'block',
+                    fontWeight: 600,
+                    marginBottom: '8px',
+                    color: '#1f2937',
+                    fontSize: '14px'
+                  }}>
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    value={contactForm.phone}
+                    onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '1px solid rgba(0, 0, 0, 0.15)',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = 'rgb(37, 99, 235)'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)'}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label htmlFor="company_name" style={{
+                    display: 'block',
+                    fontWeight: 600,
+                    marginBottom: '8px',
+                    color: '#1f2937',
+                    fontSize: '14px'
+                  }}>
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    id="company_name"
+                    value={contactForm.company_name}
+                    onChange={(e) => setContactForm({ ...contactForm, company_name: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '1px solid rgba(0, 0, 0, 0.15)',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = 'rgb(37, 99, 235)'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)'}
+                  />
+                </div>
+
+                {submitMessage && (
+                  <div style={{
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    marginBottom: '24px',
+                    background: submitMessage.type === 'success' 
+                      ? 'rgba(16, 185, 129, 0.1)' 
+                      : 'rgba(239, 68, 68, 0.1)',
+                    color: submitMessage.type === 'success' 
+                      ? '#059669' 
+                      : '#dc2626',
+                    border: `1px solid ${submitMessage.type === 'success' ? '#10b981' : '#ef4444'}`,
+                    fontSize: '14px',
+                  }}>
+                    {submitMessage.text}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn btnPrimary"
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '16px',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                    opacity: isSubmitting ? 0.6 : 1,
+                  }}
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                </button>
+              </form>
+            </Reveal>
+          </div>
+        </section>
+
       <section id="cta" className="cta">
         <div className="container ctaInner">
           <Reveal as="h2" className="ctaTitle" delay={0}>
@@ -725,13 +953,13 @@ function LandingPage() {
             Start engaging readers like never before.
           </Reveal>
           <Reveal className="ctaActions" delay={140}>
-            <a className="btn" href="mailto:hello@divee.ai" style={{
+            <a className="btn" href="/#contact" style={{
               color: '#ffffff',
               borderColor: '#ffffff',
               background: 'transparent',
               borderRadius: 12
             }}>
-              Email hello@divee.ai
+              Contact Us
             </a>
           </Reveal>
         </div>
