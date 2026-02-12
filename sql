@@ -132,6 +132,7 @@ CREATE TABLE public.project_config (
   updated_at timestamp with time zone DEFAULT now(),
   deleted_at timestamp with time zone,
   deleted_by uuid,
+  revenue_share_percentage integer NOT NULL DEFAULT 50 CHECK (revenue_share_percentage >= 0 AND revenue_share_percentage <= 100),
   CONSTRAINT project_config_pkey PRIMARY KEY (id),
   CONSTRAINT project_config_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.project(project_id),
   CONSTRAINT project_config_ad_tag_id_updated_by_fkey FOREIGN KEY (ad_tag_id_updated_by) REFERENCES auth.users(id),
