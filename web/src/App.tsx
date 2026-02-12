@@ -779,168 +779,402 @@ function LandingPage() {
         <section id="contact" className="section">
           <div className="container">
             <Reveal as="h2" className="sectionTitle" delay={0}>
-              Get in <span className="heroHighlight">touch</span>
+              Let's <span className="heroHighlight">talk</span>
             </Reveal>
             <Reveal as="p" className="sectionLead" delay={80}>
-              Ready to transform your content? Fill out the form below and we'll get back to you shortly.
+              Get started in minutes. Our team typically responds within 24 hours.
             </Reveal>
 
-            <Reveal delay={120} style={{ maxWidth: '600px', margin: '48px auto 0' }}>
-              <form onSubmit={handleContactSubmit} style={{
-                background: '#ffffff',
-                border: '1px solid rgba(0, 0, 0, 0.08)',
-                borderRadius: '16px',
-                padding: '40px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
-              }}>
-                <div style={{ marginBottom: '24px' }}>
-                  <label htmlFor="name" style={{
-                    display: 'block',
-                    fontWeight: 600,
-                    marginBottom: '8px',
-                    color: '#1f2937',
-                    fontSize: '14px'
-                  }}>
-                    Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    required
-                    value={contactForm.name}
-                    onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid rgba(0, 0, 0, 0.15)',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      transition: 'border-color 0.2s',
-                    }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'rgb(37, 99, 235)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)'}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '24px' }}>
-                  <label htmlFor="email" style={{
-                    display: 'block',
-                    fontWeight: 600,
-                    marginBottom: '8px',
-                    color: '#1f2937',
-                    fontSize: '14px'
-                  }}>
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    required
-                    value={contactForm.email}
-                    onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid rgba(0, 0, 0, 0.15)',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      transition: 'border-color 0.2s',
-                    }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'rgb(37, 99, 235)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)'}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '24px' }}>
-                  <label htmlFor="phone" style={{
-                    display: 'block',
-                    fontWeight: 600,
-                    marginBottom: '8px',
-                    color: '#1f2937',
-                    fontSize: '14px'
-                  }}>
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    value={contactForm.phone}
-                    onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid rgba(0, 0, 0, 0.15)',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      transition: 'border-color 0.2s',
-                    }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'rgb(37, 99, 235)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)'}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '24px' }}>
-                  <label htmlFor="company_name" style={{
-                    display: 'block',
-                    fontWeight: 600,
-                    marginBottom: '8px',
-                    color: '#1f2937',
-                    fontSize: '14px'
-                  }}>
-                    Company Name
-                  </label>
-                  <input
-                    type="text"
-                    id="company_name"
-                    value={contactForm.company_name}
-                    onChange={(e) => setContactForm({ ...contactForm, company_name: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid rgba(0, 0, 0, 0.15)',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      transition: 'border-color 0.2s',
-                    }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'rgb(37, 99, 235)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)'}
-                  />
-                </div>
-
-                {submitMessage && (
-                  <div style={{
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    marginBottom: '24px',
-                    background: submitMessage.type === 'success' 
-                      ? 'rgba(16, 185, 129, 0.1)' 
-                      : 'rgba(239, 68, 68, 0.1)',
-                    color: submitMessage.type === 'success' 
-                      ? '#059669' 
-                      : '#dc2626',
-                    border: `1px solid ${submitMessage.type === 'success' ? '#10b981' : '#ef4444'}`,
-                    fontSize: '14px',
-                  }}>
-                    {submitMessage.text}
+            <div style={{ maxWidth: '900px', margin: '48px auto 0', display: 'grid', gap: '40px', gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr' : '1fr' }}>
+              <Reveal delay={180}>
+                <form onSubmit={handleContactSubmit} style={{
+                  background: '#ffffff',
+                  border: '2px solid rgba(37, 99, 235, 0.15)',
+                  borderRadius: '20px',
+                  padding: '48px 40px',
+                  boxShadow: '0 20px 60px rgba(37, 99, 235, 0.12)'
+                }}>
+                  <div style={{ marginBottom: '28px' }}>
+                    <label htmlFor="name" style={{
+                      display: 'block',
+                      fontWeight: 600,
+                      marginBottom: '10px',
+                      color: '#111827',
+                      fontSize: '15px'
+                    }}>
+                      Your Name *
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="text"
+                        id="name"
+                        required
+                        placeholder="John Doe"
+                        value={contactForm.name}
+                        onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                        style={{
+                          width: '100%',
+                          padding: '14px 16px 14px 44px',
+                          border: '2px solid rgba(0, 0, 0, 0.08)',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          transition: 'all 0.2s',
+                          outline: 'none',
+                          fontFamily: 'inherit'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = 'rgb(37, 99, 235)';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.08)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      />
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }}>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </div>
                   </div>
-                )}
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="btn btnPrimary"
-                  style={{
-                    width: '100%',
-                    padding: '14px',
-                    fontSize: '16px',
-                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                    opacity: isSubmitting ? 0.6 : 1,
-                  }}
-                >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                </button>
-              </form>
-            </Reveal>
+                  <div style={{ marginBottom: '28px' }}>
+                    <label htmlFor="email" style={{
+                      display: 'block',
+                      fontWeight: 600,
+                      marginBottom: '10px',
+                      color: '#111827',
+                      fontSize: '15px'
+                    }}>
+                      Work Email *
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="email"
+                        id="email"
+                        required
+                        placeholder="john@company.com"
+                        value={contactForm.email}
+                        onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                        style={{
+                          width: '100%',
+                          padding: '14px 16px 14px 44px',
+                          border: '2px solid rgba(0, 0, 0, 0.08)',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          transition: 'all 0.2s',
+                          outline: 'none',
+                          fontFamily: 'inherit'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = 'rgb(37, 99, 235)';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.08)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      />
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }}>
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '28px' }}>
+                    <label htmlFor="phone" style={{
+                      display: 'block',
+                      fontWeight: 600,
+                      marginBottom: '10px',
+                      color: '#111827',
+                      fontSize: '15px'
+                    }}>
+                      Phone Number <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span>
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="tel"
+                        id="phone"
+                        placeholder="+1 (555) 000-0000"
+                        value={contactForm.phone}
+                        onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                        style={{
+                          width: '100%',
+                          padding: '14px 16px 14px 44px',
+                          border: '2px solid rgba(0, 0, 0, 0.08)',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          transition: 'all 0.2s',
+                          outline: 'none',
+                          fontFamily: 'inherit'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = 'rgb(37, 99, 235)';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.08)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      />
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }}>
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '28px' }}>
+                    <label htmlFor="company_name" style={{
+                      display: 'block',
+                      fontWeight: 600,
+                      marginBottom: '10px',
+                      color: '#111827',
+                      fontSize: '15px'
+                    }}>
+                      Company Name <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span>
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="text"
+                        id="company_name"
+                        placeholder="Acme Inc."
+                        value={contactForm.company_name}
+                        onChange={(e) => setContactForm({ ...contactForm, company_name: e.target.value })}
+                        style={{
+                          width: '100%',
+                          padding: '14px 16px 14px 44px',
+                          border: '2px solid rgba(0, 0, 0, 0.08)',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          transition: 'all 0.2s',
+                          outline: 'none',
+                          fontFamily: 'inherit'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = 'rgb(37, 99, 235)';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.08)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      />
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }}>
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+
+                  {submitMessage && (
+                    <div style={{
+                      padding: '16px',
+                      borderRadius: '12px',
+                      marginBottom: '24px',
+                      background: submitMessage.type === 'success' 
+                        ? 'rgba(16, 185, 129, 0.08)' 
+                        : 'rgba(239, 68, 68, 0.08)',
+                      color: submitMessage.type === 'success' 
+                        ? '#059669' 
+                        : '#dc2626',
+                      border: `2px solid ${submitMessage.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+                      fontSize: '15px',
+                      fontWeight: 500,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}>
+                      {submitMessage.type === 'success' ? (
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="16 10 10 16 8 14"></polyline>
+                        </svg>
+                      ) : (
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                      )}
+                      <span>{submitMessage.text}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    style={{
+                      width: '100%',
+                      padding: '16px',
+                      fontSize: '17px',
+                      fontWeight: 600,
+                      background: isSubmitting ? '#9ca3af' : 'linear-gradient(135deg, rgb(37, 99, 235), rgb(79, 70, 229))',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s',
+                      boxShadow: isSubmitting ? 'none' : '0 4px 14px rgba(37, 99, 235, 0.35)',
+                      fontFamily: 'var(--font-display)'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSubmitting) {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(37, 99, 235, 0.4)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = isSubmitting ? 'none' : '0 4px 14px rgba(37, 99, 235, 0.35)';
+                    }}
+                  >
+                    {isSubmitting ? (
+                      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
+                          <circle cx="12" cy="12" r="10" opacity="0.25"></circle>
+                          <path d="M12 2a10 10 0 0 1 10 10" opacity="0.75"></path>
+                        </svg>
+                        Sending...
+                      </span>
+                    ) : (
+                      <span>Get Started →</span>
+                    )}
+                  </button>
+
+                  <p style={{ 
+                    marginTop: '20px', 
+                    fontSize: '13px', 
+                    color: '#6b7280', 
+                    textAlign: 'center',
+                    lineHeight: 1.5
+                  }}>
+                    We'll never share your information. Protected by reCAPTCHA Enterprise.
+                  </p>
+                </form>
+              </Reveal>
+
+              <Reveal delay={120}>
+                <div style={{
+                  background: 'rgba(248, 250, 252, 0.8)',
+                  border: '1px solid rgba(0, 0, 0, 0.06)',
+                  borderRadius: '20px',
+                  padding: '40px 32px',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}>
+                  <div>
+                    <h3 style={{ 
+                      fontSize: '22px', 
+                      fontWeight: 700, 
+                      marginBottom: '12px',
+                      color: '#111827',
+                      fontFamily: 'var(--font-display)'
+                    }}>
+                      Why Divee.AI?
+                    </h3>
+                    <p style={{ fontSize: '15px', lineHeight: 1.6, marginBottom: '28px', color: '#6b7280' }}>
+                      Join publishers who are seeing 3× longer time-on-site and 45% less bounce.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'start', gap: '12px' }}>
+                      <div style={{ 
+                        background: 'linear-gradient(135deg, rgb(37, 99, 235), rgb(79, 70, 229))',
+                        borderRadius: '8px',
+                        padding: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '4px', color: '#111827' }}>Setup in seconds</div>
+                        <div style={{ fontSize: '14px', color: '#6b7280' }}>One script tag and you're live</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'start', gap: '12px' }}>
+                      <div style={{ 
+                        background: 'linear-gradient(135deg, rgb(37, 99, 235), rgb(79, 70, 229))',
+                        borderRadius: '8px',
+                        padding: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '4px', color: '#111827' }}>No credit card needed</div>
+                        <div style={{ fontSize: '14px', color: '#6b7280' }}>Start with our free tier</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'start', gap: '12px' }}>
+                      <div style={{ 
+                        background: 'linear-gradient(135deg, rgb(37, 99, 235), rgb(79, 70, 229))',
+                        borderRadius: '8px',
+                        padding: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '4px', color: '#111827' }}>Built-in monetization</div>
+                        <div style={{ fontSize: '14px', color: '#6b7280' }}>Start earning from day one</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '28px', paddingTop: '28px', borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
+                    <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '10px', fontWeight: 500 }}>Trusted by</p>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ 
+                        background: 'white', 
+                        padding: '6px 12px', 
+                        borderRadius: '6px', 
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        color: '#6b7280',
+                        border: '1px solid rgba(0, 0, 0, 0.06)'
+                      }}>News Sites</span>
+                      <span style={{ 
+                        background: 'white', 
+                        padding: '6px 12px', 
+                        borderRadius: '6px', 
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        color: '#6b7280',
+                        border: '1px solid rgba(0, 0, 0, 0.06)'
+                      }}>Blogs</span>
+                      <span style={{ 
+                        background: 'white', 
+                        padding: '6px 12px', 
+                        borderRadius: '6px', 
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        color: '#6b7280',
+                        border: '1px solid rgba(0, 0, 0, 0.06)'
+                      }}>Magazines</span>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
           </div>
         </section>
 
