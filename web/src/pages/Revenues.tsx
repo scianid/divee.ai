@@ -244,14 +244,15 @@ export default function Revenues() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<RevenueData | null>(null);
+  const [availableProjects, setAvailableProjects] = useState<Array<{ project_id: string; projectName: string; url: string }>>([]);
   const [selectedProject, setSelectedProject] = useState<string>('all');
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const navigate = useNavigate();
 
-  // Calculate default date range (last 7 days)
+  // Calculate default date range (this month)
   const getDefaultDateRange = () => {
     const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - 7);
+    const start = new Date(end.getFullYear(), end.getMonth(), 1);
     return {
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0]
@@ -275,7 +276,32 @@ export default function Revenues() {
 
   // Don't render until auth check is complete
   if (isLoading || !user) {
-    return <div style={{ padding: '48px', textAlign: 'center' }}>Loading...</div>;
+    return (
+      <div style={{ 
+        padding: '48px', 
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '16px'
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid #e2e8f0',
+          borderTop: '4px solid #2563eb',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <style>{
+          `@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }`
+        }</style>
+        <div style={{ color: '#64748b', fontSize: '14px' }}>Loading...</div>
+      </div>
+    );
   }
 
   // Fetch revenue data
@@ -544,10 +570,116 @@ export default function Revenues() {
     }
   };
 
-  // Load data when component mounts or filters change
+  // Fetch user projects
+  const fetchProjects = async () => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
+
+      // Get user's accounts
+      const { data: accounts } = await supabase
+        .from('account')
+        .select('id')
+        .eq('user_id', authUser.id);
+
+      const accountIds = accounts?.map(a => a.id) || [];
+      if (accountIds.length === 0) return;
+
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('project')
+        .select('project_id, client_name, allowed_urls')
+        .in('account_id', accountIds)
+        .order('client_name');
+
+      if (projectsError) throw projectsError;
+      
+      // Extract all projects with their URLs
+      const projects: Array<{ project_id: string; projectName: string; url: string }> = [];
+      projectsData?.forEach(project => {
+        if (project.allowed_urls && Array.isArray(project.allowed_urls) && project.allowed_urls.length > 0) {
+          // Use first URL as representative
+          projects.push({
+            project_id: project.project_id,
+            projectName: project.client_name || 'Unnamed Project',
+            url: project.allowed_urls[0]
+          });
+        }
+      });
+      
+      setAvailableProjects(projects.sort((a, b) => a.projectName.localeCompare(b.projectName)));
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+    }
+  };
+
+  // Fetch projects on mount
   useEffect(() => {
-    fetchRevenues();
-  }, [dateRange, selectedProject]);
+    if (user) {
+      fetchProjects();
+      fetchRevenues();
+    }
+  }, [user]);
+
+  // Handle date change
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateRange(prev => ({ ...prev, start: e.target.value }));
+  };
+
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateRange(prev => ({ ...prev, end: e.target.value }));
+  };
+
+  // Quick presets
+  const setPreset = (days: number) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    setDateRange({
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0],
+    });
+  };
+
+  const setThisMonth = () => {
+    const end = new Date();
+    const start = new Date(end.getFullYear(), end.getMonth(), 1);
+    setDateRange({
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0],
+    });
+  };
+
+  const isPresetActive = (days: number) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    return dateRange.start === start.toISOString().split('T')[0] &&
+           dateRange.end === end.toISOString().split('T')[0];
+  };
+
+  const isThisMonthActive = () => {
+    const end = new Date();
+    const start = new Date(end.getFullYear(), end.getMonth(), 1);
+    return dateRange.start === start.toISOString().split('T')[0] &&
+           dateRange.end === end.toISOString().split('T')[0];
+  };
+
+  const btnStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '14px 16px',
+    borderRadius: '999px',
+    border: '1px solid #e2e8f0',
+    background: '#fff',
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#334155',
+    cursor: 'pointer',
+    transition: 'background 0.2s',
+  };
+
+  if (!user) return null;
 
   return (
     <div style={{ padding: '0' }}>
@@ -575,77 +707,250 @@ export default function Revenues() {
         </p>
       </div>
 
-      {/* Date Range Filter */}
-      <Card style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CalendarIcon />
-            <span style={{ fontSize: '14px', fontWeight: 500, color: '#64748b' }}>
-              Date Range:
+      {/* Toolbar */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '12px', 
+        marginBottom: '32px', 
+        flexWrap: 'wrap',
+        alignItems: 'center'
+      }}>
+        {/* Project Filter */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowProjectDropdown(!showProjectDropdown)}
+            style={{
+              ...btnStyle,
+              minWidth: '180px',
+              justifyContent: 'space-between'
+            }}
+          >
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {selectedProject === 'all' 
+                ? 'All Widgets' 
+                : availableProjects.find(p => p.project_id === selectedProject)?.projectName || selectedProject}
             </span>
-          </div>
-          <input
-            type="date"
-            value={dateRange.start}
-            onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #e2e8f0',
-              borderRadius: '8px',
-              fontSize: '14px',
-              color: '#334155',
-            }}
-          />
-          <span style={{ color: '#64748b' }}>to</span>
-          <input
-            type="date"
-            value={dateRange.end}
-            onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #e2e8f0',
-              borderRadius: '8px',
-              fontSize: '14px',
-              color: '#334155',
-            }}
-          />
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
 
-          {/* Project Filter */}
-          {data && data.projectRevenues.length > 1 && (
+          {showProjectDropdown && (
             <>
-              <span style={{ marginLeft: '16px', fontSize: '14px', fontWeight: 500, color: '#64748b' }}>
-                Widget:
-              </span>
-              <select
-                value={selectedProject}
-                onChange={(e) => setSelectedProject(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  color: '#334155',
-                  background: '#fff',
-                  cursor: 'pointer',
-                }}
-              >
-                <option value="all">All Widgets</option>
-                {data.projectRevenues.map(p => (
-                  <option key={p.project_id} value={p.project_id}>
-                    {p.project_name}
-                  </option>
+              <div 
+                style={{ position: 'fixed', inset: 0, zIndex: 10 }} 
+                onClick={() => setShowProjectDropdown(false)}
+              />
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                marginTop: '8px',
+                background: '#fff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                minWidth: '200px',
+                maxHeight: '300px',
+                overflowY: 'auto',
+                zIndex: 20
+              }}>
+                <div
+                  onClick={() => {
+                    setSelectedProject('all');
+                    setShowProjectDropdown(false);
+                  }}
+                  style={{
+                    padding: '12px 16px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: selectedProject === 'all' ? '#2563eb' : '#334155',
+                    fontWeight: selectedProject === 'all' ? 600 : 400,
+                    background: selectedProject === 'all' ? '#f0f7ff' : 'transparent',
+                    borderBottom: '1px solid #f1f5f9'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedProject !== 'all') e.currentTarget.style.background = '#f8fafc';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedProject !== 'all') e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  All Widgets
+                </div>
+                {availableProjects.map(project => (
+                  <div
+                    key={project.project_id}
+                    onClick={() => {
+                      setSelectedProject(project.project_id);
+                      setShowProjectDropdown(false);
+                    }}
+                    style={{
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      color: selectedProject === project.project_id ? '#2563eb' : '#334155',
+                      fontWeight: selectedProject === project.project_id ? 600 : 400,
+                      background: selectedProject === project.project_id ? '#f0f7ff' : 'transparent',
+                      borderBottom: '1px solid #f1f5f9'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedProject !== project.project_id) e.currentTarget.style.background = '#f8fafc';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedProject !== project.project_id) e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    <div style={{ fontWeight: 500 }}>{project.projectName}</div>
+                    <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                      {project.url}
+                    </div>
+                  </div>
                 ))}
-              </select>
+              </div>
             </>
           )}
         </div>
-      </Card>
+
+        {/* Date Range Picker */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          alignItems: 'center', 
+          background: '#fff', 
+          padding: '8px 12px', 
+          borderRadius: '999px', 
+          border: '1px solid #e2e8f0',
+        }}>
+          <CalendarIcon />
+          <input
+            type="date"
+            value={dateRange.start}
+            onChange={handleStartDateChange}
+            style={{ 
+              border: 'none', 
+              outline: 'none', 
+              fontSize: '14px', 
+              fontWeight: 600, 
+              color: '#334155', 
+              fontFamily: 'inherit', 
+              width: '110px',
+              cursor: 'pointer'
+            }}
+          />
+          <span style={{ color: '#94a3b8' }}>→</span>
+          <input
+            type="date"
+            value={dateRange.end}
+            onChange={handleEndDateChange}
+            style={{ 
+              border: 'none', 
+              outline: 'none', 
+              fontSize: '14px', 
+              fontWeight: 600, 
+              color: '#334155', 
+              fontFamily: 'inherit', 
+              width: '110px',
+              cursor: 'pointer'
+            }}
+          />
+        </div>
+
+        {/* Quick Presets */}
+        <button 
+          onClick={() => setPreset(1)} 
+          style={{ 
+            ...btnStyle, 
+            border: isPresetActive(1) ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isPresetActive(1) ? '#2563eb' : '#334155' 
+          }}
+        >
+          24h
+        </button>
+        <button 
+          onClick={setThisMonth} 
+          style={{ 
+            ...btnStyle, 
+            border: isThisMonthActive() ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isThisMonthActive() ? '#2563eb' : '#334155' 
+          }}
+        >
+          This Month
+        </button>
+        <button 
+          onClick={() => setPreset(7)} 
+          style={{ 
+            ...btnStyle, 
+            border: isPresetActive(7) ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isPresetActive(7) ? '#2563eb' : '#334155' 
+          }}
+        >
+          7 days
+        </button>
+        <button 
+          onClick={() => setPreset(30)} 
+          style={{ 
+            ...btnStyle, 
+            border: isPresetActive(30) ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isPresetActive(30) ? '#2563eb' : '#334155' 
+          }}
+        >
+          30 days
+        </button>
+        <button 
+          onClick={() => setPreset(90)} 
+          style={{ 
+            ...btnStyle, 
+            border: isPresetActive(90) ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isPresetActive(90) ? '#2563eb' : '#334155' 
+          }}
+        >
+          90 days
+        </button>
+
+        {/* Apply Button */}
+        <button 
+          onClick={fetchRevenues} 
+          disabled={loading}
+          style={{ 
+            ...btnStyle, 
+            background: '#2563eb', 
+            color: '#fff', 
+            border: '1px solid #2563eb',
+            opacity: loading ? 0.6 : 1,
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {loading ? 'Loading...' : 'Apply'}
+        </button>
+      </div>
 
       {/* Loading & Error States */}
       {loading && (
         <Card>
-          <div style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>
-            Loading revenue data...
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '48px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              border: '4px solid #e2e8f0',
+              borderTop: '4px solid #2563eb',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <style>{
+              `@keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }`
+            }</style>
+            <div style={{ color: '#64748b', fontSize: '14px' }}>Loading revenue data...</div>
           </div>
         </Card>
       )}
@@ -668,6 +973,40 @@ export default function Revenues() {
       {/* Data Display */}
       {!loading && !error && data && (
         <>
+          {/* Hero Net Revenue Card */}
+          <Card style={{ 
+            background: 'linear-gradient(135deg, rgb(59, 130, 246) 0%, rgb(37, 99, 235) 100%)',
+            border: 'none',
+            marginBottom: '24px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)', marginBottom: '8px', fontWeight: 500 }}>
+                  Net Revenue
+                </div>
+                <div style={{ fontSize: '48px', fontWeight: 700, color: '#fff', marginBottom: '8px', lineHeight: 1 }}>
+                  {formatCurrency(data.totalRevenue)}
+                </div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
+                  Your earnings for the above period 
+                  </div>
+              </div>
+              <div style={{ 
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>
+                  Projected Monthly
+                </div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>
+                  {formatCurrency(data.projectedMonthly)}
+                </div>
+              </div>
+            </div>
+          </Card>
+
           {/* Summary Cards */}
           <div style={{ 
             display: 'grid', 
@@ -677,33 +1016,9 @@ export default function Revenues() {
           }}>
             <Card>
               <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
-                Net Revenue
-              </div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#10b981', marginBottom: '4px' }}>
-                {formatCurrency(data.totalRevenue)}
-              </div>
-              <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                Your share after deductions
-              </div>
-            </Card>
-
-            <Card>
-              <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
-                Projected Monthly
-              </div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#3b82f6', marginBottom: '4px' }}>
-                {formatCurrency(data.projectedMonthly)}
-              </div>
-              <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                Based on current period
-              </div>
-            </Card>
-
-            <Card>
-              <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
                 Total Impressions
               </div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b', marginBottom: '4px' }}>
                 {formatNumber(data.totalImpressions)}
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8' }}>
@@ -715,7 +1030,7 @@ export default function Revenues() {
               <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
                 Total Token Usage
               </div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#8b5cf6', marginBottom: '4px' }}>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b', marginBottom: '4px' }}>
                 {formatNumber(data.totalTokens)}
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8' }}>
@@ -724,28 +1039,14 @@ export default function Revenues() {
             </Card>
           </div>
 
-          {/* Charts */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', 
-            gap: '20px',
-            marginBottom: '24px'
-          }}>
-            <Card title="Net Revenue Over Time">
-              <TrendChart 
-                data={data.timeSeries} 
-                dataKey="net_revenue" 
-                label="Net Revenue"
-                color="#10b981" 
-              />
-            </Card>
-
+          {/* Chart */}
+          <div style={{ marginBottom: '24px' }}>
             <Card title="Impressions Over Time">
               <TrendChart 
                 data={data.timeSeries} 
                 dataKey="impressions" 
                 label="Impressions"
-                color="#3b82f6" 
+                color="#2563eb" 
               />
             </Card>
           </div>
@@ -831,7 +1132,7 @@ export default function Revenues() {
                         <td style={{ 
                           padding: '12px 8px', 
                           fontSize: '14px', 
-                          color: '#8b5cf6',
+                          color: '#2563eb',
                           textAlign: 'right' 
                         }}>
                           {formatNumber(project.total_tokens)}
