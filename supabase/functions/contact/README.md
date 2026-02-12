@@ -38,7 +38,7 @@ Alternatively, use the Supabase CLI:
 supabase secrets set RECAPTCHA_API_KEY=your_api_key_here
 ```
 
-**Note:** The Project ID (`playlist-481721`) and Site Key (`6LdwHGksAAAAACdLIN5EjT5aI1CHEH1kiC6G_DUX`) are already hardcoded in the application.
+**Note:** The Project ID (`divee-487210`) and Site Key (`6LeVHmksAAAAADGDD9Q9sYYHEkLlP1hPfSmbjcRd`) are already hardcoded in the application.
 
 #### Update Site Key (if needed)
 If you need to use a different site key, update it in these locations:

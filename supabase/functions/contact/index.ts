@@ -34,7 +34,7 @@ async function verifyCaptcha(token: string, expectedAction: string = "CONTACT_FO
           event: {
             token: token,
             expectedAction: expectedAction,
-            siteKey: "6LdwHGksAAAAACdLIN5EjT5aI1CHEH1kiC6G_DUX",
+            siteKey: "6LeVHmksAAAAADGDD9Q9sYYHEkLlP1hPfSmbjcRd",
           },
         }),
       }
