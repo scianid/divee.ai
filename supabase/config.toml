@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.contact]
 verify_jwt = false
+
+[functions.contact-submissions]
+verify_jwt = false

@@ -15,6 +15,7 @@ import Revenues from './pages/Revenues'
 import Articles from './pages/Articles'
 import Questions from './pages/Questions'
 import Conversations from './pages/Conversations'
+import ContactSubmissions from './pages/ContactSubmissions'
 import TermsPage from './pages/Terms'
 import PrivacyPage from './pages/Privacy'
 import { DashboardLayout } from './layouts/DashboardLayout'
@@ -1229,6 +1230,7 @@ function App() {
         <Route path="/analytics" element={<RequireAuth><Reports /></RequireAuth>} />
         <Route path="/ad-reports" element={<RequireAdmin><AdReports /></RequireAdmin>} />
         <Route path="/usage-cost" element={<RequireAdmin><UsageCost /></RequireAdmin>} />
+        <Route path="/contact-submissions" element={<RequireAdmin><ContactSubmissions /></RequireAdmin>} />
         <Route path="/revenues" element={<RequireAuth><Revenues /></RequireAuth>} />
       </Route>
     </Routes>

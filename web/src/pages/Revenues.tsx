@@ -325,13 +325,22 @@ export default function Revenues() {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) throw new Error('Not authenticated');
 
-      // Get user's accounts
-      const { data: accounts } = await supabase
+      // Get user's owned accounts
+      const { data: ownedAccounts } = await supabase
         .from('account')
         .select('id')
         .eq('user_id', authUser.id);
 
-      const accountIds = accounts?.map(a => a.id) || [];
+      // Get accounts where user is a collaborator
+      const { data: collaboratorAccounts } = await supabase
+        .from('account_collaborator')
+        .select('account_id')
+        .eq('user_id', authUser.id);
+
+      const accountIds = [
+        ...(ownedAccounts || []).map(a => a.id),
+        ...(collaboratorAccounts || []).map(c => c.account_id)
+      ];
 
       if (accountIds.length === 0) {
         setData({
@@ -576,13 +585,23 @@ export default function Revenues() {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) return;
 
-      // Get user's accounts
-      const { data: accounts } = await supabase
+      // Get user's owned accounts
+      const { data: ownedAccounts } = await supabase
         .from('account')
         .select('id')
         .eq('user_id', authUser.id);
 
-      const accountIds = accounts?.map(a => a.id) || [];
+      // Get accounts where user is a collaborator
+      const { data: collaboratorAccounts } = await supabase
+        .from('account_collaborator')
+        .select('account_id')
+        .eq('user_id', authUser.id);
+
+      const accountIds = [
+        ...(ownedAccounts || []).map(a => a.id),
+        ...(collaboratorAccounts || []).map(c => c.account_id)
+      ];
+      
       if (accountIds.length === 0) return;
 
       const { data: projectsData, error: projectsError } = await supabase
