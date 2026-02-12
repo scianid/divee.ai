@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Projects from './pages/Projects'
 import Accounts from './pages/Accounts'
 import { RequireAuth } from './components/RequireAuth'
+import { RequireAdmin } from './components/RequireAdmin'
 import Reports from './pages/Reports'
 import Inventory from './pages/Inventory'
 import AdReports from './pages/AdReports'
@@ -1225,8 +1226,8 @@ function App() {
         <Route path="/questions" element={<RequireAuth><Questions /></RequireAuth>} />
         <Route path="/conversations" element={<RequireAuth><Conversations /></RequireAuth>} />
         <Route path="/analytics" element={<RequireAuth><Reports /></RequireAuth>} />
-        <Route path="/ad-reports" element={<RequireAuth><AdReports /></RequireAuth>} />
-        <Route path="/usage-cost" element={<RequireAuth><UsageCost /></RequireAuth>} />
+        <Route path="/ad-reports" element={<RequireAdmin><AdReports /></RequireAdmin>} />
+        <Route path="/usage-cost" element={<RequireAdmin><UsageCost /></RequireAdmin>} />
       </Route>
     </Routes>
   )
