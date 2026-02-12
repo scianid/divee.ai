@@ -70,35 +70,5 @@ CREATE POLICY "Users can view their project aggregated events"
     )
   );
 
--- Initial backfill for last 90 days
--- This will populate the aggregate table with historical data
-INSERT INTO public.analytics_events_hourly_agg (
-  project_id,
-  event_type,
-  event_label,
-  hour_bucket,
-  event_count,
-  unique_visitors,
-  unique_sessions
-)
-SELECT 
-  project_id,
-  event_type,
-  event_label,
-  date_trunc('hour', created_at) as hour_bucket,
-  COUNT(*) as event_count,
-  COUNT(DISTINCT visitor_id) as unique_visitors,
-  COUNT(DISTINCT session_id) as unique_sessions
-FROM public.analytics_events
-WHERE created_at >= NOW() - INTERVAL '90 days'
-GROUP BY 
-  project_id,
-  event_type,
-  event_label,
-  date_trunc('hour', created_at)
-ON CONFLICT (project_id, event_type, event_label, hour_bucket)
-DO UPDATE SET
-  event_count = EXCLUDED.event_count,
-  unique_visitors = EXCLUDED.unique_visitors,
-  unique_sessions = EXCLUDED.unique_sessions,
-  updated_at = NOW();
+-- Note: Initial backfill should be run separately to avoid timeout
+-- See backfill script for instructions on populating historical data
