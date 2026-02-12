@@ -20,7 +20,7 @@ async function verifyCaptcha(token: string, expectedAction: string = "CONTACT_FO
     return false;
   }
 
-  const projectId = "playlist-481721";
+  const projectId = "divee-487210";
 
   try {
     const response = await fetch(
