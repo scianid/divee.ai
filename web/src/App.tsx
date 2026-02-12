@@ -616,11 +616,6 @@ function LandingPage() {
                     <span style={{ color: '#c8d3f5' }}>=</span>
                     <span style={{ color: '#c3e88d' }}>"your-project-id"</span>{' '}
                     {'\n  '}
-                    <span style={{ color: '#ffc777' }}>data-article-class</span>
-                    <span style={{ color: '#c8d3f5' }}>=</span>
-                    <span style={{ color: '#c3e88d' }}>"your-article-class"</span>
-                    <span style={{ color: '#ff6b9d' }}>&gt;</span>
-                    {'\n'}
                     <span style={{ color: '#ff6b9d' }}>&lt;/script&gt;</span>
                   </code>
                 </pre>
