@@ -388,12 +388,12 @@ function LandingPage() {
               </Reveal>
 
               <Reveal className="heroCtas" delay={240}>
-                <button className="btn btnPrimary" onClick={() => setDemoModalOpen(true)}>
-                  See Demo
-                </button>
-                <a href="/#contact" className="btn btnSecondary">
+                <a href="/#contact" className="btn btnPrimary">
                   Get Divee Now!
                 </a>
+                <button className="btn btnSecondary" onClick={() => setDemoModalOpen(true)}>
+                  See Demo
+                </button>
               </Reveal>
 
              
