@@ -141,7 +141,9 @@ function Inventory() {
         .select('id, name, user_id, created_at, icon_url')
         .eq('user_id', user.id);
       
-      if (ownedError) throw ownedError;
+      if (ownedError) {
+        console.error('Error loading owned accounts:', ownedError);
+      }
 
       // Fetch collaborated accounts
       const { data: collaboratedAccounts, error: collabError } = await supabase
@@ -149,7 +151,9 @@ function Inventory() {
         .select('account_id, account:account_id(id, name, user_id, created_at, icon_url)')
         .eq('user_id', user.id);
       
-      if (collabError) throw collabError;
+      if (collabError) {
+        console.error('Error loading collaborator accounts:', collabError);
+      }
 
       // Combine and deduplicate accounts
       const collaboratedAccountData = collaboratedAccounts?.map((c: any) => c.account).filter(Boolean) || [];
