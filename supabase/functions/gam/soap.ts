@@ -11,12 +11,16 @@ export const GAM_SOAP_ENDPOINT = `https://ads.google.com/apis/ads/publisher/${GA
 // Divee.AI (23336129396)
 // Divee.AI » desktop (23336129444)
 // Divee.AI » mobileweb (23336129816)
+// Divee.AI » desktop (23338404207) NEW
+// Divee.AI » mobileweb (23338403031) NEW
 export const GAM_AD_UNIT_IDS: string[] = [
   "23335681243",
   "23335681369",
   "23336129396",
   "23336129444",
   "23336129816",
+  "23338404207",
+  "23338403031"
 ];
 
 // Parse date from ISO or YYYY-MM-DD format
