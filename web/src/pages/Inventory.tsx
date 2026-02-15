@@ -10,10 +10,6 @@ const SearchableSelect = ({
   value, 
   onChange, 
   options, 
-<<<<<<< HEAD
-=======
-  _placeholder = 'Select...', 
->>>>>>> 13841a77cd453f1696ea707979bac57e6950c353
   allLabel = 'All',
   fullWidth = false
 }: { 
