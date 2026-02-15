@@ -127,7 +127,7 @@ const SearchableSelect = ({
   value, 
   onChange, 
   options, 
-  placeholder = 'Select...', 
+  _placeholder = 'Select...', 
   allLabel = 'All',
   fullWidth = true
 }: { 
@@ -384,7 +384,7 @@ export default function Insights() {
   const [expandedConv, setExpandedConv] = useState<string | null>(null)
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
   const [aiCallsData, setAiCallsData] = useState<AICallsData>({ totalCalls: 0, timeSeries: [] })
-  const [stats, setStats] = useState({
+  const [_stats, setStats] = useState({
     totalAnalyzed: 0,
     highInterestCount: 0,
     avgScore: 0
@@ -714,9 +714,6 @@ export default function Insights() {
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
           <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b', margin: 0 }}>
             Insights
           </h1>
@@ -773,13 +770,41 @@ export default function Insights() {
         <>
           {/* AI Performance Score - Hero Card */}
           <div style={{
+            position: 'relative',
             background: 'linear-gradient(135deg, rgb(59, 130, 246) 0%, rgb(37, 99, 235) 100%)',
             borderRadius: '20px',
             padding: '24px',
             marginBottom: '24px',
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+            overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px', flexWrap: 'wrap' }}>
+            {/* Circular Pattern Background */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              pointerEvents: 'none'
+            }}>
+              <svg width="100%" height="100%" style={{ position: 'absolute' }}>
+                {/* Asymmetric scattered circles with varying opacity and sizes */}
+                <circle cx="5%" cy="15%" r="60" fill="rgba(255,255,255,0.08)" />
+                <circle cx="85%" cy="25%" r="80" fill="rgba(255,255,255,0.05)" />
+                <circle cx="70%" cy="70%" r="100" fill="rgba(255,255,255,0.06)" />
+                <circle cx="15%" cy="85%" r="70" fill="rgba(255,255,255,0.07)" />
+                <circle cx="45%" cy="40%" r="50" fill="rgba(255,255,255,0.04)" />
+                <circle cx="92%" cy="80%" r="55" fill="rgba(255,255,255,0.09)" />
+                <circle cx="30%" cy="50%" r="45" fill="rgba(255,255,255,0.05)" />
+                <circle cx="60%" cy="10%" r="65" fill="rgba(255,255,255,0.06)" />
+                <circle cx="10%" cy="60%" r="40" fill="rgba(255,255,255,0.08)" />
+                <circle cx="80%" cy="50%" r="75" fill="rgba(255,255,255,0.04)" />
+                <circle cx="50%" cy="90%" r="85" fill="rgba(255,255,255,0.05)" />
+                <circle cx="25%" cy="20%" r="35" fill="rgba(255,255,255,0.07)" />
+              </svg>
+            </div>
+
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.95)', marginBottom: '8px', fontWeight: 700, letterSpacing: '0.5px' }}>
                   AI PERFORMANCE SCORE

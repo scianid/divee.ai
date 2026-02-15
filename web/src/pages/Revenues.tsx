@@ -705,9 +705,7 @@ export default function Revenues() {
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-          <div style={{ color: 'var(--primary)', display: 'flex' }}>
-            <DollarIcon />
-          </div>
+        
           <h1 style={{ 
             fontSize: '32px', 
             fontWeight: 700, 
@@ -994,14 +992,42 @@ export default function Revenues() {
         <>
           {/* Hero Net Revenue Card */}
           <Card style={{ 
+            position: 'relative',
             background: 'linear-gradient(135deg, rgb(59, 130, 246) 0%, rgb(37, 99, 235) 100%)',
             border: 'none',
-            marginBottom: '24px'
+            marginBottom: '24px',
+            overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+            {/* Circular Pattern Background */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              pointerEvents: 'none'
+            }}>
+              <svg width="100%" height="100%" style={{ position: 'absolute' }}>
+                {/* Asymmetric scattered circles with varying opacity and sizes */}
+                <circle cx="5%" cy="15%" r="60" fill="rgba(255,255,255,0.08)" />
+                <circle cx="85%" cy="25%" r="80" fill="rgba(255,255,255,0.05)" />
+                <circle cx="70%" cy="70%" r="100" fill="rgba(255,255,255,0.06)" />
+                <circle cx="15%" cy="85%" r="70" fill="rgba(255,255,255,0.07)" />
+                <circle cx="45%" cy="40%" r="50" fill="rgba(255,255,255,0.04)" />
+                <circle cx="92%" cy="80%" r="55" fill="rgba(255,255,255,0.09)" />
+                <circle cx="30%" cy="50%" r="45" fill="rgba(255,255,255,0.05)" />
+                <circle cx="60%" cy="10%" r="65" fill="rgba(255,255,255,0.06)" />
+                <circle cx="10%" cy="60%" r="40" fill="rgba(255,255,255,0.08)" />
+                <circle cx="80%" cy="50%" r="75" fill="rgba(255,255,255,0.04)" />
+                <circle cx="50%" cy="90%" r="85" fill="rgba(255,255,255,0.05)" />
+                <circle cx="25%" cy="20%" r="35" fill="rgba(255,255,255,0.07)" />
+              </svg>
+            </div>
+
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
               <div>
-                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)', marginBottom: '8px', fontWeight: 500 }}>
-                  Net Revenue
+                <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.95)', marginBottom: '8px', fontWeight: 700, letterSpacing: '0.5px' }}>
+                  NET REVENUE
                 </div>
                 <div style={{ fontSize: '48px', fontWeight: 700, color: '#fff', marginBottom: '8px', lineHeight: 1 }}>
                   {formatCurrency(data.totalRevenue)}
