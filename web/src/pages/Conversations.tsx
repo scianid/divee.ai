@@ -314,12 +314,15 @@ export default function Conversations() {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: '100%',
-              padding: '10px 16px 10px 40px',
+              padding: '14px 16px 14px 44px',
               border: '1px solid #e2e8f0',
-              borderRadius: '8px',
+              borderRadius: '999px',
               fontSize: '14px',
+              fontWeight: 600,
               outline: 'none',
-              background: '#fff'
+              background: '#fff',
+              color: '#334155',
+              transition: 'background 0.2s'
             }}
           />
           <svg 
@@ -329,7 +332,7 @@ export default function Conversations() {
             fill="none" 
             stroke="#94a3b8" 
             strokeWidth="2"
-            style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }}
+            style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }}
           >
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -341,14 +344,17 @@ export default function Conversations() {
           value={selectedProject}
           onChange={(e) => setSelectedProject(e.target.value)}
           style={{
-            padding: '10px 16px',
+            padding: '14px 16px',
             border: '1px solid #e2e8f0',
-            borderRadius: '8px',
+            borderRadius: '999px',
             fontSize: '14px',
+            fontWeight: 600,
             outline: 'none',
             background: '#fff',
             cursor: 'pointer',
-            minWidth: '180px'
+            minWidth: '180px',
+            color: '#334155',
+            transition: 'background 0.2s'
           }}
         >
           <option value="all">All Widgets</option>
@@ -366,13 +372,16 @@ export default function Conversations() {
             value={dateRange.start}
             onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
             style={{
-              padding: '10px 12px',
+              padding: '14px 12px',
               border: '1px solid #e2e8f0',
-              borderRadius: '8px',
+              borderRadius: '999px',
               fontSize: '14px',
+              fontWeight: 600,
               outline: 'none',
               background: '#fff',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              color: '#334155',
+              transition: 'background 0.2s'
             }}
           />
           <span style={{ color: '#94a3b8' }}>→</span>
@@ -381,26 +390,31 @@ export default function Conversations() {
             value={dateRange.end}
             onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
             style={{
-              padding: '10px 12px',
+              padding: '14px 12px',
               border: '1px solid #e2e8f0',
-              borderRadius: '8px',
+              borderRadius: '999px',
               fontSize: '14px',
+              fontWeight: 600,
               outline: 'none',
               background: '#fff',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              color: '#334155',
+              transition: 'background 0.2s'
             }}
           />
           {(dateRange.start || dateRange.end) && (
             <button
               onClick={() => setDateRange({ start: '', end: '' })}
               style={{
-                padding: '10px 16px',
+                padding: '14px 16px',
                 border: '1px solid #e2e8f0',
-                borderRadius: '8px',
+                borderRadius: '999px',
                 fontSize: '14px',
+                fontWeight: 600,
                 background: '#fff',
                 cursor: 'pointer',
-                color: '#64748b'
+                color: '#334155',
+                transition: 'background 0.2s'
               }}
             >
               Clear

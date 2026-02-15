@@ -172,23 +172,24 @@ const SearchableSelect = ({
         onClick={() => setIsOpen(!isOpen)}
         style={{
           width: '100%',
-          padding: '8px 14px',
-          border: '1px solid rgba(0,0,0,0.05)',
-          borderRadius: '10px',
-          fontSize: '13px',
+          padding: '14px 16px',
+          border: '1px solid #e2e8f0',
+          borderRadius: '999px',
+          fontSize: '14px',
           fontWeight: 600,
           background: '#fff',
           cursor: 'pointer',
-          color: '#1e293b',
+          color: '#334155',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          textAlign: 'left'
+          textAlign: 'left',
+          transition: 'background 0.2s'
         }}
       >
         <span>{displayValue}</span>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-          <path d="M3 4.5L6 7.5L9 4.5" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
       {isOpen && (
@@ -197,19 +198,19 @@ const SearchableSelect = ({
           top: fullWidth ? (dropdownRef.current ? dropdownRef.current.getBoundingClientRect().bottom + 4 : 0) : 'calc(100% + 4px)',
           left: fullWidth ? '40px' : 0,
           right: fullWidth ? '40px' : undefined,
-          minWidth: fullWidth ? undefined : '300px',
+          minWidth: fullWidth ? undefined : '240px',
           background: '#fff',
-          border: '1px solid rgba(0,0,0,0.08)',
-          borderRadius: '10px',
+          border: '1px solid #e2e8f0',
+          borderRadius: '12px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           zIndex: 1000,
-          maxHeight: '300px',
+          maxHeight: '280px',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           maxWidth: '100%'
         }}>
-          <div style={{ padding: '8px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+          <div style={{ padding: '8px', borderBottom: '1px solid #e2e8f0' }}>
             <input
               type="text"
               value={searchQuery}
@@ -218,15 +219,16 @@ const SearchableSelect = ({
               autoFocus
               style={{
                 width: '100%',
-                padding: '6px 10px',
-                border: '1px solid rgba(0,0,0,0.08)',
-                borderRadius: '6px',
-                fontSize: '13px',
-                outline: 'none'
+                padding: '8px 12px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                fontSize: '14px',
+                outline: 'none',
+                background: '#f8fafc'
               }}
             />
           </div>
-          <div style={{ overflowY: 'auto', maxHeight: '250px' }}>
+          <div style={{ overflowY: 'auto', maxHeight: '200px' }}>
             <div
               onClick={() => {
                 onChange('all')
@@ -234,11 +236,12 @@ const SearchableSelect = ({
                 setSearchQuery('')
               }}
               style={{
-                padding: '8px 14px',
+                padding: '10px 12px',
                 cursor: 'pointer',
-                fontSize: '13px',
-                background: value === 'all' ? '#f1f5f9' : 'transparent',
-                fontWeight: value === 'all' ? 600 : 400
+                fontSize: '14px',
+                background: value === 'all' ? '#f0f9ff' : 'transparent',
+                fontWeight: value === 'all' ? 600 : 400,
+                color: value === 'all' ? '#2563eb' : '#334155'
               }}
               onMouseEnter={(e) => { if (value !== 'all') e.currentTarget.style.background = '#f8fafc' }}
               onMouseLeave={(e) => { if (value !== 'all') e.currentTarget.style.background = 'transparent' }}
@@ -254,11 +257,12 @@ const SearchableSelect = ({
                   setSearchQuery('')
                 }}
                 style={{
-                  padding: '8px 14px',
+                  padding: '10px 12px',
                   cursor: 'pointer',
-                  fontSize: '13px',
-                  background: value === option.value ? '#f1f5f9' : 'transparent',
-                  fontWeight: value === option.value ? 600 : 400
+                  fontSize: '14px',
+                  background: value === option.value ? '#f0f9ff' : 'transparent',
+                  fontWeight: value === option.value ? 600 : 400,
+                  color: value === option.value ? '#2563eb' : '#334155'
                 }}
                 onMouseEnter={(e) => { if (value !== option.value) e.currentTarget.style.background = '#f8fafc' }}
                 onMouseLeave={(e) => { if (value !== option.value) e.currentTarget.style.background = 'transparent' }}
@@ -723,29 +727,14 @@ export default function Insights() {
       </div>
 
       {/* Filters */}
-      <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-        <select
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <SearchableSelect
           value={selectedProject}
-          onChange={(e) => setSelectedProject(e.target.value)}
-          style={{
-            padding: '8px 14px',
-            border: '1px solid rgba(0,0,0,0.05)',
-            borderRadius: '10px',
-            fontSize: '13px',
-            fontWeight: 600,
-            background: '#fff',
-            cursor: 'pointer',
-            minWidth: '200px',
-            color: '#1e293b'
-          }}
-        >
-          <option value="all">All Widgets</option>
-          {projects.map(p => (
-            <option key={p.project_id} value={p.project_id}>
-              {p.client_name}
-            </option>
-          ))}
-        </select>
+          onChange={setSelectedProject}
+          options={projects.map(p => ({ value: p.project_id, label: p.client_name }))}
+          placeholder="Select widget"
+          allLabel="All Widgets"
+        />
 
         <SearchableSelect
           value={selectedArticle}
