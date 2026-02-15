@@ -558,7 +558,7 @@ export default function Revenues() {
       // Calculate projected monthly
       const startMs = new Date(dateRange.start).getTime();
       const endMs = new Date(dateRange.end).getTime();
-      const daysInRange = (endMs - startMs) / (1000 * 60 * 60 * 24);
+      const daysInRange = Math.round((endMs - startMs) / (1000 * 60 * 60 * 24)) + 1;
       const projectedMonthly = daysInRange > 0 ? (totalNetRevenue / daysInRange) * 30 : 0;
 
       setData({
@@ -1010,6 +1010,7 @@ export default function Revenues() {
                   Your earnings for the above period 
                   </div>
               </div>
+              {/* Projected Monthly - Hidden for now (partial data)
               <div style={{ 
                 background: 'rgba(255,255,255,0.2)',
                 borderRadius: '12px',
@@ -1023,6 +1024,7 @@ export default function Revenues() {
                   {formatCurrency(data.projectedMonthly)}
                 </div>
               </div>
+              */}
             </div>
           </Card>
 
@@ -1111,15 +1113,6 @@ export default function Revenues() {
                         fontWeight: 600, 
                         color: '#64748b' 
                       }}>
-                        Share %
-                      </th>
-                      <th style={{ 
-                        textAlign: 'right', 
-                        padding: '12px 8px', 
-                        fontSize: '13px', 
-                        fontWeight: 600, 
-                        color: '#64748b' 
-                      }}>
                         Net Revenue
                       </th>
                     </tr>
@@ -1155,14 +1148,6 @@ export default function Revenues() {
                           textAlign: 'right' 
                         }}>
                           {formatNumber(project.total_tokens)}
-                        </td>
-                        <td style={{ 
-                          padding: '12px 8px', 
-                          fontSize: '14px', 
-                          color: '#64748b',
-                          textAlign: 'right' 
-                        }}>
-                          {project.revenue_share_percentage}%
                         </td>
                         <td style={{ 
                           padding: '12px 8px', 

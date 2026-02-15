@@ -266,7 +266,7 @@ Deno.serve(async (req: Request) => {
     // Calculate projected monthly revenue (extrapolate based on date range)
     const startMs = new Date(startDate).getTime();
     const endMs = new Date(endDate).getTime();
-    const daysInRange = (endMs - startMs) / (1000 * 60 * 60 * 24);
+    const daysInRange = Math.round((endMs - startMs) / (1000 * 60 * 60 * 24)) + 1;
     const projectedMonthly = daysInRange > 0 ? (totalNetRevenue / daysInRange) * 30 : 0;
 
     return new Response(
