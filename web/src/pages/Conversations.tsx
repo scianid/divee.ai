@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAdmin } from '../hooks/useAdmin'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -41,6 +42,9 @@ export default function Conversations() {
     end: ''
   })
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeResult, setAnalyzeResult] = useState<string | null>(null)
+  const isAdmin = useAdmin()
 
   useEffect(() => {
     fetchProjects()
@@ -178,18 +182,122 @@ export default function Conversations() {
     return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
   }
 
+  const analyzeConversations = async () => {
+    if (selectedProject === 'all') {
+      setAnalyzeResult('Please select a specific project first')
+      setTimeout(() => setAnalyzeResult(null), 3000)
+      return
+    }
+
+    setAnalyzing(true)
+    setAnalyzeResult(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        setAnalyzeResult('Not authenticated')
+        return
+      }
+
+      const response = await fetch(
+        `https://srv.divee.ai/functions/v1/analyze-conversations?projectId=${selectedProject}&limit=50`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to analyze conversations')
+      }
+
+      setAnalyzeResult(`✓ Analyzed ${data.processed} conversations`)
+      fetchConversations() // Refresh the list
+      setTimeout(() => setAnalyzeResult(null), 5000)
+    } catch (error) {
+      console.error('Failed to analyze conversations:', error)
+      setAnalyzeResult(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      setTimeout(() => setAnalyzeResult(null), 5000)
+    } finally {
+      setAnalyzing(false)
+    }
+  }
+
   const totalPages = Math.ceil(totalCount / itemsPerPage)
 
   return (
     <div style={{ fontFamily: 'var(--font-display)', color: '#334155' }}>
       {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b', margin: 0 }}>
-          Conversations
-        </h1>
-        <p style={{ fontSize: '14px', color: '#64748b', marginTop: '8px' }}>
-          View all user conversations from your widgets
-        </p>
+      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b', margin: 0 }}>
+            Conversations
+          </h1>
+          <p style={{ fontSize: '14px', color: '#64748b', marginTop: '8px' }}>
+            View all user conversations from your widgets
+          </p>
+        </div>
+        
+        {/* Admin: Analyze Conversations Button */}
+        {isAdmin && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+            <button
+              onClick={analyzeConversations}
+              disabled={analyzing || selectedProject === 'all'}
+              style={{
+                padding: '10px 20px',
+                background: analyzing ? '#94a3b8' : '#3b82f6',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: analyzing || selectedProject === 'all' ? 'not-allowed' : 'pointer',
+                opacity: analyzing || selectedProject === 'all' ? 0.6 : 1,
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              {analyzing ? (
+                <>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTop: '2px solid #fff',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                  Analyze Conversations
+                </>
+              )}
+            </button>
+            {analyzeResult && (
+              <div style={{
+                fontSize: '13px',
+                color: analyzeResult.startsWith('✓') ? '#10b981' : '#ef4444',
+                fontWeight: 500
+              }}>
+                {analyzeResult}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Filters */}
