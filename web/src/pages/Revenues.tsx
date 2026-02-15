@@ -1073,7 +1073,7 @@ export default function Revenues() {
           </div>
 
           {/* Projects Table */}
-          {data.projectRevenues.length > 0 && (
+          {data.projectRevenues.length > 1 && (
             <Card title="Revenue by Widget">
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
