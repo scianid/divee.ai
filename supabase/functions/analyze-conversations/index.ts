@@ -3,8 +3,8 @@ import { getAuthenticatedClient } from "../_shared/supabase.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import { supabaseClient } from "../_shared/supabase.ts";
 
-const BATCH_SIZE = 50;
-const ANALYSIS_MODEL = "gpt-4o-mini";
+const BATCH_SIZE = 10;
+const ANALYSIS_MODEL = "gpt-5-mini";
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
 interface ConversationAnalysis {
@@ -30,14 +30,14 @@ Deno.serve(async (req: Request) => {
     // Verify user authentication (admin only for manual trigger)
     const { supabase, userId } = await getAuthenticatedClient(authHeader);
 
-    // Check if user is admin
-    const { data: userData } = await supabase
-      .from("user_profile")
-      .select("is_admin")
+    // Check if user is admin using service role client (bypasses RLS)
+    const { data: adminData } = await supabaseClient
+      .from("admin_users")
+      .select("user_id")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
-    if (!userData?.is_admin) {
+    if (!adminData) {
       return new Response(
         JSON.stringify({ error: "Unauthorized: Admin access required" }),
         {
@@ -74,18 +74,16 @@ Deno.serve(async (req: Request) => {
         project_id,
         visitor_id,
         session_id,
-        created_at,
-        updated_at,
+        started_at,
+        last_message_at,
         messages,
         url,
-        article_title,
-        started_at,
-        last_message_at
+        article_title
       `
       )
       .eq("project_id", projectId)
       .is("analyzed_at", null)
-      .order("created_at", { ascending: true })
+      .order("started_at", { ascending: true })
       .limit(limit);
 
     if (fetchError) {
@@ -159,17 +157,17 @@ Tag taxonomy: content_gap, sell_potential, criticism, low_confidence, high_confi
 factual_error, clarification_needed, deep_dive, related_topic, research_mode,
 casual_browsing, expert_user, beginner_user, praise, frustrated, engaged, skeptical,
 quick_exit, deep_conversation, suggestion_clicked, competitor_mention, feature_request,
-pain_point, price_sensitivity, decision_making, mobile_user, returning_visitor
+pain_point, price_sensitivity
 
 Return a JSON object with:
 {
-  "tags": [{"tag": "tag_name", "confidence": 0.95}],
-  "engagement_score": 75,
-  "business_score": 40,
-  "content_score": 60,
-  "sentiment_score": 50,
-  "summary": "Brief summary",
-  "key_insights": ["insight1", "insight2"]
+  "tags": [{"tag": "tag_name", "confidence": 0.95}], // up to 3 tags!
+  "engagement_score": SCORE (0-100),
+  "business_score": SCORE (0-100),
+  "content_score": SCORE (0-100),
+  "sentiment_score": SCORE (0-100),
+  "summary": "A Brief summary", // Be concise! up to 2 sentences summarizing the conversation, focusing on user needs and intent
+  "key_insights": ["INSITE 1", "INSITE 2"] // up to 2 insights, explain mainly the top tag you assigned and why, and anything super interesting you found in the conversation
 }`;
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -184,13 +182,19 @@ Return a JSON object with:
         { role: "system", content: systemPrompt },
         { role: "user", content: context },
       ],
-      temperature: 0.3,
       response_format: { type: "json_object" },
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.statusText}`);
+    const errorBody = await response.text();
+    console.error("OpenAI API Error Details:", {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorBody,
+      model: ANALYSIS_MODEL,
+    });
+    throw new Error(`OpenAI API error: ${response.statusText} - ${errorBody}`);
   }
 
   const result = await response.json();
@@ -241,7 +245,7 @@ function prepareConversationContext(conversation: any): string {
   return `
 Article: ${conversation.article_title || "Unknown"}
 URL: ${conversation.url || "Unknown"}
-Created: ${conversation.created_at}
+Started: ${conversation.started_at}
 Message Count: ${messageCount}
 Duration: ${Math.round(duration / 1000)}s
 

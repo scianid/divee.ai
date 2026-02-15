@@ -1,8 +1,95 @@
-# Conversation Dashboard
+# Insights
 
 ## Overview
 
-The Conversation Dashboard provides publishers with actionable insights from user conversations with the AI widget. A scheduled cron job analyzes unprocessed conversations, applies intelligent tagging, scores conversations by publisher interest, and surfaces key findings.
+The Insights page provides publishers with actionable insights from user conversations with the AI widget. A scheduled cron job analyzes unprocessed conversations, applies intelligent tagging, scores conversations by publisher interest, and surfaces key findings.
+
+## Current Implementation Status
+
+### ✅ Completed Features
+
+**Backend Infrastructure:**
+- Database schema deployed with 4 tables:
+  - `conversation_analysis` - stores AI analysis results and scores
+  - `conversation_tags` - stores applied tags with confidence scores
+  - `dashboard_metrics` - for future time-series aggregations
+  - `conversation_percentiles` - for future percentile tracking
+- Edge function: `analyze-conversations`
+  - GPT-4o-mini powered analysis
+  - Batch processing (10 conversations per run)
+  - Admin-only access via service role
+  - Tag application from 30+ tag taxonomy
+  - Interest score calculation (0-100)
+
+**Frontend:**
+- **Insights Page** (`/insights`) - Main dashboard
+  - **Priority Alert Banner** - Shows critical conversations requiring immediate attention
+  - **Actionable Opportunity Cards:**
+    - Content Gaps - Questions articles don't answer
+    - Sales Leads - Users showing purchase intent
+    - Feature Requests - Requested functionality
+    - User Feedback - Criticisms to address
+  - Overview KPI cards (Total Analyzed, High Interest Count, Avg Score)
+  - **Time-series charts:**
+    - Conversations analyzed over time (last 30 days)
+    - Average interest score trend
+  - **Interactive conversation list with:**
+    - Color-coded priority badges (Critical/High/Medium/Low/Minimal)
+    - Expandable cards showing full details
+    - AI-generated summaries and key insights
+    - Clickable tags for instant filtering
+    - Component score breakdown (engagement, business, content, sentiment)
+    - Action buttons: "View Full Conversation"
+  - **Interactive tag distribution:**
+    - Click any tag to filter conversations
+    - Visual bar charts showing tag frequency
+  - Project/widget filtering
+- **Manual Analysis Trigger** - Admin button in Conversations page
+  - Select project and click "Analyze Conversations"
+  - Processes up to 10 unanalyzed conversations
+  - Shows real-time feedback
+
+### 🚧 Planned Features
+
+- Automated cron job for continuous analysis
+- Advanced filtering and search
+- Export and reporting tools
+
+## How to Use (Current Implementation)
+
+### For Admins:
+
+1. **Analyze Conversations**
+   - Navigate to the **Conversations** page
+   - Select a specific project/widget from the dropdown
+   - Click the **"Analyze Conversations"** button (top right)
+   - Wait for analysis to complete (processes 10 conversations)
+   - Results are stored and immediately visible
+
+2. **View Insights**
+   - Navigate to the **Insights** page from the sidebar
+   - View overview metrics and high-interest conversations
+   - Use the project filter to focus on specific widgets
+   - Review AI summaries, tags, and component scores
+   - Identify conversations that need attention (score ≥ 70)
+
+### Score Interpretation:
+
+- **90-100 (Critical)**: Immediate attention needed - typically high-value business opportunities or critical content issues
+- **70-89 (High)**: Review within 24 hours - significant insights or concerns
+- **50-69 (Medium)**: Review weekly - moderate interest or feedback
+- **30-49 (Low)**: Aggregate insights only
+- **0-29 (Minimal)**: No action needed
+
+### Tag Categories:
+
+Conversations are automatically tagged across 6 categories:
+1. **Content Quality**: content_gap, factual_error, clarification_needed, deep_dive, related_topic
+2. **User Intent**: sell_potential, research_mode, casual_browsing, expert_user, beginner_user
+3. **Sentiment**: criticism, praise, frustrated, engaged, skeptical
+4. **Technical**: low_confidence, high_confidence, fallback_used, streaming_error, rate_limited
+5. **Behavioral**: quick_exit, deep_conversation, suggestion_clicked, ad_interaction, mobile_user, returning_visitor
+6. **Business Intelligence**: competitor_mention, feature_request, pain_point, price_sensitivity, decision_making
 
 ## Architecture
 
@@ -652,29 +739,37 @@ Returns tag distribution and trends
 
 ## Implementation Phases
 
-### Phase 1: Core Infrastructure (Week 1-2)
-- [ ] Create database tables
-- [ ] Implement basic cron job
-- [ ] Set up AI analysis pipeline
-- [ ] Basic tagging system
+### Phase 1: Core Infrastructure ✅ COMPLETED
+- [x] Create database tables (conversation_analysis, conversation_tags, dashboard_metrics, conversation_percentiles)
+- [x] Implement analyze-conversations edge function
+- [x] Set up AI analysis pipeline (GPT-4o-mini)
+- [x] Basic tagging system (30+ tags across 6 categories)
+- [x] Admin manual trigger button in Conversations page
+- [x] Interest score algorithm (weighted: engagement 40%, business 30%, content 20%, sentiment 10%)
 
-### Phase 2: Scoring & Metrics (Week 3)
-- [ ] Implement interest score algorithm
-- [ ] Calculate percentiles
-- [ ] Time-series aggregation
-- [ ] Test and tune scoring
+### Phase 2: Dashboard UI ✅ COMPLETED
+- [x] Insights page with navigation
+- [x] Overview KPI cards (total analyzed, high-interest count, avg score)
+- [x] High-interest conversations list with scores, summaries, and tags
+- [x] Top tags distribution visualization
+- [x] Project filtering
+- [x] Color-coded priority indicators
+- [x] Empty states and loading indicators
 
-### Phase 3: Dashboard UI (Week 4-5)
-- [ ] Overview dashboard
-- [ ] Conversation list views
-- [ ] Charts and visualizations
-- [ ] Filtering and search
+### Phase 3: Advanced Features 🚧 IN PROGRESS
+- [ ] Automated cron job (currently manual trigger only)
+- [x] Conversations over time chart
+- [x] Average interest score trend chart
+- [ ] Duration percentiles tracking
+- [ ] Content gap clustering by article
+- [ ] Business intelligence aggregations
 
-### Phase 4: Advanced Features (Week 6+)
-- [ ] Content gap clustering
-- [ ] Business intelligence reports
+### Phase 4: Future Enhancements
 - [ ] Email alerts for high-interest conversations
 - [ ] Export and reporting tools
+- [ ] Advanced filtering and search
+- [ ] Performance optimization for large datasets
+- [ ] Dashboard metrics caching
 
 ## Monitoring & Maintenance
 
@@ -726,8 +821,21 @@ Returns tag distribution and trends
 
 ## Next Steps
 
-1. **Validate tag taxonomy** with real conversation samples
-2. **Prototype interest score** on historical data
-3. **Design dashboard mockups** for user feedback
-4. **Estimate analysis costs** at expected scale
-5. **Set up development environment** for cron testing
+### Immediate (Phase 3)
+1. ✅ ~~Validate tag taxonomy with real conversation samples~~ - Implemented with 30+ tags
+2. ✅ ~~Prototype interest score on historical data~~ - Live with weighted algorithm
+3. ✅ ~~Design dashboard mockups for user feedback~~ - Insights page deployed
+4. ✅ ~~Add time-series visualizations~~ - Conversations over time and interest score trends deployed
+5. **Set up automated cron job** for continuous analysis (currently manual only)
+
+### Short-term
+- Implement conversation detail modal/page with full transcript
+- Add filtering by tags and score ranges
+- Create content gap aggregation by article
+- Build business intelligence reports
+
+### Long-term
+- Email notifications for critical conversations (score > 90)
+- Advanced analytics and ML-based insights
+- A/B testing for conversation quality improvements
+- Integration with content management systems

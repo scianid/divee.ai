@@ -14,6 +14,7 @@ import UsageCost from './pages/UsageCost'
 import Revenues from './pages/Revenues'
 import Articles from './pages/Articles'
 import Conversations from './pages/Conversations'
+import Insights from './pages/Insights'
 import ContactSubmissions from './pages/ContactSubmissions'
 import TermsPage from './pages/Terms'
 import PrivacyPage from './pages/Privacy'
@@ -1225,6 +1226,7 @@ function App() {
         <Route path="/inventory" element={<RequireAuth><Inventory /></RequireAuth>} />
         <Route path="/articles" element={<RequireAuth><Articles /></RequireAuth>} />
         <Route path="/conversations" element={<RequireAuth><Conversations /></RequireAuth>} />
+        <Route path="/insights" element={<RequireAuth><Insights /></RequireAuth>} />
         <Route path="/analytics" element={<RequireAuth><Reports /></RequireAuth>} />
         <Route path="/ad-reports" element={<RequireAdmin><AdReports /></RequireAdmin>} />
         <Route path="/usage-cost" element={<RequireAdmin><UsageCost /></RequireAdmin>} />
