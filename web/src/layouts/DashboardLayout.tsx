@@ -41,14 +41,6 @@ const ArticlesIcon = () => (
   </svg>
 )
 
-const QuestionsIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-  </svg>
-)
-
 const ConversationsIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -149,7 +141,6 @@ export function DashboardLayout() {
     { label: 'Accounts', path: '/accounts', icon: AccountsIcon },
     { label: 'Inventory', path: '/inventory', icon: InventoryIcon },
     { label: 'Articles', path: '/articles', icon: ArticlesIcon },
-    { label: 'Questions', path: '/questions', icon: QuestionsIcon },
     { label: 'Conversations', path: '/conversations', icon: ConversationsIcon },
     // { label: 'Reports', path: '/analytics', icon: ReportsIcon },
   ].filter(item => !item.adminOnly || isAdmin)

@@ -13,7 +13,6 @@ import AdReports from './pages/AdReports'
 import UsageCost from './pages/UsageCost'
 import Revenues from './pages/Revenues'
 import Articles from './pages/Articles'
-import Questions from './pages/Questions'
 import Conversations from './pages/Conversations'
 import ContactSubmissions from './pages/ContactSubmissions'
 import TermsPage from './pages/Terms'
@@ -1225,7 +1224,6 @@ function App() {
         <Route path="/projects" element={<Projects />} />
         <Route path="/inventory" element={<RequireAuth><Inventory /></RequireAuth>} />
         <Route path="/articles" element={<RequireAuth><Articles /></RequireAuth>} />
-        <Route path="/questions" element={<RequireAuth><Questions /></RequireAuth>} />
         <Route path="/conversations" element={<RequireAuth><Conversations /></RequireAuth>} />
         <Route path="/analytics" element={<RequireAuth><Reports /></RequireAuth>} />
         <Route path="/ad-reports" element={<RequireAdmin><AdReports /></RequireAdmin>} />
