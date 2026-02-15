@@ -1408,6 +1408,11 @@ export default function Dashboard() {
                         <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
                         {formatNumber(stats.widgetVisibleOverTime?.total ?? 0)}
                         </span>
+                        {totalImpressions > 0 && (
+                          <span style={{ fontSize: '18px', fontWeight: 600, color: '#3b82f6' }}>
+                            ({Math.round((stats.widgetVisibleOverTime?.total ?? 0) / totalImpressions * 100)}%)
+                          </span>
+                        )}
                     </div>
                     <TrendChart data={stats.widgetVisibleOverTime?.timeline || []} />
                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
