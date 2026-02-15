@@ -1,9 +1,169 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAdmin } from '../hooks/useAdmin';
 import { ProjectFunnelModal } from '../components/ProjectFunnelModal';
 import { ScanSiteModal } from '../components/ScanSiteModal';
+
+// Searchable Select Component
+const SearchableSelect = ({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder = 'Select...', 
+  allLabel = 'All',
+  fullWidth = false
+}: { 
+  value: string
+  onChange: (value: string) => void
+  options: Array<string | { value: string; label: string }>
+  placeholder?: string
+  allLabel?: string
+  fullWidth?: boolean
+}) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+        setSearchQuery('')
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Normalize options to { value, label } format
+  const normalizedOptions = options.map(opt => 
+    typeof opt === 'string' ? { value: opt, label: opt } : opt
+  )
+
+  const filteredOptions = normalizedOptions.filter(option => 
+    option.label.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const selectedOption = normalizedOptions.find(opt => opt.value === value)
+  const displayValue = value === 'all' ? allLabel : (selectedOption ? (selectedOption.label.length > 30 ? selectedOption.label.substring(0, 30) + '...' : selectedOption.label) : allLabel)
+
+  return (
+    <div ref={dropdownRef} style={{ position: 'relative', minWidth: '200px' }}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%',
+          padding: '14px 16px',
+          border: '1px solid #e2e8f0',
+          borderRadius: '999px',
+          fontSize: '14px',
+          fontWeight: 600,
+          background: '#fff',
+          cursor: 'pointer',
+          color: '#334155',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          textAlign: 'left',
+          transition: 'background 0.2s'
+        }}
+      >
+        <span>{displayValue}</span>
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div style={{
+          position: fullWidth ? 'fixed' : 'absolute',
+          top: fullWidth ? (dropdownRef.current ? dropdownRef.current.getBoundingClientRect().bottom + 4 : 0) : 'calc(100% + 4px)',
+          left: fullWidth ? '40px' : 0,
+          right: fullWidth ? '40px' : undefined,
+          minWidth: fullWidth ? undefined : '240px',
+          background: '#fff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          zIndex: 1000,
+          maxHeight: '280px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          maxWidth: '100%'
+        }}>
+          <div style={{ padding: '8px', borderBottom: '1px solid #e2e8f0' }}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                fontSize: '14px',
+                outline: 'none',
+                background: '#f8fafc'
+              }}
+            />
+          </div>
+          <div style={{ overflowY: 'auto', maxHeight: '200px' }}>
+            <div
+              onClick={() => {
+                onChange('all')
+                setIsOpen(false)
+                setSearchQuery('')
+              }}
+              style={{
+                padding: '10px 12px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                background: value === 'all' ? '#f0f9ff' : 'transparent',
+                fontWeight: value === 'all' ? 600 : 400,
+                color: value === 'all' ? '#2563eb' : '#334155'
+              }}
+              onMouseEnter={(e) => { if (value !== 'all') e.currentTarget.style.background = '#f8fafc' }}
+              onMouseLeave={(e) => { if (value !== 'all') e.currentTarget.style.background = 'transparent' }}
+            >
+              {allLabel}
+            </div>
+            {filteredOptions.map((option) => (
+              <div
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value)
+                  setIsOpen(false)
+                  setSearchQuery('')
+                }}
+                style={{
+                  padding: '10px 12px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  background: value === option.value ? '#f0f9ff' : 'transparent',
+                  fontWeight: value === option.value ? 600 : 400,
+                  color: value === option.value ? '#2563eb' : '#334155'
+                }}
+                onMouseEnter={(e) => { if (value !== option.value) e.currentTarget.style.background = '#f8fafc' }}
+                onMouseLeave={(e) => { if (value !== option.value) e.currentTarget.style.background = 'transparent' }}
+              >
+                {option.label}
+              </div>
+            ))}
+            {filteredOptions.length === 0 && (
+              <div style={{ padding: '12px 14px', fontSize: '13px', color: '#94a3b8', textAlign: 'center' }}>
+                No results found
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // Helper for safe account icons
 const AccountIcon = ({ url, name, size = 20 }: { url?: string | null, name: string, size?: number }) => {
@@ -481,40 +641,26 @@ function Inventory() {
 
       {/* Account dropdown and search bar above the table */}
       <div style={{ width: '100%', margin: '0 0 18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <select
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <SearchableSelect
             value={selectedAccount}
-            onChange={e => setSelectedAccount(e.target.value)}
-            style={{
-              padding: '10px 16px',
-              borderRadius: 8,
-              border: '1px solid #e5e7eb',
-              fontSize: 15,
-              background: '#fafbfc',
-              outline: 'none',
-              minWidth: 180,
-              marginRight: 8
-            }}
-          >
-            <option value="all">All Accounts</option>
-            {accounts.map(acc => (
-              <option key={acc.id} value={acc.id}>
-                {acc.name}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedAccount}
+            options={accounts.map(acc => ({ value: acc.id, label: acc.name }))}
+            placeholder="Select account"
+            allLabel="All Accounts"
+          />
           {/* Show icon next to dropdown if selected */}
           {selectedAccount !== 'all' && (() => {
             const acc = accounts.find(a => a.id === selectedAccount);
             if (!acc) return null;
             return acc.icon_url ? (
-              <img src={acc.icon_url} alt={acc.name} style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'cover', marginLeft: 8, verticalAlign: 'middle', background: '#f3f3f3' }} />
+              <img src={acc.icon_url} alt={acc.name} style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'cover', background: '#f3f3f3' }} />
             ) : (
-              <span style={{ width: 28, height: 28, borderRadius: 8, background: '#f3f3f3', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginLeft: 8, color: '#bbb', fontSize: 18 }}>?</span>
+              <span style={{ width: 28, height: 28, borderRadius: 8, background: '#f3f3f3', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: 18 }}>?</span>
             );
           })()}
         </div>
-        <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
+        <div style={{ position: 'relative', flex: 1, maxWidth: 400 }}>
           <input
             type="text"
             value={search}
@@ -522,20 +668,23 @@ function Inventory() {
             placeholder="Search projects..."
             style={{
               width: '100%',
-              padding: '10px 36px 10px 36px',
-              borderRadius: 8,
-              border: '1px solid #e5e7eb',
-              fontSize: 15,
-              background: '#fafbfc',
+              padding: '14px 16px 14px 44px',
+              borderRadius: '999px',
+              border: '1px solid #e2e8f0',
+              fontSize: 14,
+              fontWeight: 600,
+              background: '#fff',
+              color: '#334155',
               outline: 'none',
+              transition: 'background 0.2s'
             }}
           />
           <span style={{
             position: 'absolute',
-            left: 12,
+            left: 16,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: '#b0b0b0',
+            color: '#94a3b8',
             pointerEvents: 'none',
             display: 'flex',
             alignItems: 'center',

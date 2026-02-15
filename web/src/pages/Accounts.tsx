@@ -344,7 +344,7 @@ const Accounts: React.FC = () => {
 
       {/* Search Bar */}
       <div style={{ width: '100%', margin: '0 0 18px 0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 16 }}>
-        <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
+        <div style={{ position: 'relative', flex: 1, maxWidth: 400 }}>
           <input
             type="text"
             value={search}
@@ -352,20 +352,23 @@ const Accounts: React.FC = () => {
             placeholder="Search accounts..."
             style={{
               width: '100%',
-              padding: '10px 36px 10px 36px',
-              borderRadius: 8,
-              border: '1px solid #e5e7eb',
-              fontSize: 15,
-              background: '#fafbfc',
+              padding: '14px 16px 14px 44px',
+              borderRadius: '999px',
+              border: '1px solid #e2e8f0',
+              fontSize: 14,
+              fontWeight: 600,
+              background: '#fff',
+              color: '#334155',
               outline: 'none',
+              transition: 'background 0.2s'
             }}
           />
           <span style={{
             position: 'absolute',
-            left: 12,
+            left: 16,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: '#b0b0b0',
+            color: '#94a3b8',
             pointerEvents: 'none',
             display: 'flex',
             alignItems: 'center',

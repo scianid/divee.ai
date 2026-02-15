@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { AdminBadge } from '../components/AdminBadge'
@@ -110,8 +110,19 @@ const LogoutIcon = () => (
 
 export function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(true)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.email) {
+        setUserEmail(user.email)
+      }
+    }
+    fetchUser()
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -140,19 +151,21 @@ export function DashboardLayout() {
 
   const isAdmin = useAdmin()
 
-  const navItems = [
+  const allNavItems = [
     { label: 'Dashboard', path: '/dashboard', icon: DashboardIcon },
     { label: 'Revenues', path: '/revenues', icon: RevenuesIcon },
-    { label: 'Ad Reports', path: '/ad-reports', icon: AdReportsIcon, adminOnly: true },
-    { label: 'Usage & Cost', path: '/usage-cost', icon: UsageCostIcon, adminOnly: true },
-    { label: 'Contact Submissions', path: '/contact-submissions', icon: ContactIcon, adminOnly: true },
     { label: 'Accounts', path: '/accounts', icon: AccountsIcon },
     { label: 'Inventory', path: '/inventory', icon: InventoryIcon },
     { label: 'Articles', path: '/articles', icon: ArticlesIcon },
     { label: 'Conversations', path: '/conversations', icon: ConversationsIcon },
     { label: 'Insights', path: '/insights', icon: InsightsIcon },
-    // { label: 'Reports', path: '/analytics', icon: ReportsIcon },
-  ].filter(item => !item.adminOnly || isAdmin)
+  ]
+
+  const adminNavItems = [
+    { label: 'Ad Reports', path: '/ad-reports', icon: AdReportsIcon },
+    { label: 'Usage & Cost', path: '/usage-cost', icon: UsageCostIcon },
+    { label: 'Contact Submissions', path: '/contact-submissions', icon: ContactIcon },
+  ]
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fa' }}>
@@ -214,54 +227,131 @@ export function DashboardLayout() {
         </div>
 
         {/* Navigation */}
-        <nav style={{ padding: '20px 0', flex: 1, minWidth: '240px' }}>
-            {navItems.map(item => {
-                const isActive = location.pathname === item.path
-                return (
-                    <Link 
-                        key={item.path}
-                        to={item.path}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            height: '48px',
-                            padding: '0 20px',
-                            color: isActive ? 'var(--primary)' : 'var(--text)',
-                            background: isActive ? 'rgba(17, 65, 141, 0.08)' : 'transparent',
-                            textDecoration: 'none',
-                            boxShadow: isActive ? 'inset 3px 0 0 var(--primary)' : 'none',
-                            marginBottom: '4px',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <div style={{ 
-                            color: isActive ? 'var(--primary)' : 'currentColor', 
-                            opacity: 0.8,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '24px',
-                            flexShrink: 0
-                        }}>
-                            <item.icon />
-                        </div>
-                         <span style={{ 
-                            marginLeft: '12px',
-                            fontSize: '14px', 
-                            fontWeight: 500,
-                            opacity: collapsed ? 0 : 1,
-                            transform: collapsed ? 'translateX(-10px)' : 'none',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        }}>
-                            {item.label}
-                        </span>
-                    </Link>
-                )
-            })}
+        <nav style={{ padding: '20px 0', flex: 1, minWidth: '240px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1 }}>
+              {allNavItems.map(item => {
+                  const isActive = location.pathname === item.path
+                  return (
+                      <Link 
+                          key={item.path}
+                          to={item.path}
+                          style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              height: '48px',
+                              padding: '0 20px',
+                              color: isActive ? 'var(--primary)' : 'var(--text)',
+                              background: isActive ? 'rgba(17, 65, 141, 0.08)' : 'transparent',
+                              textDecoration: 'none',
+                              boxShadow: isActive ? 'inset 3px 0 0 var(--primary)' : 'none',
+                              marginBottom: '4px',
+                              transition: 'all 0.2s'
+                          }}
+                      >
+                          <div style={{ 
+                              color: isActive ? 'var(--primary)' : 'currentColor', 
+                              opacity: 0.8,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '24px',
+                              flexShrink: 0
+                          }}>
+                              <item.icon />
+                          </div>
+                           <span style={{ 
+                              marginLeft: '12px',
+                              fontSize: '14px', 
+                              fontWeight: 500,
+                              opacity: collapsed ? 0 : 1,
+                              transform: collapsed ? 'translateX(-10px)' : 'none',
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          }}>
+                              {item.label}
+                          </span>
+                      </Link>
+                  )
+              })}
+            </div>
+
+            {/* Admin Section */}
+            {isAdmin && adminNavItems.length > 0 && (
+              <div>
+                <div style={{ 
+                  height: '1px', 
+                  background: 'rgba(0,0,0,0.06)', 
+                  margin: '12px 20px 16px'
+                }} />
+                {adminNavItems.map(item => {
+                    const isActive = location.pathname === item.path
+                    return (
+                        <Link 
+                            key={item.path}
+                            to={item.path}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: '48px',
+                                padding: '0 20px',
+                                color: isActive ? 'var(--primary)' : 'var(--text)',
+                                background: isActive ? 'rgba(17, 65, 141, 0.08)' : 'transparent',
+                                textDecoration: 'none',
+                                boxShadow: isActive ? 'inset 3px 0 0 var(--primary)' : 'none',
+                                marginBottom: '4px',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <div style={{ 
+                                color: isActive ? 'var(--primary)' : 'currentColor', 
+                                opacity: 0.8,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '24px',
+                                flexShrink: 0
+                            }}>
+                                <item.icon />
+                            </div>
+                             <span style={{ 
+                                marginLeft: '12px',
+                                fontSize: '14px', 
+                                fontWeight: 500,
+                                opacity: collapsed ? 0 : 1,
+                                transform: collapsed ? 'translateX(-10px)' : 'none',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            }}>
+                                {item.label}
+                            </span>
+                        </Link>
+                    )
+                })}
+              </div>
+            )}
         </nav>
 
         {/* Bottom Actions */}
         <div style={{ borderTop: '1px solid rgba(0,0,0,0.04)', padding: '10px 0', minWidth: '240px' }}>
+            {/* User Email */}
+            {userEmail && (
+              <div style={{
+                padding: '12px 20px 8px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  fontSize: '12px',
+                  color: '#64748b',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  opacity: collapsed ? 0 : 1,
+                  transform: collapsed ? 'translateX(-10px)' : 'none',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}>
+                  {userEmail}
+                </div>
+              </div>
+            )}
+            
             <button
                 onClick={() => handleLogout()}
                 style={{
