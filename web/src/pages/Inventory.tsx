@@ -211,6 +211,7 @@ interface Project {
   display_position: string;
   article_class: string | null;
   widget_container_class: string | null;
+  override_mobile_container_selector: string | null;
 }
 
 interface Account {
@@ -423,6 +424,7 @@ function Inventory() {
         display_position: form.display_position || 'bottom-right',
         article_class: form.article_class || '.article',
         widget_container_class: form.widget_container_class || null,
+        override_mobile_container_selector: form.override_mobile_container_selector || null,
         show_ad: form.show_ad !== undefined ? form.show_ad : true,
       };
 
@@ -656,6 +658,7 @@ function Inventory() {
             display_position: editingProject.display_position,
             article_class: editingProject.article_class || '',
             widget_container_class: editingProject.widget_container_class || '',
+            override_mobile_container_selector: editingProject.override_mobile_container_selector || '',
             show_ad: editingProject.show_ad,
             ad_tag_id: editingProject.ad_tag_id || '',
             override_mobile_ad_size: editingProject.override_mobile_ad_size || '',

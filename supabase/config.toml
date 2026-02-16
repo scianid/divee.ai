@@ -21,3 +21,6 @@ verify_jwt = false
 
 [functions.analyze-conversations]
 verify_jwt = false
+
+[functions.invite-collaborator]
+verify_jwt = false

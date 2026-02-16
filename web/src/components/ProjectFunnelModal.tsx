@@ -27,6 +27,7 @@ export interface ProjectFunnelFormData {
   display_position: string;
   article_class: string;
   widget_container_class: string;
+  override_mobile_container_selector: string;
   // Admin-only fields
   ad_tag_id?: string;
   show_ad?: boolean;
@@ -63,6 +64,7 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
     display_position: initialData?.display_position || 'bottom-right',
     article_class: initialData?.article_class || '.article',
     widget_container_class: initialData?.widget_container_class || '',
+    override_mobile_container_selector: initialData?.override_mobile_container_selector || '',
     ad_tag_id: initialData?.ad_tag_id || '',
     show_ad: initialData?.show_ad ?? true,
     override_mobile_ad_size: initialData?.override_mobile_ad_size || '',
@@ -98,6 +100,7 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
           display_position: initialData.display_position || 'bottom-right',
           article_class: initialData.article_class || '.article',
           widget_container_class: initialData.widget_container_class || '',
+          override_mobile_container_selector: initialData.override_mobile_container_selector || '',
           ad_tag_id: initialData.ad_tag_id || '',
           show_ad: initialData.show_ad ?? true,
           override_mobile_ad_size: initialData.override_mobile_ad_size || '',
@@ -120,6 +123,7 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
           display_position: 'bottom-right',
           article_class: '.article',
           widget_container_class: '',
+          override_mobile_container_selector: '',
           ad_tag_id: '',
           show_ad: true,
           override_mobile_ad_size: '',
@@ -503,8 +507,21 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
           <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Optional: CSS class for widget container</div>
         </div>
       </div>
+
+      {/* Override Mobile Container Selector Row */}
+      <div>
+        <label className="inputLabel" style={{ marginBottom: 6, display: 'block', fontSize: 13, fontWeight: 600, color: '#4b5563' }}>Override Mobile Container Selector</label>
+        <input 
+          className="inputField" 
+          value={form.override_mobile_container_selector} 
+          onChange={e => handleChange('override_mobile_container_selector', e.target.value)} 
+          placeholder="Optional: custom mobile container selector" 
+          style={{ width: '100%', padding: '10px 12px', fontSize: 14, borderRadius: 10, border: '1px solid #e5e7eb' }}
+        />
+        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Optional: CSS selector for mobile widget container</div>
+      </div>
     </div>
-  ), [form.display_mode, form.display_position, form.article_class, form.widget_container_class, form.highlight_color_1, form.highlight_color_2, handleChange]);
+  ), [form.display_mode, form.display_position, form.article_class, form.widget_container_class, form.override_mobile_container_selector, form.highlight_color_1, form.highlight_color_2, handleChange]);
 
   // Component for Prompts
   const PromptsSection = React.useMemo(() => {

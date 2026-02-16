@@ -56,25 +56,20 @@ export default function CollaboratorsModal({ accountId, accountName, isOwner, on
       setInviting(true)
       setError(null)
 
-      // Get user by email using auth admin (Note: This requires service role or special permissions)
-      // For now, we'll need to implement this via an edge function
-      // Simplified version: just show error that user must exist
-      
-      const { error: searchError } = await supabase
-        .from('account')
-        .select('user_id')
-        .limit(1)
-      
-      if (searchError) {
-        throw new Error('Unable to search for users. Please use a Supabase Edge Function to invite collaborators.')
-      }
+      // Call the edge function to invite collaborator
+      const { data, error } = await supabase.functions.invoke('invite-collaborator', {
+        body: {
+          accountId,
+          email: inviteEmail.trim()
+        }
+      })
 
-      // This is a placeholder - you'd need an edge function to:
-      // 1. Look up user by email
-      // 2. Insert into account_collaborator
-      // 3. Optionally send invitation email
-      
-      setError('Invite feature requires an Edge Function. Please implement /functions/invite-collaborator')
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+
+      // Success! Refresh the collaborators list
+      await fetchCollaborators()
+      setInviteEmail('')
       
     } catch (err: any) {
       setError(err.message)
