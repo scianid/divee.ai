@@ -390,6 +390,37 @@ export default function AdReports() {
     });
   };
 
+  const setTodayPreset = () => {
+    const today = new Date();
+    setDateRange({
+      start: today.toISOString().split('T')[0],
+      end: today.toISOString().split('T')[0],
+    });
+  };
+
+  const setLastMonthPreset = () => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+    setDateRange({
+      start: firstDay.toISOString().split('T')[0],
+      end: lastDay.toISOString().split('T')[0],
+    });
+  };
+
+  const isTodayPresetActive = () => {
+    const today = new Date().toISOString().split('T')[0];
+    return dateRange.start === today && dateRange.end === today;
+  };
+
+  const isLastMonthPresetActive = () => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+    return dateRange.start === firstDay.toISOString().split('T')[0] &&
+           dateRange.end === lastDay.toISOString().split('T')[0];
+  };
+
   const isPresetActive = (days: number) => {
     const end = new Date();
     const start = new Date();
@@ -582,6 +613,16 @@ export default function AdReports() {
 
         {/* Quick Presets */}
         <button 
+          onClick={setTodayPreset} 
+          style={{ 
+            ...btnStyle, 
+            border: isTodayPresetActive() ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isTodayPresetActive() ? '#2563eb' : '#334155' 
+          }}
+        >
+          Today
+        </button>
+        <button 
           onClick={() => setPreset(1)} 
           style={{ 
             ...btnStyle, 
@@ -612,14 +653,14 @@ export default function AdReports() {
           30 days
         </button>
         <button 
-          onClick={() => setPreset(90)} 
+          onClick={setLastMonthPreset} 
           style={{ 
             ...btnStyle, 
-            border: isPresetActive(90) ? '1px solid #2563eb' : '1px solid #e2e8f0', 
-            color: isPresetActive(90) ? '#2563eb' : '#334155' 
+            border: isLastMonthPresetActive() ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isLastMonthPresetActive() ? '#2563eb' : '#334155' 
           }}
         >
-          90 days
+          Last Month
         </button>
 
         {/* Apply Button */}

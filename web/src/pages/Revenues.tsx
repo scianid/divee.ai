@@ -242,13 +242,12 @@ export default function Revenues() {
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const navigate = useNavigate();
 
-  // Calculate default date range (this month)
+  // Calculate default date range (today)
   const getDefaultDateRange = () => {
-    const end = new Date();
-    const start = new Date(end.getFullYear(), end.getMonth(), 1);
+    const today = new Date();
     return {
-      start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0]
+      start: today.toISOString().split('T')[0],
+      end: today.toISOString().split('T')[0]
     };
   };
 
@@ -652,12 +651,30 @@ export default function Revenues() {
     });
   };
 
+  const setTodayPreset = () => {
+    const today = new Date();
+    setDateRange({
+      start: today.toISOString().split('T')[0],
+      end: today.toISOString().split('T')[0],
+    });
+  };
+
   const setThisMonth = () => {
     const end = new Date();
     const start = new Date(end.getFullYear(), end.getMonth(), 1);
     setDateRange({
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0],
+    });
+  };
+
+  const setLastMonthPreset = () => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+    setDateRange({
+      start: firstDay.toISOString().split('T')[0],
+      end: lastDay.toISOString().split('T')[0],
     });
   };
 
@@ -669,11 +686,24 @@ export default function Revenues() {
            dateRange.end === end.toISOString().split('T')[0];
   };
 
+  const isTodayPresetActive = () => {
+    const today = new Date().toISOString().split('T')[0];
+    return dateRange.start === today && dateRange.end === today;
+  };
+
   const isThisMonthActive = () => {
     const end = new Date();
     const start = new Date(end.getFullYear(), end.getMonth(), 1);
     return dateRange.start === start.toISOString().split('T')[0] &&
            dateRange.end === end.toISOString().split('T')[0];
+  };
+
+  const isLastMonthPresetActive = () => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+    return dateRange.start === firstDay.toISOString().split('T')[0] &&
+           dateRange.end === lastDay.toISOString().split('T')[0];
   };
 
   const btnStyle: React.CSSProperties = {
@@ -868,6 +898,16 @@ export default function Revenues() {
 
         {/* Quick Presets */}
         <button 
+          onClick={setTodayPreset} 
+          style={{ 
+            ...btnStyle, 
+            border: isTodayPresetActive() ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isTodayPresetActive() ? '#2563eb' : '#334155' 
+          }}
+        >
+          Today
+        </button>
+        <button 
           onClick={() => setPreset(1)} 
           style={{ 
             ...btnStyle, 
@@ -876,16 +916,6 @@ export default function Revenues() {
           }}
         >
           24h
-        </button>
-        <button 
-          onClick={setThisMonth} 
-          style={{ 
-            ...btnStyle, 
-            border: isThisMonthActive() ? '1px solid #2563eb' : '1px solid #e2e8f0', 
-            color: isThisMonthActive() ? '#2563eb' : '#334155' 
-          }}
-        >
-          This Month
         </button>
         <button 
           onClick={() => setPreset(7)} 
@@ -908,14 +938,24 @@ export default function Revenues() {
           30 days
         </button>
         <button 
-          onClick={() => setPreset(90)} 
+          onClick={setThisMonth} 
           style={{ 
             ...btnStyle, 
-            border: isPresetActive(90) ? '1px solid #2563eb' : '1px solid #e2e8f0', 
-            color: isPresetActive(90) ? '#2563eb' : '#334155' 
+            border: isThisMonthActive() ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isThisMonthActive() ? '#2563eb' : '#334155' 
           }}
         >
-          90 days
+          This Month
+        </button>
+        <button 
+          onClick={setLastMonthPreset} 
+          style={{ 
+            ...btnStyle, 
+            border: isLastMonthPresetActive() ? '1px solid #2563eb' : '1px solid #e2e8f0', 
+            color: isLastMonthPresetActive() ? '#2563eb' : '#334155' 
+          }}
+        >
+          Last Month
         </button>
 
         {/* Apply Button */}
