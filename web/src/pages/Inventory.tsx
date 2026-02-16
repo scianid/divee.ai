@@ -202,6 +202,8 @@ interface Project {
   highlight_color: string[] | null;
   show_ad: boolean;
   ad_tag_id?: string; // Admin-only field from project_config
+  override_mobile_ad_size?: string; // Admin-only field from project_config
+  override_desktop_ad_size?: string; // Admin-only field from project_config
   input_text_placeholders: string[];
   allowed_urls: string[] | null;
   account_id: string;
@@ -361,7 +363,7 @@ function Inventory() {
         const projectUuids = finalProjects.map(p => p.project_id); // Use UUID, not integer ID
         const { data: configData } = await supabase
           .from('project_config')
-          .select('project_id, ad_tag_id')
+          .select('project_id, ad_tag_id, override_mobile_ad_size, override_desktop_ad_size')
           .in('project_id', projectUuids);
         
         // Merge config data into projects
@@ -369,7 +371,9 @@ function Inventory() {
           const configMap = new Map(configData.map(c => [c.project_id, c]));
           finalProjects = finalProjects.map(p => ({
             ...p,
-            ad_tag_id: configMap.get(p.project_id)?.ad_tag_id || '' // Match by UUID
+            ad_tag_id: configMap.get(p.project_id)?.ad_tag_id || '', // Match by UUID
+            override_mobile_ad_size: configMap.get(p.project_id)?.override_mobile_ad_size || '',
+            override_desktop_ad_size: configMap.get(p.project_id)?.override_desktop_ad_size || ''
           }));
         }
       }
@@ -441,12 +445,14 @@ function Inventory() {
       if (data) {
         const savedProject = data[0] as Project;
         
-        // Save admin-only ad_tag_id to project_config if user is admin and ad_tag_id is provided
-        if (form.ad_tag_id !== undefined && form.ad_tag_id !== '') {
+        // Save admin-only fields to project_config if user is admin
+        if (isAdmin) {
           
           const configPayload = {
             project_id: savedProject.project_id, // Use UUID, not integer ID
             ad_tag_id: form.ad_tag_id || null,
+            override_mobile_ad_size: form.override_mobile_ad_size || null,
+            override_desktop_ad_size: form.override_desktop_ad_size || null,
           };
           
           // Check if config exists
@@ -463,18 +469,23 @@ function Inventory() {
               .update(configPayload)
               .eq('project_id', savedProject.project_id);
           } else {
-            // Insert new config
-            await supabase
-              .from('project_config')
-              .insert([configPayload]);
-            // Non-blocking errors are ignored
+            // Insert new config only if at least one field has a value
+            const hasAdminFields = form.ad_tag_id || form.override_mobile_ad_size || form.override_desktop_ad_size;
+            if (hasAdminFields) {
+              await supabase
+                .from('project_config')
+                .insert([configPayload]);
+              // Non-blocking errors are ignored
+            }
           }
         }
         
         // Preserve admin-only fields that aren't in the project table response
         const updatedProject = {
           ...savedProject,
-          ad_tag_id: form.ad_tag_id || editingProject?.ad_tag_id || ''
+          ad_tag_id: form.ad_tag_id || editingProject?.ad_tag_id || '',
+          override_mobile_ad_size: form.override_mobile_ad_size || editingProject?.override_mobile_ad_size || '',
+          override_desktop_ad_size: form.override_desktop_ad_size || editingProject?.override_desktop_ad_size || ''
         };
         
         const isEditing = !!editingProject;
@@ -646,7 +657,9 @@ function Inventory() {
             article_class: editingProject.article_class || '',
             widget_container_class: editingProject.widget_container_class || '',
             show_ad: editingProject.show_ad,
-            ad_tag_id: editingProject.ad_tag_id || ''
+            ad_tag_id: editingProject.ad_tag_id || '',
+            override_mobile_ad_size: editingProject.override_mobile_ad_size || '',
+            override_desktop_ad_size: editingProject.override_desktop_ad_size || ''
           } : undefined}
         />
       )}

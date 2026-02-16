@@ -30,6 +30,8 @@ export interface ProjectFunnelFormData {
   // Admin-only fields
   ad_tag_id?: string;
   show_ad?: boolean;
+  override_mobile_ad_size?: string;
+  override_desktop_ad_size?: string;
   // Optional ID for editing existing projects
   project_id?: string;
 }
@@ -63,6 +65,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
     widget_container_class: initialData?.widget_container_class || '',
     ad_tag_id: initialData?.ad_tag_id || '',
     show_ad: initialData?.show_ad ?? true,
+    override_mobile_ad_size: initialData?.override_mobile_ad_size || '',
+    override_desktop_ad_size: initialData?.override_desktop_ad_size || '',
   });
   const [tempUrl, setTempUrl] = useState('');
   const [tempPlaceholder, setTempPlaceholder] = useState('');
@@ -96,6 +100,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
           widget_container_class: initialData.widget_container_class || '',
           ad_tag_id: initialData.ad_tag_id || '',
           show_ad: initialData.show_ad ?? true,
+          override_mobile_ad_size: initialData.override_mobile_ad_size || '',
+          override_desktop_ad_size: initialData.override_desktop_ad_size || '',
         });
       } else {
         // Reset to defaults for new project
@@ -116,6 +122,8 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
           widget_container_class: '',
           ad_tag_id: '',
           show_ad: true,
+          override_mobile_ad_size: '',
+          override_desktop_ad_size: '',
         });
         setStep(1);
       }
@@ -664,9 +672,63 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
           Admin only - Controls revenue flow
         </p>
       </div>
+
+      {/* Override Mobile Ad Size Input */}
+      <div>
+        <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 8, color: '#374151' }}>
+          Override Mobile Ad Size
+        </label>
+        <input
+          type="text"
+          value={form.override_mobile_ad_size || ''}
+          onChange={(e) => handleChange('override_mobile_ad_size', e.target.value)}
+          placeholder="Optional: custom mobile ad size"
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            fontSize: 14,
+            border: '1px solid #e5e7eb',
+            borderRadius: 8,
+            outline: 'none',
+            transition: 'all 0.2s'
+          }}
+          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+        />
+        <p style={{ margin: '6px 0 0 0', fontSize: 12, color: '#9ca3af' }}>
+          Admin only - Leave empty to use default mobile ad size
+        </p>
+      </div>
+
+      {/* Override Desktop Ad Size Input */}
+      <div>
+        <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 8, color: '#374151' }}>
+          Override Desktop Ad Size
+        </label>
+        <input
+          type="text"
+          value={form.override_desktop_ad_size || ''}
+          onChange={(e) => handleChange('override_desktop_ad_size', e.target.value)}
+          placeholder="Optional: custom desktop ad size"
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            fontSize: 14,
+            border: '1px solid #e5e7eb',
+            borderRadius: 8,
+            outline: 'none',
+            transition: 'all 0.2s'
+          }}
+          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+        />
+        <p style={{ margin: '6px 0 0 0', fontSize: 12, color: '#9ca3af' }}>
+          Admin only - Leave empty to use default desktop ad size
+        </p>
+      </div>
     </div>
     );
-  }, [form.show_ad, form.ad_tag_id, handleChange]);
+  }, [form.show_ad, form.ad_tag_id, form.override_mobile_ad_size, form.override_desktop_ad_size, handleChange]);
 
   return (
     <div style={{ position: 'fixed', zIndex: 1000, left: 0, top: 0, width: '100vw', height: '100vh', background: 'rgba(23, 23, 28, 0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
