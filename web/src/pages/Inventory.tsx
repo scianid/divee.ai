@@ -304,22 +304,35 @@ function Inventory() {
         console.error('Error loading owned accounts:', ownedError);
       }
 
-      // Fetch collaborated accounts
-      const { data: collaboratedAccounts, error: collabError } = await supabase
+      // Fetch collaborated account IDs
+      const { data: collaborations, error: collabError } = await supabase
         .from('account_collaborator')
-        .select('account_id, account:account_id(id, name, user_id, created_at, icon_url)')
+        .select('account_id')
         .eq('user_id', user.id);
       
       if (collabError) {
         console.error('Error loading collaborator accounts:', collabError);
       }
 
+      // Fetch collaborated accounts directly using their IDs
+      let collaboratedAccounts: Account[] = [];
+      if (collaborations && collaborations.length > 0) {
+        const collaboratedAccountIds = collaborations.map(c => c.account_id);
+        const { data: collabAccountsData, error: collabAccountsError } = await supabase
+          .from('account')
+          .select('id, name, user_id, created_at, icon_url')
+          .in('id', collaboratedAccountIds);
+        
+        if (collabAccountsError) {
+          console.error('Error loading collaborated account details:', collabAccountsError);
+        } else {
+          collaboratedAccounts = collabAccountsData || [];
+        }
+      }
+
       // Combine and deduplicate accounts
-      const collaboratedAccountData = collaboratedAccounts?.map((c: any) => c.account).filter(Boolean) || [];
-      
-      // Merge and deduplicate
       const allAccountsMap = new Map();
-      [...(ownedAccounts || []), ...collaboratedAccountData].forEach(acc => {
+      [...(ownedAccounts || []), ...collaboratedAccounts].forEach(acc => {
         if (acc && acc.id) allAccountsMap.set(acc.id, acc);
       });
       const allAccounts = Array.from(allAccountsMap.values());
