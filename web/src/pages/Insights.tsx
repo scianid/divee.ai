@@ -934,8 +934,11 @@ export default function Insights() {
                 <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
                   Content Gaps
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
                   {actionableInsights.contentGaps.length}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                  Topics users asked about that weren't covered in your content
                 </div>
               </div>
             )}
@@ -963,8 +966,11 @@ export default function Insights() {
                 <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
                   Sales Leads
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
                   {actionableInsights.sellOpportunities.length}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                  Users showing purchase intent or commercial interest
                 </div>
               </div>
             )}
@@ -992,8 +998,11 @@ export default function Insights() {
                 <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
                   Feature Requests
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
                   {actionableInsights.featureRequests.length}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                  Requests for new features or functionality improvements
                 </div>
               </div>
             )}
@@ -1021,8 +1030,11 @@ export default function Insights() {
                 <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
                   User Feedback
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b' }}>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
                   {actionableInsights.criticisms.length}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                  Critical feedback and concerns shared by users
                 </div>
               </div>
             )}
