@@ -806,13 +806,13 @@ export default function Insights() {
             <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.95)', marginBottom: '8px', fontWeight: 700, letterSpacing: '0.5px' }}>
-                  AI PERFORMANCE SCORE
+                  AI PERFORMANCE SCORE (GEO OPTIMIZATION)
                 </div>
                 <div style={{ fontSize: '48px', fontWeight: 700, color: '#fff', marginBottom: '8px', lineHeight: 1 }}>
                   {aiCallsData.totalCalls.toLocaleString()}
                 </div>
                 <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
-                  Total AI calls across selected filters
+                  Total AI organic conversations made about your website & site
                 </div>
               </div>
               {aiCallsData.timeSeries.length > 0 && (
