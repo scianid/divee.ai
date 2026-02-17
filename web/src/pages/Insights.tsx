@@ -932,7 +932,7 @@ export default function Insights() {
                 e.currentTarget.style.transform = 'translateY(0)'
               }}>
                 <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
-                  Content Gaps
+                  In-Depth Questions
                 </div>
                 <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
                   {actionableInsights.contentGaps.length}
