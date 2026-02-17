@@ -92,6 +92,13 @@ const ContactIcon = () => (
   </svg>
 )
 
+const ConversationAnalysisIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    <polyline points="9 10 12 13 16 9"></polyline>
+  </svg>
+)
+
 // const ReportsIcon = () => (
 //   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 //     <line x1="18" y1="20" x2="18" y2="10"></line>
@@ -165,6 +172,7 @@ export function DashboardLayout() {
     { label: 'Ad Reports', path: '/ad-reports', icon: AdReportsIcon },
     { label: 'Usage & Cost', path: '/usage-cost', icon: UsageCostIcon },
     { label: 'Contact Submissions', path: '/contact-submissions', icon: ContactIcon },
+    { label: 'Conversation Analysis', path: '/conversation-analysis', icon: ConversationAnalysisIcon },
   ]
 
   return (

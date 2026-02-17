@@ -26,28 +26,6 @@ Deno.serve(async (req: Request) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-
-    // Verify user authentication (admin only for manual trigger)
-    const { supabase, userId } = await getAuthenticatedClient(authHeader);
-
-    // Check if user is admin using service role client (bypasses RLS)
-    const { data: adminData } = await supabaseClient
-      .from("admin_users")
-      .select("user_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (!adminData) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized: Admin access required" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Parse query parameters
     const url = new URL(req.url);
     const projectId = url.searchParams.get("projectId");
     const limit = Math.min(
@@ -55,18 +33,45 @@ Deno.serve(async (req: Request) => {
       100
     );
 
-    if (!projectId) {
-      return new Response(
-        JSON.stringify({ error: "projectId is required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    // Check if it's a service role JWT by decoding the token
+    let isServiceRole = false;
+    const token = authHeader?.replace("Bearer ", "");
+    
+    if (token) {
+      try {
+        // Decode JWT (without verification, just to read the payload)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        isServiceRole = payload.role === "service_role";
+      } catch (e) {
+        // If JWT decode fails, it's not a valid JWT
+        console.log("Failed to decode JWT:", e);
+      }
+    }
+
+    // If not service role, verify user authentication (admin only)
+    if (!isServiceRole) {
+      const { supabase, userId } = await getAuthenticatedClient(authHeader);
+
+      // Check if user is admin using service role client (bypasses RLS)
+      const { data: adminData } = await supabaseClient
+        .from("admin_users")
+        .select("user_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!adminData) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized: Admin access required" }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
     }
 
     // Fetch unanalyzed conversations
-    const { data: conversations, error: fetchError } = await supabaseClient
+    let query = supabaseClient
       .from("conversations")
       .select(
         `
@@ -81,10 +86,16 @@ Deno.serve(async (req: Request) => {
         article_title
       `
       )
-      .eq("project_id", projectId)
       .is("analyzed_at", null)
       .order("started_at", { ascending: true })
       .limit(limit);
+
+    // Filter by project if specified
+    if (projectId) {
+      query = query.eq("project_id", projectId);
+    }
+
+    const { data: conversations, error: fetchError } = await query;
 
     if (fetchError) {
       throw new Error(`Failed to fetch conversations: ${fetchError.message}`);

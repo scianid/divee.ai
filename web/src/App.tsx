@@ -16,6 +16,7 @@ import Articles from './pages/Articles'
 import Conversations from './pages/Conversations'
 import Insights from './pages/Insights'
 import ContactSubmissions from './pages/ContactSubmissions'
+import ConversationAnalysis from './pages/ConversationAnalysis'
 import TermsPage from './pages/Terms'
 import PrivacyPage from './pages/Privacy'
 import { DashboardLayout } from './layouts/DashboardLayout'
@@ -1231,6 +1232,7 @@ function App() {
         <Route path="/ad-reports" element={<RequireAdmin><AdReports /></RequireAdmin>} />
         <Route path="/usage-cost" element={<RequireAdmin><UsageCost /></RequireAdmin>} />
         <Route path="/contact-submissions" element={<RequireAdmin><ContactSubmissions /></RequireAdmin>} />
+        <Route path="/conversation-analysis" element={<RequireAdmin><ConversationAnalysis /></RequireAdmin>} />
         <Route path="/revenues" element={<RequireAuth><Revenues /></RequireAuth>} />
       </Route>
     </Routes>
