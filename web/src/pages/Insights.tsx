@@ -972,25 +972,25 @@ export default function Insights() {
     setSelectedTag(tag)
   }
 
-  // Extract unique articles and tags from analyses
-  const uniqueArticles = Array.from(new Set(analyses.map(a => a.conversation.article_title))).sort()
-  const uniqueTags = Array.from(new Set(analyses.flatMap(a => a.tags.map(t => t.tag))))
-    .filter(tag => tag !== 'mobile_user' && tag !== 'suggestion_click')
-    .sort()
-
-  // Apply article filter first for base filtering
-  let baseFilteredAnalyses = analyses
-  if (selectedArticle !== 'all') {
-    baseFilteredAnalyses = baseFilteredAnalyses.filter(a => a.conversation.article_title === selectedArticle)
-  }
-
-  // Filter to last 7 days for stats calculation
+  // Filter to last 7 days first
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  const last7DaysAnalyses = baseFilteredAnalyses.filter(a => {
+  const last7DaysAnalyses = analyses.filter(a => {
     const convDate = new Date(a.conversation.started_at)
     return convDate >= sevenDaysAgo
   })
+
+  // Extract unique articles and tags from last 7 days analyses
+  const uniqueArticles = Array.from(new Set(last7DaysAnalyses.map(a => a.conversation.article_title))).sort()
+  const uniqueTags = Array.from(new Set(last7DaysAnalyses.flatMap(a => a.tags.map(t => t.tag))))
+    .filter(tag => tag !== 'mobile_user' && tag !== 'suggestion_click')
+    .sort()
+
+  // Apply article filter to last 7 days data
+  let baseFilteredAnalyses = last7DaysAnalyses
+  if (selectedArticle !== 'all') {
+    baseFilteredAnalyses = baseFilteredAnalyses.filter(a => a.conversation.article_title === selectedArticle)
+  }
 
   // Calculate actionable insights from article-filtered data
   const actionableInsights = {
@@ -1001,12 +1001,12 @@ export default function Insights() {
     criticisms: baseFilteredAnalyses.filter(a => a.tags.some(t => t.tag === 'criticism')),
   }
 
-  // Calculate filtered stats from last 7 days data
+  // Calculate filtered stats
   const filteredStats = {
-    totalAnalyzed: last7DaysAnalyses.length,
-    highInterestCount: last7DaysAnalyses.filter(a => a.interest_score >= 70).length,
-    avgScore: last7DaysAnalyses.length > 0
-      ? Math.round(last7DaysAnalyses.reduce((sum, a) => sum + a.interest_score, 0) / last7DaysAnalyses.length)
+    totalAnalyzed: baseFilteredAnalyses.length,
+    highInterestCount: baseFilteredAnalyses.filter(a => a.interest_score >= 70).length,
+    avgScore: baseFilteredAnalyses.length > 0
+      ? Math.round(baseFilteredAnalyses.reduce((sum, a) => sum + a.interest_score, 0) / baseFilteredAnalyses.length)
       : 0
   }
 
