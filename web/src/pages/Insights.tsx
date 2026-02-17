@@ -1221,7 +1221,7 @@ export default function Insights() {
           {timeSeriesData.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
               <Card title="Conversations Over Time">
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
                   Total analyzed conversations with AI-powered insights (last 7 days)
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -1238,7 +1238,7 @@ export default function Insights() {
               </Card>
               
               <Card title="Avg Interest Score">
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
                   Average engagement and value score across all conversations (last 7 days)
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -1255,7 +1255,7 @@ export default function Insights() {
               </Card>
 
               <Card title="Engagement">
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
                   Number of times users asked for suggestions (last 7 days)
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -1276,7 +1276,7 @@ export default function Insights() {
               </Card>
 
               <Card title="Avg Messages per Conversation">
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
                   Average number of messages exchanged per conversation (last 7 days)
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
