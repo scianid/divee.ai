@@ -65,6 +65,22 @@ interface AICallsData {
   }>
 }
 
+interface EngagementData {
+  totalEngagements: number
+  timeSeries: Array<{
+    date: string
+    engagements: number
+  }>
+}
+
+interface AvgMessagesData {
+  overallAvg: number
+  timeSeries: Array<{
+    date: string
+    avgMessages: number
+  }>
+}
+
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {
@@ -371,6 +387,146 @@ const TrendChart = ({ data, dataKey, title, color = '#2563eb' }: {
   return <ReactECharts option={option} style={{ height: '200px', width: '100%' }} opts={{ renderer: 'svg' }} />
 }
 
+const EngagementChart = ({ data, color = '#10b981' }: { 
+  data: Array<{ date: string; engagements: number }>, 
+  color?: string 
+}) => {
+  const chartData = data.map(d => d.engagements)
+  const dates = data.map(d => {
+    const date = new Date(d.date)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  })
+
+  const option = {
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      top: '10%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      boundaryGap: false,
+      axisLine: { lineStyle: { color: 'rgba(0,0,0,0.05)' } },
+      axisLabel: { color: '#94a3b8', fontSize: 10 },
+      axisTick: { show: false }
+    },
+    yAxis: {
+      type: 'value',
+      axisLine: { show: false },
+      axisLabel: { color: '#94a3b8', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(0,0,0,0.05)' } }
+    },
+    series: [{
+      data: chartData,
+      type: 'line',
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 4,
+      itemStyle: { color: color },
+      lineStyle: { color: color, width: 2 },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: color + '20' },
+            { offset: 1, color: color + '00' }
+          ]
+        }
+      }
+    }],
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: '#1e293b',
+      borderWidth: 0,
+      textStyle: { color: '#fff', fontSize: 12 },
+      formatter: (params: any) => {
+        const value = params[0].value
+        return `<div style="font-weight: 600">${params[0].name}</div>
+                <div>Engagements: <strong>${value}</strong></div>`
+      }
+    }
+  }
+
+  return <ReactECharts option={option} style={{ height: '200px', width: '100%' }} opts={{ renderer: 'svg' }} />
+}
+
+const AvgMessagesChart = ({ data, color = '#f59e0b' }: { 
+  data: Array<{ date: string; avgMessages: number }>, 
+  color?: string 
+}) => {
+  const chartData = data.map(d => d.avgMessages)
+  const dates = data.map(d => {
+    const date = new Date(d.date)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  })
+
+  const option = {
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      top: '10%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      boundaryGap: false,
+      axisLine: { lineStyle: { color: 'rgba(0,0,0,0.05)' } },
+      axisLabel: { color: '#94a3b8', fontSize: 10 },
+      axisTick: { show: false }
+    },
+    yAxis: {
+      type: 'value',
+      axisLine: { show: false },
+      axisLabel: { color: '#94a3b8', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(0,0,0,0.05)' } }
+    },
+    series: [{
+      data: chartData,
+      type: 'line',
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 4,
+      itemStyle: { color: color },
+      lineStyle: { color: color, width: 2 },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: color + '20' },
+            { offset: 1, color: color + '00' }
+          ]
+        }
+      }
+    }],
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: '#1e293b',
+      borderWidth: 0,
+      textStyle: { color: '#fff', fontSize: 12 },
+      formatter: (params: any) => {
+        const value = params[0].value
+        return `<div style="font-weight: 600">${params[0].name}</div>
+                <div>Avg Messages: <strong>${Math.round(value * 10) / 10}</strong></div>`
+      }
+    }
+  }
+
+  return <ReactECharts option={option} style={{ height: '200px', width: '100%' }} opts={{ renderer: 'svg' }} />
+}
+
 export default function Insights() {
   const [analyses, setAnalyses] = useState<ConversationAnalysis[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -383,6 +539,8 @@ export default function Insights() {
   const [expandedConv, setExpandedConv] = useState<string | null>(null)
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
   const [aiCallsData, setAiCallsData] = useState<AICallsData>({ totalCalls: 0, timeSeries: [] })
+  const [engagementData, setEngagementData] = useState<EngagementData>({ totalEngagements: 0, timeSeries: [] })
+  const [avgMessagesData, setAvgMessagesData] = useState<AvgMessagesData>({ overallAvg: 0, timeSeries: [] })
   const [_stats, setStats] = useState({
     totalAnalyzed: 0,
     highInterestCount: 0,
@@ -398,6 +556,8 @@ export default function Insights() {
     if (projects.length > 0) {
       fetchAnalyses()
       fetchAICalls()
+      fetchEngagementData()
+      fetchAvgMessagesData()
     }
   }, [selectedProject, selectedArticle, projects])
 
@@ -543,6 +703,11 @@ export default function Insights() {
     try {
       const projectIds = projects.map(p => p.project_id)
 
+      // Calculate date range - last 7 days
+      const endDate = new Date()
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - 7)
+
       // Build query for time-series data - join with conversations to get started_at and article_title
       let query = supabase
         .from('conversation_analysis')
@@ -553,6 +718,8 @@ export default function Insights() {
           conversations!inner(started_at, article_title)
         `)
         .in('project_id', projectIds)
+        .gte('conversations.started_at', startDate.toISOString())
+        .lte('conversations.started_at', endDate.toISOString())
 
       if (selectedProject !== 'all') {
         query = query.eq('project_id', selectedProject)
@@ -588,7 +755,6 @@ export default function Insights() {
           avgScore: stats.count > 0 ? stats.totalScore / stats.count : 0
         }))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(-30) // Last 30 days
 
       setTimeSeriesData(timeSeriesArray)
 
@@ -601,11 +767,18 @@ export default function Insights() {
     try {
       const projectIds = projects.map(p => p.project_id)
       
+      // Calculate date range - last 7 days
+      const endDate = new Date()
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - 7)
+      
       // Build query for conversations (AI calls)
       let query = supabase
         .from('conversations')
         .select('started_at, article_title')
         .in('project_id', projectIds)
+        .gte('started_at', startDate.toISOString())
+        .lte('started_at', endDate.toISOString())
 
       if (selectedProject !== 'all') {
         query = query.eq('project_id', selectedProject)
@@ -634,14 +807,141 @@ export default function Insights() {
         }
       })
 
-      // Convert to array and sort
+      // Convert to array and sort - last 7 days only
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
+
       const timeSeries = Array.from(dateMap.entries())
         .map(([date, calls]) => ({ date, calls }))
+        .filter(item => item.date >= sevenDaysAgoStr)
         .sort((a, b) => a.date.localeCompare(b.date))
 
       setAiCallsData({ totalCalls, timeSeries })
     } catch (error) {
       console.error('Error fetching AI calls data:', error)
+    }
+  }
+
+  async function fetchEngagementData() {
+    try {
+      const projectIds = projects.map(p => p.project_id)
+      
+      // Calculate date range - last 7 days
+      const endDate = new Date()
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - 7)
+      
+      // Build query for engagement events from aggregated table
+      let query = supabase
+        .from('analytics_events_hourly_agg')
+        .select('hour_bucket, event_count, event_label')
+        .eq('event_type', 'suggestion_question_asked')
+        .in('project_id', projectIds)
+        .gte('hour_bucket', startDate.toISOString())
+        .lte('hour_bucket', endDate.toISOString())
+
+      if (selectedProject !== 'all') {
+        query = query.eq('project_id', selectedProject)
+      }
+
+      const { data, error } = await query
+
+      if (error) throw error
+
+      let filteredData = data || []
+
+      // Apply article filter using event_label (which contains article info)
+      if (selectedArticle !== 'all') {
+        filteredData = filteredData.filter((item: any) => 
+          item.event_label && item.event_label.includes(selectedArticle)
+        )
+      }
+
+      // Calculate total engagements
+      const totalEngagements = filteredData.reduce((sum, item) => sum + (item.event_count || 0), 0)
+
+      // Group by date for time series
+      const dateMap = new Map<string, number>()
+      filteredData.forEach((item: any) => {
+        if (item.hour_bucket) {
+          const date = new Date(item.hour_bucket).toISOString().split('T')[0]
+          dateMap.set(date, (dateMap.get(date) || 0) + (item.event_count || 0))
+        }
+      })
+
+      // Convert to array and sort
+      const timeSeries = Array.from(dateMap.entries())
+        .map(([date, engagements]) => ({ date, engagements }))
+        .sort((a, b) => a.date.localeCompare(b.date))
+
+      setEngagementData({ totalEngagements, timeSeries })
+    } catch (error) {
+      console.error('Error fetching engagement data:', error)
+    }
+  }
+
+  async function fetchAvgMessagesData() {
+    try {
+      const projectIds = projects.map(p => p.project_id)
+      
+      // Calculate date range - last 7 days
+      const endDate = new Date()
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - 7)
+      
+      // Build query for conversations with message_count
+      let query = supabase
+        .from('conversations')
+        .select('started_at, article_title, message_count')
+        .in('project_id', projectIds)
+        .gte('started_at', startDate.toISOString())
+        .lte('started_at', endDate.toISOString())
+
+      if (selectedProject !== 'all') {
+        query = query.eq('project_id', selectedProject)
+      }
+
+      const { data, error } = await query
+
+      if (error) throw error
+
+      let filteredData = data || []
+
+      // Apply article filter
+      if (selectedArticle !== 'all') {
+        filteredData = filteredData.filter(conv => conv.article_title === selectedArticle)
+      }
+
+      // Calculate overall average
+      const overallAvg = filteredData.length > 0
+        ? Math.round(filteredData.reduce((sum, conv) => sum + (conv.message_count || 0), 0) / filteredData.length)
+        : 0
+
+      // Group by date and calculate average messages per day
+      const dateMap = new Map<string, { totalMessages: number; count: number }>()
+      filteredData.forEach(conv => {
+        if (conv.started_at) {
+          const date = new Date(conv.started_at).toISOString().split('T')[0]
+          const existing = dateMap.get(date) || { totalMessages: 0, count: 0 }
+          dateMap.set(date, {
+            totalMessages: existing.totalMessages + (conv.message_count || 0),
+            count: existing.count + 1
+          })
+        }
+      })
+
+      // Convert to array and sort
+      const timeSeries = Array.from(dateMap.entries())
+        .map(([date, stats]) => ({
+          date,
+          avgMessages: stats.count > 0 ? stats.totalMessages / stats.count : 0
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date))
+
+      setAvgMessagesData({ overallAvg, timeSeries })
+    } catch (error) {
+      console.error('Error fetching avg messages data:', error)
     }
   }
 
@@ -684,6 +984,14 @@ export default function Insights() {
     baseFilteredAnalyses = baseFilteredAnalyses.filter(a => a.conversation.article_title === selectedArticle)
   }
 
+  // Filter to last 7 days for stats calculation
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const last7DaysAnalyses = baseFilteredAnalyses.filter(a => {
+    const convDate = new Date(a.conversation.started_at)
+    return convDate >= sevenDaysAgo
+  })
+
   // Calculate actionable insights from article-filtered data
   const actionableInsights = {
     critical: baseFilteredAnalyses.filter(a => a.interest_score >= 90),
@@ -693,12 +1001,12 @@ export default function Insights() {
     criticisms: baseFilteredAnalyses.filter(a => a.tags.some(t => t.tag === 'criticism')),
   }
 
-  // Calculate filtered stats
+  // Calculate filtered stats from last 7 days data
   const filteredStats = {
-    totalAnalyzed: baseFilteredAnalyses.length,
-    highInterestCount: baseFilteredAnalyses.filter(a => a.interest_score >= 70).length,
-    avgScore: baseFilteredAnalyses.length > 0
-      ? Math.round(baseFilteredAnalyses.reduce((sum, a) => sum + a.interest_score, 0) / baseFilteredAnalyses.length)
+    totalAnalyzed: last7DaysAnalyses.length,
+    highInterestCount: last7DaysAnalyses.filter(a => a.interest_score >= 70).length,
+    avgScore: last7DaysAnalyses.length > 0
+      ? Math.round(last7DaysAnalyses.reduce((sum, a) => sum + a.interest_score, 0) / last7DaysAnalyses.length)
       : 0
   }
 
@@ -812,7 +1120,7 @@ export default function Insights() {
                   {aiCallsData.totalCalls.toLocaleString()}
                 </div>
                 <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
-                  Total AI organic conversations made about your articles & site
+                  Total AI organic conversations in the last 7 days
                 </div>
               </div>
               {aiCallsData.timeSeries.length > 0 && (
@@ -909,6 +1217,87 @@ export default function Insights() {
             </div>
           )}
 
+          {/* Time-Series Charts */}
+          {timeSeriesData.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+              <Card title="Conversations Over Time">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                    {filteredStats.totalAnalyzed}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Total analyzed conversations with AI-powered insights (last 7 days)
+                </div>
+                <TrendChart 
+                  data={timeSeriesData} 
+                  dataKey="count" 
+                  title="Conversations"
+                  color="#2563eb"
+                />
+              </Card>
+              
+              <Card title="Avg Interest Score">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                    {filteredStats.avgScore}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Average engagement and value score across all conversations (last 7 days)
+                </div>
+                <TrendChart 
+                  data={timeSeriesData} 
+                  dataKey="avgScore" 
+                  title="Avg Score"
+                  color="#2563eb"
+                />
+              </Card>
+
+              <Card title="Engagement">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                    {engagementData.totalEngagements}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Number of times users asked for suggestions (last 7 days)
+                </div>
+                {engagementData.timeSeries.length > 0 ? (
+                  <EngagementChart 
+                    data={engagementData.timeSeries} 
+                    color="#10b981"
+                  />
+                ) : (
+                  <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                    No engagement data yet
+                  </div>
+                )}
+              </Card>
+
+              <Card title="Avg Messages per Conversation">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                    {avgMessagesData.overallAvg}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Average number of messages exchanged per conversation (last 7 days)
+                </div>
+                {avgMessagesData.timeSeries.length > 0 ? (
+                  <AvgMessagesChart 
+                    data={avgMessagesData.timeSeries} 
+                    color="#f59e0b"
+                  />
+                ) : (
+                  <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                    No conversation data yet
+                  </div>
+                )}
+              </Card>
+            </div>
+          )}
+
           {/* Opportunity Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' }}>
             {/* Content Gaps */}
@@ -939,70 +1328,6 @@ export default function Insights() {
                 </div>
                 <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
                   Topics users asked about that weren't covered in your content
-                </div>
-              </div>
-            )}
-
-            {/* Sell Opportunities */}
-            {actionableInsights.sellOpportunities.length > 0 && (
-              <div style={{
-                background: '#fff',
-                border: '1px solid rgba(0,0,0,0.05)',
-                borderRadius: '20px',
-                padding: '16px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-              }}
-              onClick={() => setTagFilter('sell_potential')}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.15)'
-                e.currentTarget.style.transform = 'translateY(-1px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}>
-                <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
-                  Sales Leads
-                </div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
-                  {actionableInsights.sellOpportunities.length}
-                </div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
-                  Users showing purchase intent or commercial interest
-                </div>
-              </div>
-            )}
-
-            {/* Feature Requests */}
-            {actionableInsights.featureRequests.length > 0 && (
-              <div style={{
-                background: '#fff',
-                border: '1px solid rgba(0,0,0,0.05)',
-                borderRadius: '20px',
-                padding: '16px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-              }}
-              onClick={() => setTagFilter('feature_request')}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.15)'
-                e.currentTarget.style.transform = 'translateY(-1px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}>
-                <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
-                  Feature Requests
-                </div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
-                  {actionableInsights.featureRequests.length}
-                </div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
-                  Requests for new features or functionality improvements
                 </div>
               </div>
             )}
@@ -1038,48 +1363,44 @@ export default function Insights() {
                 </div>
               </div>
             )}
+
+            
+
+            {/* Sell Opportunities */}
+            {actionableInsights.sellOpportunities.length > 0 && (
+              <div style={{
+                background: '#fff',
+                border: '1px solid rgba(0,0,0,0.05)',
+                borderRadius: '20px',
+                padding: '16px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+              }}
+              onClick={() => setTagFilter('sell_potential')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.15)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}>
+                <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
+                  Purchase Attempts
+                </div>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
+                  {actionableInsights.sellOpportunities.length}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                  Users showing purchase intent or commercial interest
+                </div>
+              </div>
+            )}
+            
           </div>
 
-          {/* Time-Series Charts */}
-          {timeSeriesData.length > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-              <Card title="Conversations Over Time">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                    {filteredStats.totalAnalyzed}
-                  </span>
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-                  Total analyzed conversations with AI-powered insights
-                </div>
-                <TrendChart 
-                  data={timeSeriesData} 
-                  dataKey="count" 
-                  title="Conversations"
-                  color="#2563eb"
-                />
-              </Card>
-              
-              <Card title="Avg Interest Score">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                    {filteredStats.avgScore}
-                  </span>
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-                  Average engagement and value score across all conversations
-                </div>
-                <TrendChart 
-                  data={timeSeriesData} 
-                  dataKey="avgScore" 
-                  title="Avg Score"
-                  color="#2563eb"
-                />
-              </Card>
-            </div>
-          )}
-
-          {/* Main Content Grid */}
+          /* Main Content Grid */
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px', marginBottom: '20px' }}>
             {/* Tag Distribution */}
             <Card title="Top Tags - Click to Filter">
