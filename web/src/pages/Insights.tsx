@@ -1322,7 +1322,7 @@ export default function Insights() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
               <Card title="Engagement">
                 <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
-                  Number of times users asked for suggestions (last 7 days)
+                  Number of times users interacted with divee at least once (last 7 days)
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                   <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
