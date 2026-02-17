@@ -915,7 +915,7 @@ export default function Revenues() {
             color: isPresetActive(1) ? '#2563eb' : '#334155' 
           }}
         >
-          24h
+          Yesterday
         </button>
         <button 
           onClick={() => setPreset(7)} 
@@ -1108,13 +1108,13 @@ export default function Revenues() {
 
             <Card>
               <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 500 }}>
-                Total Token Usage
+                Total AI Usage
               </div>
               <div style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b', marginBottom: '4px' }}>
                 {formatNumber(data.totalTokens)}
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                AI tokens consumed
+                AI tokens consumed by chats
               </div>
             </Card>
           </div>
