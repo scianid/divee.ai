@@ -1022,7 +1022,7 @@ export default function Insights() {
       <div style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b', margin: 0 }}>
-            Insights
+            Insights (7 Days)
           </h1>
         </div>
         <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
@@ -1397,7 +1397,7 @@ export default function Insights() {
                 </div>
               </div>
             )}
-            
+
           </div>
 
           /* Main Content Grid */
