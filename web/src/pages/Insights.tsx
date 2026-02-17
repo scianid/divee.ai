@@ -1341,7 +1341,7 @@ export default function Insights() {
                 )}
               </Card>
 
-              <Card title="Conversations Over Time">
+              <Card title="Number Of Conversations">
                 <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
                   Total analyzed conversations with AI-powered insights (last 7 days)
                 </div>
