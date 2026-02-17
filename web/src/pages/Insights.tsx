@@ -812,7 +812,7 @@ export default function Insights() {
                   {aiCallsData.totalCalls.toLocaleString()}
                 </div>
                 <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
-                  Total AI organic conversations made about your website & site
+                  Total AI organic conversations made about your articles & site
                 </div>
               </div>
               {aiCallsData.timeSeries.length > 0 && (
@@ -1044,10 +1044,13 @@ export default function Insights() {
           {timeSeriesData.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
               <Card title="Conversations Over Time">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                   <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
                     {filteredStats.totalAnalyzed}
                   </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Total analyzed conversations with AI-powered insights
                 </div>
                 <TrendChart 
                   data={timeSeriesData} 
@@ -1058,10 +1061,13 @@ export default function Insights() {
               </Card>
               
               <Card title="Avg Interest Score">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                   <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
                     {filteredStats.avgScore}
                   </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Average engagement and value score across all conversations
                 </div>
                 <TrendChart 
                   data={timeSeriesData} 
