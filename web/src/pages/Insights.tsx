@@ -81,6 +81,14 @@ interface AvgMessagesData {
   }>
 }
 
+interface ContentGapsData {
+  totalContentGaps: number
+  timeSeries: Array<{
+    date: string
+    count: number
+  }>
+}
+
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {
@@ -541,6 +549,7 @@ export default function Insights() {
   const [aiCallsData, setAiCallsData] = useState<AICallsData>({ totalCalls: 0, timeSeries: [] })
   const [engagementData, setEngagementData] = useState<EngagementData>({ totalEngagements: 0, timeSeries: [] })
   const [avgMessagesData, setAvgMessagesData] = useState<AvgMessagesData>({ overallAvg: 0, timeSeries: [] })
+  const [contentGapsData, setContentGapsData] = useState<ContentGapsData>({ totalContentGaps: 0, timeSeries: [] })
   const [_stats, setStats] = useState({
     totalAnalyzed: 0,
     highInterestCount: 0,
@@ -558,6 +567,7 @@ export default function Insights() {
       fetchAICalls()
       fetchEngagementData()
       fetchAvgMessagesData()
+      fetchContentGapsData()
     }
   }, [selectedProject, selectedArticle, projects])
 
@@ -945,6 +955,96 @@ export default function Insights() {
     }
   }
 
+  async function fetchContentGapsData() {
+    try {
+      const projectIds = projects.map(p => p.project_id)
+      
+      // Calculate date range - last 7 days
+      const endDate = new Date()
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - 7)
+      
+      // Build query for conversation_analysis with content_gap tag
+      let analysisQuery = supabase
+        .from('conversation_analysis')
+        .select(`
+          conversation_id,
+          project_id,
+          conversations!inner(started_at, article_title)
+        `)
+        .in('project_id', projectIds)
+        .gte('conversations.started_at', startDate.toISOString())
+        .lte('conversations.started_at', endDate.toISOString())
+
+      if (selectedProject !== 'all') {
+        analysisQuery = analysisQuery.eq('project_id', selectedProject)
+      }
+
+      const { data: analysisData, error: analysisError } = await analysisQuery
+
+      if (analysisError) throw analysisError
+
+      // Get conversation tags for content_gap
+      const conversationIds = (analysisData || []).map((item: any) => item.conversation_id)
+      
+      if (conversationIds.length === 0) {
+        setContentGapsData({ totalContentGaps: 0, timeSeries: [] })
+        return
+      }
+
+      const { data: tagsData, error: tagsError } = await supabase
+        .from('conversation_tags')
+        .select('conversation_id, tag')
+        .in('conversation_id', conversationIds)
+        .eq('tag', 'content_gap')
+
+      if (tagsError) throw tagsError
+
+      // Create a map of conversation_id to conversation data
+      const conversationMap = new Map(
+        (analysisData || []).map((item: any) => [
+          item.conversation_id,
+          { started_at: item.conversations.started_at, article_title: item.conversations.article_title }
+        ])
+      )
+
+      // Filter by article if selected and get conversations with content_gap tag
+      let contentGapConversations = (tagsData || [])
+        .map((tag: any) => ({
+          conversation_id: tag.conversation_id,
+          ...conversationMap.get(tag.conversation_id)
+        }))
+        .filter((conv: any) => conv.started_at)
+
+      if (selectedArticle !== 'all') {
+        contentGapConversations = contentGapConversations.filter(
+          (conv: any) => conv.article_title === selectedArticle
+        )
+      }
+
+      // Calculate total
+      const totalContentGaps = contentGapConversations.length
+
+      // Group by date for time series
+      const dateMap = new Map<string, number>()
+      contentGapConversations.forEach((conv: any) => {
+        if (conv.started_at) {
+          const date = new Date(conv.started_at).toISOString().split('T')[0]
+          dateMap.set(date, (dateMap.get(date) || 0) + 1)
+        }
+      })
+
+      // Convert to array and sort
+      const timeSeries = Array.from(dateMap.entries())
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => a.date.localeCompare(b.date))
+
+      setContentGapsData({ totalContentGaps, timeSeries })
+    } catch (error) {
+      console.error('Error fetching content gaps data:', error)
+    }
+  }
+
   async function openConversation(conversationId: string) {
     try {
       const { data, error } = await supabase
@@ -1220,40 +1320,6 @@ export default function Insights() {
           {/* Time-Series Charts */}
           {timeSeriesData.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-              <Card title="Conversations Over Time">
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
-                  Total analyzed conversations with AI-powered insights (last 7 days)
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                    {filteredStats.totalAnalyzed}
-                  </span>
-                </div>
-                <TrendChart 
-                  data={timeSeriesData} 
-                  dataKey="count" 
-                  title="Conversations"
-                  color="#2563eb"
-                />
-              </Card>
-              
-              <Card title="Avg Interest Score">
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
-                  Average engagement and value score across all conversations (last 7 days)
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                    {filteredStats.avgScore}
-                  </span>
-                </div>
-                <TrendChart 
-                  data={timeSeriesData} 
-                  dataKey="avgScore" 
-                  title="Avg Score"
-                  color="#2563eb"
-                />
-              </Card>
-
               <Card title="Engagement">
                 <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
                   Number of times users asked for suggestions (last 7 days)
@@ -1273,6 +1339,23 @@ export default function Insights() {
                     No engagement data yet
                   </div>
                 )}
+              </Card>
+
+              <Card title="Conversations Over Time">
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
+                  Total analyzed conversations with AI-powered insights (last 7 days)
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                    {filteredStats.totalAnalyzed}
+                  </span>
+                </div>
+                <TrendChart 
+                  data={timeSeriesData} 
+                  dataKey="count" 
+                  title="Conversations"
+                  color="#2563eb"
+                />
               </Card>
 
               <Card title="Avg Messages per Conversation">
@@ -1295,43 +1378,32 @@ export default function Insights() {
                   </div>
                 )}
               </Card>
+
+              <Card title="In-Depth Questions">
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
+                  Topics users asked about that weren't covered in your content (last 7 days)
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                    {contentGapsData.totalContentGaps}
+                  </span>
+                </div>
+                {contentGapsData.timeSeries.length > 0 ? (
+                  <EngagementChart 
+                    data={contentGapsData.timeSeries.map(d => ({ date: d.date, engagements: d.count }))} 
+                    color="#8b5cf6"
+                  />
+                ) : (
+                  <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                    No content gaps yet
+                  </div>
+                )}
+              </Card>
             </div>
           )}
 
           {/* Opportunity Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' }}>
-            {/* Content Gaps */}
-            {actionableInsights.contentGaps.length > 0 && (
-              <div style={{
-                background: '#fff',
-                border: '1px solid rgba(0,0,0,0.05)',
-                borderRadius: '20px',
-                padding: '16px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-              }}
-              onClick={() => setTagFilter('content_gap')}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.15)'
-                e.currentTarget.style.transform = 'translateY(-1px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}>
-                <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', fontWeight: 600 }}>
-                  In-Depth Questions
-                </div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
-                  {actionableInsights.contentGaps.length}
-                </div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
-                  Topics users asked about that weren't covered in your content
-                </div>
-              </div>
-            )}
-
             {/* Criticisms */}
             {actionableInsights.criticisms.length > 0 && (
               <div style={{
@@ -1399,8 +1471,6 @@ export default function Insights() {
             )}
 
           </div>
-
-          /* Main Content Grid */
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px', marginBottom: '20px' }}>
             {/* Tag Distribution */}
             <Card title="Top Tags - Click to Filter">
