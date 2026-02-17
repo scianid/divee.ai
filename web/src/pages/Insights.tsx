@@ -307,7 +307,7 @@ const Card = ({ children, title, style = {} }: { children: React.ReactNode; titl
     ...style
   }}>
     {title && (
-      <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', marginBottom: '16px', marginTop: 0 }}>
+      <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', marginBottom: '4px', marginTop: 0 }}>
         {title}
       </h3>
     )}
