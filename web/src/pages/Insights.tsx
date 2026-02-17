@@ -1358,27 +1358,6 @@ export default function Insights() {
                 />
               </Card>
 
-              <Card title="Avg Messages per Conversation">
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
-                  Average number of messages exchanged per conversation (last 7 days)
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
-                    {avgMessagesData.overallAvg}
-                  </span>
-                </div>
-                {avgMessagesData.timeSeries.length > 0 ? (
-                  <AvgMessagesChart 
-                    data={avgMessagesData.timeSeries} 
-                    color="#f59e0b"
-                  />
-                ) : (
-                  <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '13px' }}>
-                    No conversation data yet
-                  </div>
-                )}
-              </Card>
-
               <Card title="In-Depth Questions">
                 <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
                   Topics users asked about that weren't covered in your content (last 7 days)
@@ -1396,6 +1375,27 @@ export default function Insights() {
                 ) : (
                   <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '13px' }}>
                     No content gaps yet
+                  </div>
+                )}
+              </Card>
+
+              <Card title="Avg Messages per Conversation">
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', lineHeight: '1.4' }}>
+                  Average number of messages exchanged per conversation (last 7 days)
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
+                    {avgMessagesData.overallAvg}
+                  </span>
+                </div>
+                {avgMessagesData.timeSeries.length > 0 ? (
+                  <AvgMessagesChart 
+                    data={avgMessagesData.timeSeries} 
+                    color="#f59e0b"
+                  />
+                ) : (
+                  <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                    No conversation data yet
                   </div>
                 )}
               </Card>
