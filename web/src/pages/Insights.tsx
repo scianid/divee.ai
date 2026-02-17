@@ -1120,7 +1120,7 @@ export default function Insights() {
                   {aiCallsData.totalCalls.toLocaleString()}
                 </div>
                 <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
-                  Total AI organic conversations in the last 7 days
+                  Total AI organic conversations about your articles & site (last 7 days)
                 </div>
               </div>
               {aiCallsData.timeSeries.length > 0 && (
@@ -1221,13 +1221,13 @@ export default function Insights() {
           {timeSeriesData.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
               <Card title="Conversations Over Time">
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Total analyzed conversations with AI-powered insights (last 7 days)
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                   <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
                     {filteredStats.totalAnalyzed}
                   </span>
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-                  Total analyzed conversations with AI-powered insights (last 7 days)
                 </div>
                 <TrendChart 
                   data={timeSeriesData} 
@@ -1238,13 +1238,13 @@ export default function Insights() {
               </Card>
               
               <Card title="Avg Interest Score">
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Average engagement and value score across all conversations (last 7 days)
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                   <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
                     {filteredStats.avgScore}
                   </span>
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-                  Average engagement and value score across all conversations (last 7 days)
                 </div>
                 <TrendChart 
                   data={timeSeriesData} 
@@ -1255,13 +1255,13 @@ export default function Insights() {
               </Card>
 
               <Card title="Engagement">
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Number of times users asked for suggestions (last 7 days)
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                   <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
                     {engagementData.totalEngagements}
                   </span>
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-                  Number of times users asked for suggestions (last 7 days)
                 </div>
                 {engagementData.timeSeries.length > 0 ? (
                   <EngagementChart 
@@ -1276,13 +1276,13 @@ export default function Insights() {
               </Card>
 
               <Card title="Avg Messages per Conversation">
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+                  Average number of messages exchanged per conversation (last 7 days)
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                   <span style={{ fontSize: '36px', fontWeight: 700, color: '#1e293b' }}>
                     {avgMessagesData.overallAvg}
                   </span>
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-                  Average number of messages exchanged per conversation (last 7 days)
                 </div>
                 {avgMessagesData.timeSeries.length > 0 ? (
                   <AvgMessagesChart 
