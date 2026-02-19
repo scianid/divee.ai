@@ -89,13 +89,18 @@ function CardError({ message }: { message: string }) {
   );
 }
 
-function TrendChart({ data: timelineData }: { data: any[] }) {
+function TrendChart({ data: timelineData, showHours = false }: { data: any[], showHours?: boolean }) {
     const chartData = timelineData.length > 0 ? timelineData.map((d: any) => d.count) : [0];
+    const spansMultipleDays = !showHours && timelineData.length > 1 && (() => {
+        const first = new Date(timelineData[0].date).toDateString();
+        const last = new Date(timelineData[timelineData.length - 1].date).toDateString();
+        return first !== last;
+    })();
     const labels = timelineData.length > 0 ? timelineData.map((d: any) => {
         const date = new Date(d.date);
-        return d.date && d.date.includes('T') && d.date.length > 10 
-          ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-          : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return spansMultipleDays
+          ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          : date.toLocaleTimeString([], { hour: 'numeric', hour12: true });
     }) : [];
     
     const option = {
@@ -138,8 +143,13 @@ function TrendChart({ data: timelineData }: { data: any[] }) {
             textStyle: { color: '#fff' },
             formatter: (params: any) => {
                 const index = params[0].dataIndex;
-                const label = labels[index] || '';
-                return `${label}<br/>${params[0].value}`;
+                const raw = timelineData[index]?.date;
+                const date = raw ? new Date(raw) : null;
+                const dateLabel = date
+                    ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+                      ' ' + date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })
+                    : labels[index] || '';
+                return `${dateLabel}<br/>${params[0].value}`;
             }
         }
     };
@@ -1371,7 +1381,7 @@ export default function Dashboard() {
                         </span>
                     </div>
                     {/* Hide static labels, TrendChart handles axis now implicitly by shape, or we can improve it later */}
-                    <TrendChart data={stats.impressionsOverTime?.timeline || []} />
+                    <TrendChart data={stats.impressionsOverTime?.timeline || []} showHours={isLast24Hours} />
                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
                         {/* Simple dynamic labels if data exists, otherwise placeholders or just hide */}
                         {stats.impressionsOverTime?.timeline?.length > 0 && stats.impressionsOverTime?.timeline[0].date.length > 10 ? (
@@ -1414,7 +1424,7 @@ export default function Dashboard() {
                           </span>
                         )}
                     </div>
-                    <TrendChart data={stats.widgetVisibleOverTime?.timeline || []} />
+                    <TrendChart data={stats.widgetVisibleOverTime?.timeline || []} showHours={isLast24Hours} />
                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
                         {stats.widgetVisibleOverTime?.timeline?.length > 0 && stats.widgetVisibleOverTime?.timeline[0].date.length > 10 ? (
                            <>
@@ -1461,7 +1471,7 @@ export default function Dashboard() {
                         {formatNumber(stats.adImpressions?.total ?? 0)}
                         </span>
                     </div>
-                    <TrendChart data={stats.adImpressions?.timeline || []} />
+                    <TrendChart data={stats.adImpressions?.timeline || []} showHours={isLast24Hours} />
                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94a3b8', marginTop: '12px' }}>
                         {stats.adImpressions?.timeline?.length > 0 && stats.adImpressions?.timeline[0].date.length > 10 ? (
                            <>
