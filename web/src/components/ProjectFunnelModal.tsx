@@ -309,16 +309,16 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
               <div key={idx} style={{ 
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
                 background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 12px',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                boxShadow: '0 1px 2px rgba(0,0,0,0.02)', minWidth: 0, overflow: 'hidden'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
-                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                   <span style={{ fontSize: 13, fontWeight: 500, color: '#374151', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{url}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden', minWidth: 0, flex: 1 }}>
+                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                   <span style={{ fontSize: 13, fontWeight: 500, color: '#374151', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', display: 'block', minWidth: 0,  maxWidth: 260 }}>{url}</span>
                 </div>
                 <button 
                   type="button" 
                   onClick={() => handleChange('allowed_urls', form.allowed_urls.filter((_, i) => i !== idx))} 
-                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: '#9ca3af', minWidth: 24, justifyContent: 'center', borderRadius: 4 }}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: '#9ca3af', minWidth: 24, justifyContent: 'center', borderRadius: 4, flexShrink: 0 }}
                   onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
                   onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
                 >
