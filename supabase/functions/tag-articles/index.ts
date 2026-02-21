@@ -159,9 +159,7 @@ Rules:
 - If nothing fits confidently, return fewer tags rather than guessing.
 - Tags must be title-cased.
 - IMPORTANT: Detect the language of the article and return all tag values in that same language. For example, if the article is in Hebrew, return Hebrew tag values; if in French, return French tag values; etc.
-.
 
-.00
 Response format (JSON only, no markdown):
 {
   "tags": [

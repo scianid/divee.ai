@@ -25,14 +25,14 @@ export async function analyzeSiteWithAi(cleanText: string) {
                         - "name": The name of the website or brand.
                         - "description": A short description of the website (max 80 words) - in the detected language.
                         - "direction": "ltr" or "rtl" based on the language.
+                        - "disclaimer_text": Translate this sentence into the detected language: "This is an AI driven tool, results might not always be accurate"
                         - "placeholders": Translate these 4 phrases into the detected language of the site: 
                           1. "Summarize this article"
                           2. "I can help you with this article!"
                           3. "Ask me anything on this content"
                           4. "What would you like to know?"
                           Return them as an array of strings.
-                        - "disclaimer_text": Translate this sentence into the detected language: "This is an AI driven tool, results might not always be accurate"
-                        
+
                         Content:
                         ${cleanText}`
                 }
