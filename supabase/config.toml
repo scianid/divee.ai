@@ -24,3 +24,9 @@ verify_jwt = false
 
 [functions.invite-collaborator]
 verify_jwt = false
+
+[functions.list-users]
+verify_jwt = false
+
+[functions.impersonate]
+verify_jwt = false

@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { AdminBadge } from '../components/AdminBadge'
 import { useAdmin } from '../hooks/useAdmin'
+import { useAuth } from '../contexts/AuthContext'
 
 // Icons
 const DashboardIcon = () => (
@@ -120,6 +121,7 @@ export function DashboardLayout() {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
+  const { impersonating, impersonatedUser, stopImpersonation } = useAuth()
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -130,6 +132,11 @@ export function DashboardLayout() {
     }
     fetchUser()
   }, [])
+
+  const handleStopImpersonation = async () => {
+    await stopImpersonation()
+    navigate('/dashboard')
+  }
 
   const handleLogout = async () => {
     try {
@@ -177,6 +184,47 @@ export function DashboardLayout() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fa' }}>
+
+      {/* Impersonation Banner */}
+      {impersonating && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 200,
+          background: '#f59e0b',
+          color: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '16px',
+          padding: '10px 24px',
+          fontWeight: 600,
+          fontSize: '14px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        }}>
+          <span>⚠️ Impersonating: {impersonatedUser?.email}</span>
+          <button
+            onClick={handleStopImpersonation}
+            style={{
+              background: '#fff',
+              color: '#f59e0b',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '4px 14px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontSize: '13px',
+            }}
+          >
+            Stop Impersonating
+          </button>
+        </div>
+      )}
+
+      {/* User Picker Modal removed — see /impersonate page */}
+
       {/* Sidebar */}
       <aside 
         onMouseEnter={() => setCollapsed(false)}
@@ -191,7 +239,7 @@ export function DashboardLayout() {
           transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           position: 'fixed',
           left: 0,
-          top: 0,
+          top: impersonating ? '44px' : 0,
           bottom: 0,
           zIndex: 50,
           overflow: 'hidden',
@@ -290,6 +338,45 @@ export function DashboardLayout() {
                   background: 'rgba(0,0,0,0.06)', 
                   margin: '12px 20px 16px'
                 }} />
+
+                {/* Impersonate link */}
+                <Link
+                  to="/impersonate"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: '48px',
+                    padding: '0 20px',
+                    color: location.pathname === '/impersonate' ? '#7c3aed' : '#7c3aed',
+                    background: location.pathname === '/impersonate' ? 'rgba(124, 58, 237, 0.08)' : 'transparent',
+                    textDecoration: 'none',
+                    boxShadow: location.pathname === '/impersonate' ? 'inset 3px 0 0 #7c3aed' : 'none',
+                    marginBottom: '4px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <div style={{ width: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                      <line x1="19" y1="8" x2="23" y2="12"/>
+                      <line x1="23" y1="8" x2="19" y2="12"/>
+                    </svg>
+                  </div>
+                  <span style={{
+                    marginLeft: '12px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    opacity: collapsed ? 0 : 1,
+                    transform: collapsed ? 'translateX(-10px)' : 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}>
+                    Impersonate User
+                  </span>
+                </Link>
+
                 {adminNavItems.map(item => {
                     const isActive = location.pathname === item.path
                     return (
@@ -400,11 +487,8 @@ export function DashboardLayout() {
       {/* Main Content Area */}
       <main style={{ 
         flex: 1, 
-        marginLeft: collapsed ? '64px' : '64px', // Keep content margin constant to avoid layout shift, or '240px' if pushing page. 
-        // User said "expand on hover". Typically hover sidebars float OVER content or push content. 
-        // If it pushes content on hover, the whole page jitters. Better to float over or keep fixed narrow margin.
-        // But if I keep fixed narrow margin (64px), when expanded (240px), the sidebar will cover the left side of the content.
-        // Let's assume standard behavior: Sidebar expands OVER content (z-index 50).
+        marginLeft: collapsed ? '64px' : '64px',
+        marginTop: impersonating ? '44px' : 0,
         padding: '32px',
         maxWidth: '1600px',
         width: '100%'
