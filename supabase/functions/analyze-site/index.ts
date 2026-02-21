@@ -86,7 +86,8 @@ Deno.serve(async (req: Request) => {
         // Default settings
         input_text_placeholders: result.placeholders,
         highlight_color: DEFAULT_COLORS, // Defaults from UI
-        show_ad: true // Default to showing ad/branding? or as per Requirement
+        show_ad: true, // Default to showing ad/branding? or as per Requirement
+        disclaimer_text: result.disclaimer_text
       })
       .select()
       .single();

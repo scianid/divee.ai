@@ -31,6 +31,7 @@ export async function analyzeSiteWithAi(cleanText: string) {
                           3. "Ask me anything on this content"
                           4. "What would you like to know?"
                           Return them as an array of strings.
+                        - "disclaimer_text": Translate this sentence into the detected language: "This is an AI driven tool, results might not always be accurate"
                         
                         Content:
                         ${cleanText}`

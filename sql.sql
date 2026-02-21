@@ -97,7 +97,21 @@ CREATE TABLE public.article (
   unique_id text NOT NULL UNIQUE,
   image_url text,
   created_at timestamp with time zone DEFAULT now(),
+  tagged_at timestamp with time zone,
+  tag_attempts integer NOT NULL DEFAULT 0,
   CONSTRAINT article_pkey PRIMARY KEY (unique_id)
+);
+CREATE TABLE public.article_tag (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  article_unique_id text NOT NULL,
+  project_id text NOT NULL,
+  tag text NOT NULL,
+  tag_type text NOT NULL CHECK (tag_type = ANY (ARRAY['category'::text, 'person'::text, 'place'::text])),
+  confidence numeric,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT article_tag_pkey PRIMARY KEY (id),
+  CONSTRAINT article_tag_article_unique_id_fkey FOREIGN KEY (article_unique_id) REFERENCES public.article(unique_id),
+  CONSTRAINT article_tag_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.project(project_id)
 );
 CREATE TABLE public.contact_submissions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -179,6 +193,13 @@ CREATE TABLE public.conversations (
   CONSTRAINT conversations_pkey PRIMARY KEY (id),
   CONSTRAINT conversations_article_unique_id_fkey FOREIGN KEY (article_unique_id) REFERENCES public.article(unique_id)
 );
+CREATE TABLE public.cron_config (
+  key text NOT NULL,
+  value text NOT NULL,
+  description text,
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT cron_config_pkey PRIMARY KEY (key)
+);
 CREATE TABLE public.dashboard_metrics (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   project_id text NOT NULL,
@@ -219,6 +240,8 @@ CREATE TABLE public.project (
   display_position USER-DEFINED NOT NULL DEFAULT 'bottom-right'::display_position,
   article_class text DEFAULT '.article'::text,
   widget_container_class text,
+  override_mobile_container_selector text,
+  disclaimer_text text,
   CONSTRAINT project_pkey PRIMARY KEY (project_id),
   CONSTRAINT project_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(id)
 );
@@ -234,6 +257,8 @@ CREATE TABLE public.project_config (
   deleted_at timestamp with time zone,
   deleted_by uuid,
   revenue_share_percentage integer NOT NULL DEFAULT 50 CHECK (revenue_share_percentage >= 0 AND revenue_share_percentage <= 100),
+  override_mobile_ad_size text,
+  override_desktop_ad_size text,
   CONSTRAINT project_config_pkey PRIMARY KEY (id),
   CONSTRAINT project_config_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.project(project_id),
   CONSTRAINT project_config_ad_tag_id_updated_by_fkey FOREIGN KEY (ad_tag_id_updated_by) REFERENCES auth.users(id),
