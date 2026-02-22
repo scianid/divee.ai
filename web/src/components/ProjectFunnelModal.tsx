@@ -43,9 +43,10 @@ export interface ProjectFunnelProps {
   onSubmit: (data: ProjectFunnelFormData) => void;
   accounts: { id: string; name: string }[];
   initialData?: Partial<ProjectFunnelFormData>;
+  isSubmitting?: boolean;
 }
 
-export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialData }: ProjectFunnelProps) {
+export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialData, isSubmitting = false }: ProjectFunnelProps) {
   const isAdmin = useAdmin();
   const [step, setStep] = useState(1);
   const isEditMode = !!initialData;
@@ -904,15 +905,17 @@ export function ProjectFunnelModal({ open, onClose, onSubmit, accounts, initialD
               <button 
                 type="submit" 
                 className="btn btnPrimary"
+                disabled={isSubmitting}
                 style={{ 
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                  background: isSubmitting ? '#9ca3af' : 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
                   border: 'none',
-                  boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
-                  minWidth: isEditMode ? 180 : 140
+                  boxShadow: isSubmitting ? 'none' : '0 4px 12px rgba(79, 70, 229, 0.3)',
+                  minWidth: isEditMode ? 180 : 140,
+                  cursor: isSubmitting ? 'wait' : 'pointer',
                 }}
               >
-                {initialData ? 'Save Changes' : 'Create Project'}
+                {isSubmitting ? 'Saving…' : (initialData ? 'Save Changes' : 'Create Project')}
               </button>
             )}
           </div>

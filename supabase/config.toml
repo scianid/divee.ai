@@ -33,3 +33,6 @@ verify_jwt = false
 
 [functions.authorize-account]
 verify_jwt = false
+
+[functions.projects]
+verify_jwt = false

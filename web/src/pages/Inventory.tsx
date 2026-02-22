@@ -239,7 +239,7 @@ function Inventory() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [_submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [_error, setError] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<string>('all');
   const [sortField, setSortField] = useState<'client_name' | 'client_description' | 'project_id' | 'language'>('project_id');
@@ -355,44 +355,20 @@ function Inventory() {
         .maybeSingle();
       setIsAuthorized(!!authData);
 
-      const accountIds = allAccounts.map(a => a.id);
-      if (accountIds.length === 0) {
-        setProjects([]);
-        return;
-      }
-
-      // Fetch projects for all accounts (owned + collaborated)
-      const { data: projectsData, error: projectsError } = await supabase
-        .from('project')
-        .select('*')
-        .in('account_id', accountIds)
-        .order('created_at', { ascending: false });
-      
-      if (projectsError) throw projectsError;
-      
-      let finalProjects = projectsData || [];
-      
-      // If admin, fetch project_config separately to avoid RLS join issues
-      if (isAdmin && finalProjects.length > 0) {
-        const projectUuids = finalProjects.map(p => p.project_id); // Use UUID, not integer ID
-        const { data: configData } = await supabase
-          .from('project_config')
-          .select('project_id, ad_tag_id, override_mobile_ad_size, override_desktop_ad_size')
-          .in('project_id', projectUuids);
-        
-        // Merge config data into projects
-        if (configData) {
-          const configMap = new Map(configData.map(c => [c.project_id, c]));
-          finalProjects = finalProjects.map(p => ({
-            ...p,
-            ad_tag_id: configMap.get(p.project_id)?.ad_tag_id || '', // Match by UUID
-            override_mobile_ad_size: configMap.get(p.project_id)?.override_mobile_ad_size || '',
-            override_desktop_ad_size: configMap.get(p.project_id)?.override_desktop_ad_size || ''
-          }));
+      // Fetch projects via edge function (handles account ownership + admin config merging)
+      const { data: { session } } = await supabase.auth.getSession();
+      const projectsRes = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/projects`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
         }
-      }
-      
-      setProjects(finalProjects as Project[]);
+      );
+      if (!projectsRes.ok) throw new Error('Failed to load projects');
+      const { projects: fetchedProjects } = await projectsRes.json();
+      setProjects((fetchedProjects ?? []) as Project[]);
     } catch (err) {
       console.error('Error loading projects:', err);
     } finally {
@@ -441,66 +417,41 @@ function Inventory() {
         show_ad: form.show_ad !== undefined ? form.show_ad : true,
       };
 
-      let result;
-      if (editingProject) {
-        result = await supabase
-          .from('project')
-          .update(payload)
-          .eq('project_id', editingProject.project_id)
-          .select();
-      } else {
-        result = await supabase
-          .from('project')
-          .insert([payload])
-          .select();
-      }
-        
-      const { data, error } = result;
-      if (error) throw error;
-      if (data) {
-        const savedProject = data[0] as Project;
-        
-        // Save admin-only fields to project_config if user is admin
-        if (isAdmin) {
-          
-          const configPayload = {
-            project_id: savedProject.project_id, // Use UUID, not integer ID
-            ad_tag_id: form.ad_tag_id || null,
-            override_mobile_ad_size: form.override_mobile_ad_size || null,
-            override_desktop_ad_size: form.override_desktop_ad_size || null,
-          };
-          
-          // Check if config exists
-          const { data: existingConfig } = await supabase
-            .from('project_config')
-            .select('id')
-            .eq('project_id', savedProject.project_id)
-            .maybeSingle();
-          
-          if (existingConfig) {
-            // Update existing config
-            await supabase
-              .from('project_config')
-              .update(configPayload)
-              .eq('project_id', savedProject.project_id);
-          } else {
-            // Insert new config only if at least one field has a value
-            const hasAdminFields = form.ad_tag_id || form.override_mobile_ad_size || form.override_desktop_ad_size;
-            if (hasAdminFields) {
-              await supabase
-                .from('project_config')
-                .insert([configPayload]);
-              // Non-blocking errors are ignored
-            }
-          }
+      const { data: { session } } = await supabase.auth.getSession();
+      const adminFields = isAdmin ? {
+        ad_tag_id: form.ad_tag_id || null,
+        override_mobile_ad_size: form.override_mobile_ad_size || null,
+        override_desktop_ad_size: form.override_desktop_ad_size || null,
+      } : undefined;
+
+      const method = editingProject ? 'PATCH' : 'POST';
+      const body = editingProject
+        ? { project_id: editingProject.project_id, ...payload, ...(adminFields ? { admin_fields: adminFields } : {}) }
+        : { ...payload, ...(adminFields ? { admin_fields: adminFields } : {}) };
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/projects`,
+        {
+          method,
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
         }
-        
-        // Preserve admin-only fields that aren't in the project table response
+      );
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to save project');
+      }
+      const { project: savedProject } = await res.json();
+      if (savedProject) {
         const updatedProject = {
           ...savedProject,
           ad_tag_id: form.ad_tag_id || editingProject?.ad_tag_id || '',
           override_mobile_ad_size: form.override_mobile_ad_size || editingProject?.override_mobile_ad_size || '',
-          override_desktop_ad_size: form.override_desktop_ad_size || editingProject?.override_desktop_ad_size || ''
+          override_desktop_ad_size: form.override_desktop_ad_size || editingProject?.override_desktop_ad_size || '',
         };
         
         const isEditing = !!editingProject;
@@ -533,13 +484,26 @@ function Inventory() {
     if (deleteId == null) return;
     setDeleteLoading(true);
     setDeleteError(null);
-    const { error } = await supabase.from('project').delete().eq('project_id', deleteId);
-    if (error) {
-      setDeleteError('Error deleting project');
-      console.error(error);
-    } else {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/projects`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ project_id: deleteId }),
+        }
+      );
+      if (!res.ok) throw new Error('Error deleting project');
       setProjects(projects.filter(p => p.project_id !== deleteId));
       setDeleteId(null);
+    } catch (err) {
+      setDeleteError('Error deleting project');
+      console.error(err);
     }
     setDeleteLoading(false);
   };
@@ -655,6 +619,7 @@ function Inventory() {
           open={showCreateForm}
           onClose={() => { setShowCreateForm(false); setEditingProject(null); }}
           onSubmit={handleFunnelSubmit}
+          isSubmitting={submitting}
           accounts={accounts.map(a => ({ id: a.id, name: a.name }))}
           initialData={editingProject ? {
             account_id: editingProject.account_id,
