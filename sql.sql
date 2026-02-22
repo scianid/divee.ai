@@ -113,6 +113,14 @@ CREATE TABLE public.article_tag (
   CONSTRAINT article_tag_article_unique_id_fkey FOREIGN KEY (article_unique_id) REFERENCES public.article(unique_id),
   CONSTRAINT article_tag_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.project(project_id)
 );
+CREATE TABLE public.authorized_users (
+  user_id uuid NOT NULL,
+  authorized_at timestamp with time zone DEFAULT now(),
+  authorized_by uuid,
+  CONSTRAINT authorized_users_pkey PRIMARY KEY (user_id),
+  CONSTRAINT authorized_users_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT authorized_users_authorized_by_fkey FOREIGN KEY (authorized_by) REFERENCES auth.users(id)
+);
 CREATE TABLE public.contact_submissions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   name text NOT NULL,
@@ -122,7 +130,10 @@ CREATE TABLE public.contact_submissions (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   ip_address text,
   user_agent text,
-  CONSTRAINT contact_submissions_pkey PRIMARY KEY (id)
+  notes text,
+  user_id uuid,
+  CONSTRAINT contact_submissions_pkey PRIMARY KEY (id),
+  CONSTRAINT contact_submissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.conversation_analysis (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
