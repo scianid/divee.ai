@@ -248,6 +248,11 @@ function Inventory() {
   const [embedCopied, setEmbedCopied] = useState(false);
   const [purgingId, setPurgingId] = useState<string | null>(null);
   const [purgeSuccess, setPurgeSuccess] = useState<string | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authForm, setAuthForm] = useState({ phone: '', company_name: '', notes: '' });
+  const [authFormSubmitting, setAuthFormSubmitting] = useState(false);
+  const [authFormSubmitted, setAuthFormSubmitted] = useState(false);
+  const [authFormError, setAuthFormError] = useState<string | null>(null);
 
   // Helpers
   function handleSort(field: 'client_name' | 'client_description' | 'project_id' | 'language') {
@@ -341,6 +346,14 @@ function Inventory() {
       const allAccounts = Array.from(allAccountsMap.values());
       
       setAccounts(allAccounts as Account[]);
+
+      // Check if current user is authorized to embed the widget
+      const { data: authData } = await supabase
+        .from('authorized_users')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setIsAuthorized(!!authData);
 
       const accountIds = allAccounts.map(a => a.id);
       if (accountIds.length === 0) {
@@ -892,23 +905,33 @@ function Inventory() {
                     <td style={{ padding: '12px 16px', fontWeight: 600 }}>{highlight(project.client_name, search)}</td>
                     <td style={{ padding: '12px 16px', maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#555' }}>{highlight(project.client_description || '—', search)}</td>
                     <td style={{ padding: '12px 16px' }}>
-                      <code 
-                        onClick={() => handleCopy(project.project_id)}
-                        title="Click to copy"
-                        style={{ 
-                          background: 'rgba(0,0,0,0.04)', 
-                          padding: '2px 6px', 
-                          borderRadius: '4px', 
-                          cursor: 'pointer',
-                          color: copiedId === project.project_id ? '#10b981' : 'inherit',
-                          fontSize: 13
-                        }}
-                      >
-                        {highlight(project.project_id, search)}
-                        {copiedId === project.project_id && (
-                          <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', marginLeft: 4 }}>Copied</span>
-                        )}
-                      </code>
+                      {!isAdmin && !isAuthorized ? (
+                        <span title="Account authorization required to view Project ID" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#9ca3af', fontSize: 13 }}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                          </svg>
+                          Pending
+                        </span>
+                      ) : (
+                        <code
+                          onClick={() => handleCopy(project.project_id)}
+                          title="Click to copy"
+                          style={{
+                            background: 'rgba(0,0,0,0.04)',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            color: copiedId === project.project_id ? '#10b981' : 'inherit',
+                            fontSize: 13
+                          }}
+                        >
+                          {highlight(project.project_id, search)}
+                          {copiedId === project.project_id && (
+                            <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', marginLeft: 4 }}>Copied</span>
+                          )}
+                        </code>
+                      )}
                     </td>
                     <td style={{ padding: '12px 16px', color: '#444', fontSize: 14 }}>{project.language}</td>
                     <td style={{ padding: '12px 16px', color: '#555' }}>
@@ -922,7 +945,7 @@ function Inventory() {
                         ) : '—';
                       })()}
                     </td>
-                    <td style={{ padding: '12px 16px', display: 'flex', gap: 8, position: 'relative' }}>
+                    <td style={{ padding: '12px 16px', display: 'flex', gap: 8, position: 'relative', alignItems: 'center' }}>
                       <button 
                         onClick={() => handleDelete(project.project_id)}
                         title="Delete"
@@ -948,41 +971,54 @@ function Inventory() {
                           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 5 15.4a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 16 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 8c.14.31.22.65.22 1v.09A1.65 1.65 0 0 0 21 12c0 .35-.08.69-.22 1z" />
                         </svg>
                       </button>
-                      <button 
+                      {isAdmin && (
+                        <button 
+                          title="Purge Cache"
+                          onClick={() => handlePurgeCache(project.project_id)}
+                          disabled={purgingId === project.project_id}
+                          style={{ 
+                            background: 'none', 
+                            border: 'none', 
+                            cursor: purgingId === project.project_id ? 'wait' : 'pointer', 
+                            color: purgeSuccess === project.project_id ? '#10b981' : '#6b7280', 
+                            padding: 4, 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            opacity: purgingId === project.project_id ? 0.5 : 1
+                          }}
+                        >
+                          {purgingId === project.project_id ? (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                            </svg>
+                          ) : purgeSuccess === project.project_id ? (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                          ) : (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+                            </svg>
+                          )}
+                        </button>
+                      )}
+                      <button
                         title="Embed Widget"
                         onClick={() => handleOpenEmbedModal(project)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 4, display: 'flex', alignItems: 'center', fontSize: '16px', fontWeight: 700, fontFamily: 'monospace' }}
-                      >
-                        &lt;/&gt;
-                      </button>
-                      <button 
-                        title="Purge Cache"
-                        onClick={() => handlePurgeCache(project.project_id)}
-                        disabled={purgingId === project.project_id}
-                        style={{ 
-                          background: 'none', 
-                          border: 'none', 
-                          cursor: purgingId === project.project_id ? 'wait' : 'pointer', 
-                          color: purgeSuccess === project.project_id ? '#10b981' : '#6b7280', 
-                          padding: 4, 
-                          display: 'flex', 
-                          alignItems: 'center',
-                          opacity: purgingId === project.project_id ? 0.5 : 1
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 6,
+                          background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                          color: '#fff', border: 'none', borderRadius: 8,
+                          padding: '6px 12px', fontSize: 13, fontWeight: 600,
+                          cursor: 'pointer', whiteSpace: 'nowrap',
+                          boxShadow: '0 2px 6px rgba(79,70,229,0.3)',
                         }}
                       >
-                        {purgingId === project.project_id ? (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
-                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                          </svg>
-                        ) : purgeSuccess === project.project_id ? (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                        ) : (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
-                          </svg>
-                        )}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="16 18 22 12 16 6"></polyline>
+                          <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                        Embed
                       </button>
                     </td>
                   </tr>
@@ -1050,6 +1086,7 @@ function Inventory() {
 
             {/* Content */}
             <div style={{ padding: '24px 32px 32px 32px' }}>
+              {/* Project info row */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   <div style={{ 
@@ -1079,82 +1116,238 @@ function Inventory() {
                 </div>
               </div>
 
-              <div style={{ 
-                background: '#1e293b', 
-                borderRadius: 12, 
-                padding: '20px',
-                position: 'relative',
-                overflow: 'auto'
-              }}>
-                <pre style={{ 
-                  margin: 0, 
-                  fontSize: 13, 
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                  lineHeight: 1.6,
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all'
-                }}>
-                  <span style={{ color: '#7dd3fc' }}>&lt;script</span>{'\n'}
-                  <span style={{ color: '#a5b4fc' }}>  src</span>
-                  <span style={{ color: '#e2e8f0' }}>=</span>
-                  <span style={{ color: '#a3e635' }}>"https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.latest.js"</span>{'\n'}
-                  <span style={{ color: '#a5b4fc' }}>  data-project-id</span>
-                  <span style={{ color: '#e2e8f0' }}>=</span>
-                  <span style={{ color: '#a3e635' }}>"{embedModalProject.project_id}"</span>
-                  <span style={{ color: '#7dd3fc' }}>&gt;</span>{'\n'}
-                  <span style={{ color: '#7dd3fc' }}>&lt;/script&gt;</span>
-                </pre>
-              </div>
-
-              <div style={{ 
-                marginTop: 20,
-                padding: '16px',
-                background: '#eff6ff',
-                borderRadius: 8,
-                borderLeft: '3px solid #3b82f6'
-              }}>
-                <div style={{ fontSize: 13, color: '#1e40af', lineHeight: 1.6 }}>
-                  <strong style={{ display: 'block', marginBottom: 4 }}>💡 Tip:</strong>
-                  Use the <code style={{ background: '#dbeafe', padding: '2px 6px', borderRadius: 4 }}>cog wheel</code> in the inventory screen to customize your project look and behavior.
-                </div>
-              </div>
-
-              <button
-                onClick={() => handleCopySDK(embedModalProject.project_id)}
-                className="btn btnPrimary"
-                style={{ 
-                  width: '100%',
-                  marginTop: 24,
-                  borderRadius: 12,
-                  background: embedCopied ? '#10b981' : 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-                  border: 'none',
-                  boxShadow: embedCopied ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 4px 12px rgba(79, 70, 229, 0.3)',
-                  padding: '14px 24px',
-                  fontSize: 15,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 10,
-                  transition: 'all 0.2s'
-                }}
-              >
-                {embedCopied ? (
-                  <>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    Copied!
-                  </>
+              {/* Authorization gate: show pending notice unless account is authorized or viewing as admin */}
+              {!isAdmin && !isAuthorized ? (
+                authFormSubmitted ? (
+                  <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                    <div style={{
+                      width: 64, height: 64, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #d1fae5, #6ee7b7)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      margin: '0 auto 20px'
+                    }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                    <h4 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: '0 0 10px' }}>Details Sent!</h4>
+                    <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.7, margin: '0 0 24px' }}>
+                      One of our representatives will contact you within <strong style={{ color: '#111827' }}>48 hours</strong>.
+                    </p>
+                    <button onClick={() => setEmbedModalProject(null)} className="btn btnPrimary"
+                      style={{ borderRadius: 12, background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)', border: 'none', padding: '12px 32px', fontSize: 15 }}>
+                      Close
+                    </button>
+                  </div>
                 ) : (
-                  <>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    Copy to Clipboard
-                  </>
-                )}
-              </button>
+                  <div style={{ padding: '4px 0' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                      <div style={{
+                        width: 56, height: 56, borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 16px'
+                      }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                      </div>
+                      <h4 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: '0 0 8px' }}>
+                        Authorization Required
+                      </h4>
+                      <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6, margin: 0 }}>
+                        Fill in your details and one of our representatives will contact you within <strong style={{ color: '#111827' }}>48 hours</strong> to activate widget embedding.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      {/* Phone */}
+                      <div>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                          Phone number <span style={{ color: '#9ca3af', fontWeight: 400 }}>(with country code)</span>
+                        </label>
+                        <input
+                          type="tel"
+                          placeholder="+1 555 123 4567"
+                          value={authForm.phone}
+                          onChange={e => setAuthForm(f => ({ ...f, phone: e.target.value }))}
+                          style={{
+                            width: '100%', boxSizing: 'border-box',
+                            padding: '10px 14px', borderRadius: 8,
+                            border: '1px solid #d1d5db', fontSize: 14,
+                            outline: 'none', color: '#111827',
+                          }}
+                        />
+                      </div>
+
+                      {/* Company */}
+                      <div>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                          Company name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Acme Inc."
+                          value={authForm.company_name}
+                          onChange={e => setAuthForm(f => ({ ...f, company_name: e.target.value }))}
+                          style={{
+                            width: '100%', boxSizing: 'border-box',
+                            padding: '10px 14px', borderRadius: 8,
+                            border: '1px solid #d1d5db', fontSize: 14,
+                            outline: 'none', color: '#111827',
+                          }}
+                        />
+                      </div>
+
+                      {/* Notes */}
+                      <div>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                          Notes <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span>
+                        </label>
+                        <textarea
+                          placeholder="Tell us about your site, expected traffic, or anything else you'd like us to know…"
+                          value={authForm.notes}
+                          onChange={e => setAuthForm(f => ({ ...f, notes: e.target.value }))}
+                          rows={3}
+                          style={{
+                            width: '100%', boxSizing: 'border-box',
+                            padding: '10px 14px', borderRadius: 8,
+                            border: '1px solid #d1d5db', fontSize: 14,
+                            outline: 'none', color: '#111827',
+                            resize: 'vertical', fontFamily: 'inherit',
+                          }}
+                        />
+                      </div>
+
+                      {authFormError && (
+                        <p style={{ margin: 0, fontSize: 13, color: '#ef4444' }}>{authFormError}</p>
+                      )}
+
+                      <button
+                        disabled={authFormSubmitting}
+                        onClick={async () => {
+                          setAuthFormSubmitting(true);
+                          setAuthFormError(null);
+                          try {
+                            const { data: { session } } = await supabase.auth.getSession();
+                            if (!session) throw new Error('Not authenticated');
+                            const res = await fetch(
+                              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/request-authorization`,
+                              {
+                                method: 'POST',
+                                headers: {
+                                  'Authorization': `Bearer ${session.access_token}`,
+                                  'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(authForm),
+                              }
+                            );
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Failed to submit');
+                            setAuthFormSubmitted(true);
+                          } catch (err: any) {
+                            setAuthFormError(err.message);
+                          } finally {
+                            setAuthFormSubmitting(false);
+                          }
+                        }}
+                        className="btn btnPrimary"
+                        style={{
+                          width: '100%', borderRadius: 12,
+                          background: authFormSubmitting ? '#9ca3af' : 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                          border: 'none',
+                          boxShadow: authFormSubmitting ? 'none' : '0 4px 12px rgba(79, 70, 229, 0.3)',
+                          padding: '13px 24px', fontSize: 15,
+                          cursor: authFormSubmitting ? 'wait' : 'pointer',
+                        }}
+                      >
+                        {authFormSubmitting ? 'Sending…' : 'Send details & request access'}
+                      </button>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <>
+                  <div style={{ 
+                    background: '#1e293b', 
+                    borderRadius: 12, 
+                    padding: '20px',
+                    position: 'relative',
+                    overflow: 'auto'
+                  }}>
+                    <pre style={{ 
+                      margin: 0, 
+                      fontSize: 13, 
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                      lineHeight: 1.6,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all'
+                    }}>
+                      <span style={{ color: '#7dd3fc' }}>&lt;script</span>{'\n'}
+                      <span style={{ color: '#a5b4fc' }}>  src</span>
+                      <span style={{ color: '#e2e8f0' }}>=</span>
+                      <span style={{ color: '#a3e635' }}>"https://srv.divee.ai/storage/v1/object/public/sdk/divee.sdk.latest.js"</span>{'\n'}
+                      <span style={{ color: '#a5b4fc' }}>  data-project-id</span>
+                      <span style={{ color: '#e2e8f0' }}>=</span>
+                      <span style={{ color: '#a3e635' }}>"{embedModalProject.project_id}"</span>
+                      <span style={{ color: '#7dd3fc' }}>&gt;</span>{'\n'}
+                      <span style={{ color: '#7dd3fc' }}>&lt;/script&gt;</span>
+                    </pre>
+                  </div>
+
+                  <div style={{ 
+                    marginTop: 20,
+                    padding: '16px',
+                    background: '#eff6ff',
+                    borderRadius: 8,
+                    borderLeft: '3px solid #3b82f6'
+                  }}>
+                    <div style={{ fontSize: 13, color: '#1e40af', lineHeight: 1.6 }}>
+                      <strong style={{ display: 'block', marginBottom: 4 }}>💡 Tip:</strong>
+                      Use the <code style={{ background: '#dbeafe', padding: '2px 6px', borderRadius: 4 }}>cog wheel</code> in the inventory screen to customize your project look and behavior.
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleCopySDK(embedModalProject.project_id)}
+                    className="btn btnPrimary"
+                    style={{ 
+                      width: '100%',
+                      marginTop: 24,
+                      borderRadius: 12,
+                      background: embedCopied ? '#10b981' : 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                      border: 'none',
+                      boxShadow: embedCopied ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 4px 12px rgba(79, 70, 229, 0.3)',
+                      padding: '14px 24px',
+                      fontSize: 15,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 10,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {embedCopied ? (
+                      <>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy to Clipboard
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

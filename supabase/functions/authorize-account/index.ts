@@ -26,35 +26,39 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // List all users via admin API
-    const { data: usersData, error: usersError } = await supabaseClient.auth.admin.listUsers();
+    const { userId: targetUserId, authorized } = await req.json();
 
-    if (usersError) {
-      throw new Error(`Failed to list users: ${usersError.message}`);
+    if (!targetUserId || typeof authorized !== "boolean") {
+      return new Response(
+        JSON.stringify({ error: "userId (string) and authorized (boolean) are required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Fetch authorized user IDs
-    const { data: authorizedData } = await supabaseClient
-      .from("authorized_users")
-      .select("user_id");
+    if (authorized) {
+      const { error: insertError } = await supabaseClient
+        .from("authorized_users")
+        .upsert({ user_id: targetUserId, authorized_by: userId }, { onConflict: "user_id" });
 
-    const authorizedSet = new Set(
-      (authorizedData || []).map((a: any) => a.user_id)
-    );
+      if (insertError) {
+        throw new Error(`Failed to authorize user: ${insertError.message}`);
+      }
+    } else {
+      const { error: deleteError } = await supabaseClient
+        .from("authorized_users")
+        .delete()
+        .eq("user_id", targetUserId);
 
-    const users = usersData.users.map((u: any) => ({
-      id: u.id,
-      email: u.email,
-      created_at: u.created_at,
-      last_sign_in_at: u.last_sign_in_at,
-      authorized: authorizedSet.has(u.id),
-    }));
+      if (deleteError) {
+        throw new Error(`Failed to revoke authorization: ${deleteError.message}`);
+      }
+    }
 
-    return new Response(JSON.stringify({ users }), {
+    return new Response(JSON.stringify({ success: true, userId: targetUserId, authorized }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in list-users:", error);
+    console.error("Error in authorize-account:", error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Internal Server Error",

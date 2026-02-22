@@ -30,3 +30,6 @@ verify_jwt = false
 
 [functions.impersonate]
 verify_jwt = false
+
+[functions.authorize-account]
+verify_jwt = false

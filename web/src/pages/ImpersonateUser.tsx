@@ -9,6 +9,7 @@ interface UserEntry {
   email: string
   created_at: string
   last_sign_in_at: string | null
+  authorized: boolean
 }
 
 export default function ImpersonateUser() {
@@ -21,6 +22,7 @@ export default function ImpersonateUser() {
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
+  const [togglingUserId, setTogglingUserId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isAdmin) {
@@ -53,6 +55,38 @@ export default function ImpersonateUser() {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleToggleAuth(user: UserEntry) {
+    setTogglingUserId(user.id)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('No active session')
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/authorize-account`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId: user.id, authorized: !user.authorized }),
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to update authorization')
+
+      // Update local state
+      setUsers(prev => prev.map(u =>
+        u.id === user.id ? { ...u, authorized: !u.authorized } : u
+      ))
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setTogglingUserId(null)
     }
   }
 
@@ -185,40 +219,72 @@ export default function ImpersonateUser() {
               <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
                 Last sign in: {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : 'Never'}
               </div>
+              <div style={{ fontSize: '12px', marginTop: '3px', color: u.authorized ? '#10b981' : '#f59e0b', fontWeight: 600 }}>
+                {u.authorized ? '✓ Authorized' : '⏳ Pending authorization'}
+              </div>
             </div>
 
-            {/* Action */}
-            <button
-              onClick={() => handleImpersonate(u.id)}
-              disabled={impersonatingId !== null}
-              style={{
-                background: impersonatingId === u.id ? '#7c3aed' : 'transparent',
-                color: impersonatingId === u.id ? '#fff' : '#7c3aed',
-                border: '1px solid #7c3aed',
-                borderRadius: '6px',
-                padding: '7px 16px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: impersonatingId !== null ? 'wait' : 'pointer',
-                transition: 'all 0.15s',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-              }}
-              onMouseEnter={e => {
-                if (!impersonatingId) {
-                  e.currentTarget.style.background = '#7c3aed'
-                  e.currentTarget.style.color = '#fff'
-                }
-              }}
-              onMouseLeave={e => {
-                if (impersonatingId !== u.id) {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = '#7c3aed'
-                }
-              }}
-            >
-              {impersonatingId === u.id ? 'Switching...' : 'Impersonate'}
-            </button>
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+              {/* Auth toggle */}
+              <button
+                onClick={() => handleToggleAuth(u)}
+                disabled={togglingUserId !== null || impersonatingId !== null}
+                title={u.authorized ? 'Revoke authorization' : 'Authorize user'}
+                style={{
+                  background: u.authorized ? '#ecfdf5' : '#fffbeb',
+                  color: u.authorized ? '#059669' : '#d97706',
+                  border: `1px solid ${u.authorized ? '#6ee7b7' : '#fcd34d'}`,
+                  borderRadius: '6px',
+                  padding: '7px 14px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: togglingUserId !== null || impersonatingId !== null ? 'wait' : 'pointer',
+                  transition: 'all 0.15s',
+                  whiteSpace: 'nowrap',
+                  opacity: togglingUserId === u.id ? 0.6 : 1,
+                }}
+              >
+                {togglingUserId === u.id
+                  ? '...'
+                  : u.authorized
+                  ? 'Revoke'
+                  : 'Authorize'}
+              </button>
+
+              {/* Impersonate */}
+              <button
+                onClick={() => handleImpersonate(u.id)}
+                disabled={impersonatingId !== null}
+                style={{
+                  background: impersonatingId === u.id ? '#7c3aed' : 'transparent',
+                  color: impersonatingId === u.id ? '#fff' : '#7c3aed',
+                  border: '1px solid #7c3aed',
+                  borderRadius: '6px',
+                  padding: '7px 16px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: impersonatingId !== null ? 'wait' : 'pointer',
+                  transition: 'all 0.15s',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+                onMouseEnter={e => {
+                  if (!impersonatingId) {
+                    e.currentTarget.style.background = '#7c3aed'
+                    e.currentTarget.style.color = '#fff'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (impersonatingId !== u.id) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = '#7c3aed'
+                  }
+                }}
+              >
+                {impersonatingId === u.id ? 'Switching...' : 'Impersonate'}
+              </button>
+            </div>
           </div>
         ))}
       </div>
